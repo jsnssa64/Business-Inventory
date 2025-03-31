@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "target": "ES5", // Compile to ES5 JavaScript
+        "module": "ES6", // Use the latest module system
+        "strict": true, // Enable strict type-checking
+        "sourceMap": true, // Generate source map files
+        "outDir": "./dist", // Output directory
+        "rootDir": "./src", // Input directory
+        "jsx": "react" // Enable JSX with React
+    },
+    "include": ["src"], // Include all files in the 'src' directory
+    "exclude": ["node_modules"] // Exclude the 'node_modules' directory
+}
