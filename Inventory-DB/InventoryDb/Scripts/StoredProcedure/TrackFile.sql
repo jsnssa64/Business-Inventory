@@ -23,12 +23,12 @@ BEGIN TRY
 			WHERE do.FileName LIKE '%' + @fileName + '%';
 			
 			PRINT('Skipped - FileName:' + @fileName + ', Current Version:' + CAST(@oldVersion AS VARCHAR) + ', New Version: ' + CAST(@newVersion AS VARCHAR)) 
-			RETURN 1;
+			RETURN 0;
 		END
 
 		PRINT('Updated - FileName:' + @fileName + ', New Version: ' + CAST(@newVersion AS VARCHAR))
-		RETURN 1;
 	END
+	RETURN 1;
 END TRY
 BEGIN CATCH
 	PRINT('FAILED: Unable to track file, FileName:' + @fileName + ', New Version: ' + CAST(@newVersion AS VARCHAR)) 

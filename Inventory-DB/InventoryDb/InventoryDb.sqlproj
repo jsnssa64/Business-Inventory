@@ -9,8 +9,7 @@
     <ProjectGuid>{dba51de4-70dd-4b22-aca8-5b1a4350e57c}</ProjectGuid>
     <DSP>Microsoft.Data.Tools.Schema.Sql.Sql160DatabaseSchemaProvider</DSP>
     <OutputType>Database</OutputType>
-    <RootPath>
-    </RootPath>
+    <RootPath />
     <RootNamespace>InventoryDb</RootNamespace>
     <AssemblyName>InventoryDb</AssemblyName>
     <ModelCollation>1033, CI</ModelCollation>
@@ -51,7 +50,6 @@
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
-    <!-- Default to the v11.0 targets path if the targets file for the current VS version is not found -->
     <SSDTExists Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets')">True</SSDTExists>
     <VisualStudioVersion Condition="'$(SSDTExists)' == ''">11.0</VisualStudioVersion>
   </PropertyGroup>
@@ -105,5 +103,12 @@
       <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
       <DatabaseVariableLiteralValue>master</DatabaseVariableLiteralValue>
     </ArtifactReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="dbo\StoredProcedure\GetInventoryItemByItemId.sql" />
+    <Build Include="dbo\StoredProcedure\AddInventoryItem.sql" />
+    <Build Include="dbo\StoredProcedure\GetInventoryInfoByItemName.sql" />
+    <Build Include="dbo\StoredProcedure\AddItemToInventoryById.sql" />
+    <Build Include="dbo\StoredProcedure\AddItemToInventoryByName.sql" />
   </ItemGroup>
 </Project>

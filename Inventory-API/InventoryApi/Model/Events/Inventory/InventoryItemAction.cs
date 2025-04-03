@@ -3,6 +3,6 @@
     public class InventoryItemAction
     {
         public static string StreamName = "InventoryItem";
-        public string InventoryItemId { get; set; }
+        public int InventoryItemId { get; set; }
     }
 }

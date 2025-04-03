@@ -1,6 +1,10 @@
+using System.Data.Entity.Infrastructure;
 using EventStore;
 using EventStore.Client;
+using InventoryApi.Factory;
 using InventoryApi.Repository;
+using InventoryApi.Service;
+using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +15,19 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddSingleton<IDbConnectionFactory, DapperDbConnectionFactory>(sp =>
+{
+    var connectionDict = new Dictionary<DatabaseConnections, string?>()
+    {
+        { 
+            DatabaseConnections.InventoryDb, 
+            builder.Configuration.GetConnectionString(DatabaseConnections.InventoryDb.ToString())
+        }
+    };
+
+    return new DapperDbConnectionFactory(connectionDict);
+});
+
 builder.Services.AddSingleton(new EventStoreClient(new EventStoreClientSettings
 {
     ConnectivitySettings = new EventStoreClientConnectivitySettings
@@ -20,6 +37,7 @@ builder.Services.AddSingleton(new EventStoreClient(new EventStoreClientSettings
 }));
 
 builder.Services.AddSingleton<IInventoryRepository, InventoryRepository>();
+builder.Services.AddSingleton<IInventoryService, InventoryService>();
 
 var app = builder.Build();
 
