@@ -6,7 +6,7 @@ ENV ACCEPT_EULA=Y
 ENV MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD:-YourStrongPassword123!!}
 ENV MSSQL_PID=${MSSQL_PID:-Developer}
 ENV DefaultAdmin_Password=${DefaultAdmin_Password:-AdminPassword123!!}
-ENV EnvironmentName=${EnvironmentName:-Development}
+ENV EnvironmentName=${ASPNETCORE_ENVIRONMENT:-Development}
 
 # Expose SQL Server port
 EXPOSE 1433
