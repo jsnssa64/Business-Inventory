@@ -1,7 +1,7 @@
 ﻿namespace InventoryApi.Repository.Data
 {
-    public static class GetInventoryInfoByItemNameModel
+    public class GetInventoryInfoByItemNameModel
     {
-        public static string ItemName { get; set; }
+        public required string ItemName { get; set; }
     }
 }

@@ -2,7 +2,7 @@
 {
     public class ProductPurchased: ProductAction
     {
-        public string UserId { get; set; }
+        public required string UserId { get; set; }
         public int Quantity { get; set; }
     }
 }

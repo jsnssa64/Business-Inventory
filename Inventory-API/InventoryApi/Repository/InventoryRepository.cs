@@ -31,7 +31,7 @@ namespace InventoryApi.Repository
                 using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
                 
                 var parameters = new { Name = inventoryItem.Name, Quantity = inventory.Quantity };
-                var result = conn.QuerySingleOrDefault<int>("dbo.AddItemToInventoryByName", parameters, commandType: CommandType.StoredProcedure);
+                var result = await conn.QuerySingleOrDefaultAsync<int>("dbo.AddItemToInventoryByName", parameters, commandType: CommandType.StoredProcedure);
 
                 if (result == -1)
                 {
@@ -94,6 +94,9 @@ namespace InventoryApi.Repository
         public async Task<IEnumerable<InventoryItem>> GetInventoryItemByItemId(InventoryItem inventoryItem)
         {
             using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
+
+            Console.WriteLine("conn.ConnectionString");
+            Console.WriteLine(conn.ConnectionString);
 
             DynamicParameters parameters = new DynamicParameters();
             parameters.Add(nameof(GetInventoryByItemIdModel.ItemId), inventoryItem.ItemId);

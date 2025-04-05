@@ -11,6 +11,7 @@ sleep 20
 echo "Creating server-level login..."
 /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U SA -P "$MSSQL_SA_PASSWORD" -d master -i /tmp/CreateServerLogin.sql
 
+echo "Creating database..."
 # Deploy the DACPAC
 echo "Deploying InventoryDb.dacpac..."
 /opt/sqlpackage/sqlpackage \
@@ -21,8 +22,8 @@ echo "Deploying InventoryDb.dacpac..."
     /TargetUser:SA \
     /TargetTrustServerCertificate:True \
     /TargetPassword:$MSSQL_SA_PASSWORD \
-    /v:AdminPassword=$DefaultAdmin_Password \
-    /v:EnvironmentName=$EnvironmentName \
+    /v:AdminPassword=$DEFAULT_ADMIN_PASSWORD \
+    /v:EnvironmentName=$ASPNETCORE_ENVIRONMENT \
 
 
 # Keep the container alive

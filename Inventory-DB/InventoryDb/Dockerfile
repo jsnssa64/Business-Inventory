@@ -1,12 +1,10 @@
+ARG BIN_MODE=Debug    # Default to Development if not specified Release or Debug
+
 # Use the official Microsoft SQL Server image
 FROM mcr.microsoft.com/mssql/server:2022-latest
 
 # Set environment variables for SQL Server
-ENV ACCEPT_EULA=Y
-ENV MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD:-YourStrongPassword123!!}
-ENV MSSQL_PID=${MSSQL_PID:-Developer}
-ENV DefaultAdmin_Password=${DefaultAdmin_Password:-AdminPassword123!!}
-ENV EnvironmentName=${ASPNETCORE_ENVIRONMENT:-Development}
+ENV ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
 
 # Expose SQL Server port
 EXPOSE 1433
@@ -24,9 +22,11 @@ RUN apt-get update && apt-get install -y wget unzip && \
 # Create a directory for the dacpac file
 RUN mkdir -p /usr/src/app
 
+ARG BIN_MODE=Debug
+
 # Copy the dacpac file into the container
-COPY ./bin/${BIN_MODE:-Debug}/InventoryDb.dacpac /usr/src/app/InventoryDb.dacpac
-COPY ./bin/${BIN_MODE:-Debug}/master.dacpac /usr/src/app/master.dacpac
+COPY ./bin/${BIN_MODE}/InventoryDb.dacpac /usr/src/app/InventoryDb.dacpac
+COPY ./bin/${BIN_MODE}/master.dacpac /usr/src/app/master.dacpac
 COPY ./server/CreateServerLogin.sql /tmp/CreateServerLogin.sql
 
 # Entrypoint script

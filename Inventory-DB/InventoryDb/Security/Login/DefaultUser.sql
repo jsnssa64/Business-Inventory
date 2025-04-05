@@ -1,9 +1,9 @@
 ﻿IF NOT EXISTS 
     (SELECT name  
      FROM sys.database_principals
-     WHERE name = 'alice')
+     WHERE name = 'defaultAdmin')
 BEGIN
-    CREATE USER [alice] FOR LOGIN defaultAdmin;
-    ALTER ROLE db_datareader ADD MEMBER [alice];
+    CREATE USER defaultAdmin FOR LOGIN defaultAdmin;
+    ALTER ROLE db_datareader ADD MEMBER defaultAdmin;
 END
 GO

@@ -1,57 +1,59 @@
 using System.Data.Entity.Infrastructure;
-using EventStore;
 using EventStore.Client;
 using InventoryApi.Factory;
 using InventoryApi.Repository;
 using InventoryApi.Service;
-using Microsoft.Extensions.Configuration;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-builder.Services.AddSingleton<IDbConnectionFactory, DapperDbConnectionFactory>(sp =>
+internal class Program
 {
-    var connectionDict = new Dictionary<DatabaseConnections, string?>()
+    private static void Main(string[] args)
     {
-        { 
-            DatabaseConnections.InventoryDb, 
+        var builder = WebApplication.CreateBuilder(args);
+
+        // Add services to the container.
+
+        builder.Services.AddControllers();
+        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
+
+        builder.Services.AddSingleton<IDbConnectionFactory, DapperDbConnectionFactory>(sp =>
+        {
+            var connectionDict = new Dictionary<DatabaseConnections, string?>()
+            {
+        {
+            DatabaseConnections.InventoryDb,
             builder.Configuration.GetConnectionString(DatabaseConnections.InventoryDb.ToString())
         }
-    };
+            };
 
-    return new DapperDbConnectionFactory(connectionDict);
-});
+            return new DapperDbConnectionFactory(connectionDict);
+        });
 
-builder.Services.AddSingleton(new EventStoreClient(new EventStoreClientSettings
-{
-    ConnectivitySettings = new EventStoreClientConnectivitySettings
-    {
-        Address = builder.Configuration.GetSection("EventStore:Address").Get<Uri>()
+        builder.Services.AddSingleton(new EventStoreClient(new EventStoreClientSettings
+        {
+            ConnectivitySettings = new EventStoreClientConnectivitySettings
+            {
+                Address = builder.Configuration.GetSection("EventStore:Address").Get<Uri>()
+            }
+        }));
+
+        builder.Services.AddSingleton<IInventoryRepository, InventoryRepository>();
+        builder.Services.AddSingleton<IInventoryService, InventoryService>();
+
+        var app = builder.Build();
+
+        // Configure the HTTP request pipeline.
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
+
+        app.UseAuthorization();
+
+        app.MapControllers();
+
+        app.Run();
     }
-}));
-
-builder.Services.AddSingleton<IInventoryRepository, InventoryRepository>();
-builder.Services.AddSingleton<IInventoryService, InventoryService>();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
