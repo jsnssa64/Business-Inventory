@@ -5,8 +5,7 @@ const ESLintPlugin = require('eslint-webpack-plugin');
 module.exports = {
     mode: 'development',
     entry: {
-        app: './src/app.tsx',
-        print: './src/print.tsx',
+        app: './src/index.tsx'
     },
     output: {
         filename: '[name].[contenthash].js',

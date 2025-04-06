@@ -6,7 +6,9 @@
         "sourceMap": true, // Generate source map files
         "outDir": "./dist", // Output directory
         "rootDir": "./src", // Input directory
-        "jsx": "react" // Enable JSX with React
+        "jsx": "react", // Enable JSX with React
+        "esModuleInterop": true,
+        "moduleResolution": "node", // Use Node.js module resolution strategy
     },
     "include": ["src"], // Include all files in the 'src' directory
     "exclude": ["node_modules"] // Exclude the 'node_modules' directory
