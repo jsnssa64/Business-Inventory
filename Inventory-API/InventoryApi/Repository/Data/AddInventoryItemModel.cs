@@ -7,6 +7,6 @@
         public static float Price { get; set; }
         public static string CurrencyCode { get; set; } = string.Empty;
         public static int Quantity { get; set; }        
-        public static int NewItemId { get; set; }
+        public static int NewProductId { get; set; }
     }
 }

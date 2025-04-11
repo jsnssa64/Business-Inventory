@@ -1,16 +1,16 @@
-﻿CREATE PROCEDURE dbo.GetInventoryItemByItemId
-    @ItemId INT
+﻿CREATE PROCEDURE dbo.GetProductById
+    @ProductId INT
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT
-        Id AS ItemId,
+        Id,
         [Name],
         [Description],
         Price,
         CurrencyCode,
         CreatedAt
-    FROM dbo.InventoryItem
-    WHERE Id = @ItemId;
+    FROM dbo.Product
+    WHERE Id = @ProductId;
 END

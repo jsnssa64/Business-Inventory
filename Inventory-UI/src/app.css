@@ -1,2 +1,9 @@
 @import "tailwindcss";
-@plugin "daisyui";
+@plugin "daisyui" {
+    themes: light --default, lofi;
+}
+
+
+.container {
+    @apply max-w-screen-xl;
+}

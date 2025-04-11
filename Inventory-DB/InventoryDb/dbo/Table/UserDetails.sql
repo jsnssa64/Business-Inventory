@@ -1,0 +1,14 @@
+﻿CREATE TABLE [dbo].[UserDetails]
+(
+	UserId INT NOT NULL UNIQUE,
+	FullName VARCHAR(50) NOT NULL,
+	EmailAddress VARCHAR(50) NOT NULL,
+	Gender VARCHAR(50) NOT NULL,
+	DOB DATE NOT NULL,
+	ContactNumber VARCHAR(50) NOT NULL,
+	FirstLineAddress VARCHAR(150) NOT NULL,
+	SecondLineAddress VARCHAR(150) NOT NULL,
+	PostCode VARCHAR(50) NOT NULL,
+    CreatedAt DATETIME NOT NULL DEFAULT GETDATE()
+	CONSTRAINT [FK_UserDetails_User] FOREIGN KEY (UserId) REFERENCES [dbo].[User]([Id])
+)

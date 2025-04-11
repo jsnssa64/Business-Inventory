@@ -1,5 +1,5 @@
-﻿CREATE PROCEDURE [dbo].[AddItemToInventoryById]
-	@ItemId INT,
+﻿CREATE PROCEDURE [dbo].[AddItemToInventoryByProductId]
+	@ProductId INT,
     @Quantity INT
 AS
 	SET NOCOUNT ON;
@@ -13,16 +13,16 @@ AS
 
     BEGIN TRY
 
-        IF EXISTS(SELECT 1 FROM dbo.Inventory WHERE InventoryItemId = @ItemId) 
+        IF EXISTS(SELECT 1 FROM dbo.Inventory WHERE ProductId = @ProductId) 
         BEGIN
             UPDATE dbo.Inventory
             SET Quantity = Quantity + @Quantity
-            WHERE InventoryItemId = @ItemId
+            WHERE ProductId = @ProductId
         END
         ELSE 
         BEGIN
-		    INSERT INTO dbo.Inventory(InventoryItemId, Quantity)
-		    VALUES(@ItemId, @Quantity)
+		    INSERT INTO dbo.Inventory(ProductId, Quantity)
+		    VALUES(@ProductId, @Quantity)
         END
 
         IF @@ROWCOUNT = 0

@@ -1,8 +1,8 @@
 ﻿namespace InventoryApi.Repository.Data
 {
-    public static class AddItemToInventoryModel
+    public static class AddItemToInventoryByProductIdModel
     {
-        public static string ItemId { get; set; } = string.Empty;
+        public static int ProductId { get; set; }
         public static int Quantity { get; set; }
     }
 }

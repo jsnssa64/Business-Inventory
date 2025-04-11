@@ -1,6 +1,9 @@
 using Domain.Inventory;
+using Domain.User;
+using EventStore.Client;
 using InventoryApi.Model.DTO;
 using InventoryApi.Model.Events.Inventory;
+using InventoryApi.Service;
 using InventoryApi.Service.InventoryService;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,41 +11,22 @@ namespace InventoryApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class InventoryController : ControllerBase
+    public class UserController : ControllerBase
     {
-        private readonly IInventoryService _inventoryService;
         private readonly ILogger<InventoryController> _logger;
+        private readonly IInventoryService _inventoryService;
 
-        public InventoryController(IInventoryService inventoryService, ILogger<InventoryController> logger)
+        public UserController(ILogger<InventoryController> logger, IInventoryService inventoryService)
         {
-            _inventoryService = inventoryService;
             _logger = logger;
+            _inventoryService = inventoryService;
         }
 
-        [HttpGet("GetInventoryItemById")]
-        public async Task<IActionResult> GetProductById(int productid, CancellationToken cancellationToken)
+        [HttpGet("Login")]
+        public async Task<IActionResult> UserLogin(User user, CancellationToken cancellationToken)
         {
-            try
-            {
-                if (productid == 0)
-                {
-                    throw new ArgumentNullException(nameof(productid));
-                }
+            return Ok();
 
-                var product = new Product
-                {
-                    Id = productid
-                };
-
-                var inventoryItems = await _inventoryService.GetInventoryItemByProductId(product, cancellationToken);
-
-                return Ok(inventoryItems);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error adding inventory");
-                return StatusCode(500);
-            }
         }
 
         [HttpPost("AddInventoryItem")]
@@ -55,7 +39,7 @@ namespace InventoryApi.Controllers
                     throw new ArgumentNullException(nameof(dto));
                 }
 
-                var product = new Product
+                var inventoryItem = new Product
                 {
                     Name = dto.Name,
                     Description = dto.Description,
@@ -69,7 +53,7 @@ namespace InventoryApi.Controllers
                     Quantity = dto.InventoryQuantity
                 };
 
-                var result = await _inventoryService.AddInventoryItem(product, inventory, cancellationToken);
+                var result = await _inventoryService.AddInventoryItem(inventoryItem, inventory, cancellationToken);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -110,12 +94,12 @@ namespace InventoryApi.Controllers
         }
 
         [HttpPost("AddInventoryToStream")]
-        public async Task<IActionResult> AddToStream(Product product)
+        public async Task<IActionResult> AddToStream(Product inventoryItem)
         {
             var restockedEvent = new InventoryItemRestocked
             {
-                InventoryItemId = product.Id,
-                Quantity = product.Quantity
+                InventoryItemId = inventoryItem.ItemId,
+                Quantity = inventoryItem.Quantity
             };
 
             try
@@ -132,12 +116,12 @@ namespace InventoryApi.Controllers
         }
 
         [HttpPost("RemoveInventoryFromStream")]
-        public async Task<IActionResult> RemoveFromStream(Product product)
+        public async Task<IActionResult> RemoveFromStream(InventoryItem item)
         {
             var removeEvent = new InventoryItemRemoved
             {
-                InventoryItemId = product.Id,
-                Quantity = product.Quantity
+                InventoryItemId = item.ItemId,
+                Quantity = item.Quantity
             };
 
             try

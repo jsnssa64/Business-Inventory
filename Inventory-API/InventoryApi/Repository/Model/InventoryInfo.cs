@@ -2,7 +2,7 @@
 {
     public class InventoryInfo
     {
-        public required string ItemName { get; set; }
+        public required string ProductName { get; set; }
         public int Quantity { get; set; }
     }
 }

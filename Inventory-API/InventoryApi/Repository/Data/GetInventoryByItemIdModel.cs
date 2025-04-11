@@ -1,7 +1,7 @@
 ﻿namespace InventoryApi.Repository.Data
 {
-    public static class GetInventoryByItemIdModel
+    public static class GetProductByIdModel
     {
-        public static int ItemId { get; set; }
+        public static int ProductId { get; set; }
     }
 }

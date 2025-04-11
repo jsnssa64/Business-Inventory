@@ -1,6 +1,6 @@
 ﻿CREATE PROCEDURE [dbo].[AddItemToInventoryByName]
 	@Name VARCHAR(50),
-    @Quantity INT
+    @InventoryQuantity INT
 AS
 	SET NOCOUNT ON;
     SET XACT_ABORT ON;
@@ -8,10 +8,10 @@ AS
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        DECLARE @ItemId INT;
-        SET @ItemId = (SELECT TOP(1) Id FROM dbo.InventoryItem WHERE [Name] = @Name)
+        DECLARE @ProductId INT;
+        SET @ProductId = (SELECT TOP(1) Id FROM dbo.Product  WHERE [Name] = @Name)
 
-        IF @ItemId = 1 OR @ItemId IS NULL
+        IF @ProductId = 1 OR @ProductId IS NULL
         BEGIN
             ROLLBACK TRANSACTION;
             SELECT -1 AS StatusCode; -- Item doesn't exist
@@ -19,7 +19,7 @@ AS
         END
 
         DECLARE @result INT;
-        EXEC @result = dbo.AddItemToInventory @ItemId, @Quantity
+        EXEC @result = dbo.[AddItemToInventoryByProductId] @ProductId, @Quantity
 
         IF @result <> 0
         BEGIN

@@ -3,15 +3,15 @@ EXEC @result = dbo.TrackFile @fileName = 'SeedData';
 
 IF('$(EnvironmentName)' = 'Development' AND @result = 1)
 BEGIN
-	DECLARE @InventoryitemId INT;
+	DECLARE @ProductId INT;
 
-	INSERT INTO dbo.InventoryItem(Name, Description, Price, CurrencyCode)
+	INSERT INTO dbo.Product(Name, Description, Price, CurrencyCode)
 	VALUES('Test1', 'Test1', '233', 'GDP')
 
-	SELECT @InventoryitemId = SCOPE_IDENTITY()
+	SELECT @ProductId = SCOPE_IDENTITY()
 
-	INSERT INTO dbo.Inventory(InventoryItemId, Quantity)
-	VALUES(@InventoryitemId, 12)
+	INSERT INTO dbo.Inventory(ProductId, Quantity)
+	VALUES(@ProductId, 12)
 	PRINT('Complete - FileName:SeedData - $(EnvironmentName)')
 END
 ELSE 

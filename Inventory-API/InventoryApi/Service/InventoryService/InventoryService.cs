@@ -1,8 +1,10 @@
 ﻿using Domain.Inventory;
 using EventStore.Client;
-using InventoryApi.Repository;
+using InventoryApi.Repository.Inventory;
+using InventoryApi.Repository.Model;
+using Microsoft.IdentityModel.Tokens;
 
-namespace InventoryApi.Service
+namespace InventoryApi.Service.InventoryService
 {
     public class InventoryService: IInventoryService
     {
@@ -15,51 +17,51 @@ namespace InventoryApi.Service
             _inventoryRepository = inventoryRepository;
         }
 
-        public async Task<InventoryItem> AddInventoryItem(InventoryItem inventoryItem, Inventory inventory, CancellationToken cancellationToken)
+        public async Task<Product> AddInventoryItem(Product product, InventoryItem inventory, CancellationToken cancellationToken)
         {
-            if (inventoryItem.Price == 0)
+            if (product.Price == 0)
             {
                 throw new Exception("Price cannot be 0");
             }
 
-            if (inventoryItem.Quantity == 0) { 
+            if (product.Quantity == 0) { 
                 throw new Exception("Quantity cannot be 0");
             }
 
-            var result = await _inventoryRepository.AddInventoryItem(inventoryItem);
+            var result = await _inventoryRepository.AddProduct(product);
 
-            if (inventory.Quantity > 0)
+            if (inventory.InventoryQuantity > 0)
             {
-                inventory.ItemId = result.ItemId;
-                await _inventoryRepository.AddItemToInventoryById(inventory);
+                inventory.ProductId = result.Id;
+                await _inventoryRepository.AddItemToInventoryByProductId(inventory);
             }
 
             return result;
         }
 
-        public async Task<bool> AddItemToInventory(InventoryItem inventoryItem, Inventory inventory, CancellationToken cancellationToken)
+        public async Task<bool> AddItemToInventory(Product product, InventoryItem inventoryItem, CancellationToken cancellationToken)
         {
-            if (inventory.Quantity == 0)
+            if (inventoryItem.InventoryQuantity == 0)
             { 
-                throw new Exception("Quantity cannot be 0");
+                throw new Exception("Inventory Quantity cannot be 0");
             }
 
-            if(String.IsNullOrEmpty(inventoryItem.Name))
+            if(string.IsNullOrEmpty(product.Name))
             {
-                throw new Exception("Item Name cannot be empty or null");
+                throw new Exception("Product Name cannot be empty or null");
             }
 
-            return await _inventoryRepository.AddItemToInventoryByName(inventoryItem, inventory);
+            return await _inventoryRepository.AddItemToInventoryByName(product, inventoryItem);
         }
 
-        public async Task<IEnumerable<InventoryItem>> GetInventoryItemByItemId(InventoryItem inventoryItem, CancellationToken cancellationToken)
+        public async Task<IEnumerable<InventoryInfo>> GetInventoryItemByProductId(Product product, CancellationToken cancellationToken)
         {
-            if(inventoryItem.ItemId == 0)
+            if(product.Name.IsNullOrEmpty())
             {
-                throw new Exception("Item Id cannot be 0");
+                throw new Exception("Item Name cannot be 0");
             }
 
-            return await _inventoryRepository.GetInventoryItemByItemId(inventoryItem);
+            return await _inventoryRepository.GetInventoryInfoByItemName(product);
         }   
 
         public async Task<bool> RemoveInventoryItemFromStream(object eventObject, string type, long intialPos)

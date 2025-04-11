@@ -7,8 +7,9 @@ using EventStore.Client;
 using InventoryApi.Factory;
 using InventoryApi.Repository.Data;
 using InventoryApi.Repository.Model;
+using Microsoft.IdentityModel.Tokens;
 
-namespace InventoryApi.Repository
+namespace InventoryApi.Repository.Inventory
 {
     public class InventoryRepository: IInventoryRepository
     {
@@ -24,13 +25,13 @@ namespace InventoryApi.Repository
             _storeClient = storeClient;
         }
 
-        public async Task<bool> AddItemToInventoryByName(InventoryItem inventoryItem, Inventory inventory)
+        public async Task<bool> AddItemToInventoryByName(Product product, InventoryItem inventoryItem)
         {
             try
             {
                 using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
                 
-                var parameters = new { Name = inventoryItem.Name, Quantity = inventory.Quantity };
+                var parameters = new { product.Name, inventoryItem.InventoryQuantity };
                 var result = await conn.QuerySingleOrDefaultAsync<int>("dbo.AddItemToInventoryByName", parameters, commandType: CommandType.StoredProcedure);
 
                 if (result == -1)
@@ -51,13 +52,13 @@ namespace InventoryApi.Repository
             
         }
 
-        public async Task<bool> AddItemToInventoryById(Inventory inventory)
+        public async Task<bool> AddItemToInventoryByProductId(InventoryItem inventoryItem)
         {
             using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
             DynamicParameters parameters = new DynamicParameters();
-            parameters.Add(nameof(AddItemToInventoryModel.ItemId), inventory.ItemId);
-            parameters.Add(nameof(AddItemToInventoryModel.Quantity), inventory.Quantity);
-            var result = await conn.ExecuteAsync("dbo.AddItemToInventoryById", parameters, commandType: CommandType.StoredProcedure);
+            parameters.Add(nameof(AddItemToInventoryByProductIdModel.ProductId), inventoryItem.ProductId);
+            parameters.Add(nameof(AddItemToInventoryByProductIdModel.Quantity), inventoryItem.InventoryQuantity);
+            var result = await conn.ExecuteAsync("dbo.AddItemToInventoryByProductId", parameters, commandType: CommandType.StoredProcedure);
 
             if (result <= 0)
             {
@@ -67,62 +68,59 @@ namespace InventoryApi.Repository
             return true;
         }
 
-        public async Task<InventoryItem> AddInventoryItem(InventoryItem inventoryItem)
+        public async Task<Product> AddProduct(Product product)
         {
             using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
 
             DynamicParameters parameters = new DynamicParameters();
-            parameters.Add(nameof(AddInventoryItemModel.Name), inventoryItem.Name);
-            parameters.Add(nameof(AddInventoryItemModel.Description), inventoryItem.Price);
-            parameters.Add(nameof(AddInventoryItemModel.Price), inventoryItem.Price);
-            parameters.Add(nameof(AddInventoryItemModel.CurrencyCode), inventoryItem.CurrencyCode);
-            parameters.Add(nameof(AddInventoryItemModel.Quantity), inventoryItem.Quantity);
-            parameters.Add(nameof(AddInventoryItemModel.NewItemId), dbType: DbType.Int32, direction: ParameterDirection.Output);
+            parameters.Add(nameof(AddInventoryItemModel.Name), product.Name);
+            parameters.Add(nameof(AddInventoryItemModel.Description), product.Price);
+            parameters.Add(nameof(AddInventoryItemModel.Price), product.Price);
+            parameters.Add(nameof(AddInventoryItemModel.CurrencyCode), product.CurrencyCode);
+            parameters.Add(nameof(AddInventoryItemModel.Quantity), product.Quantity);
+            parameters.Add(nameof(AddInventoryItemModel.NewProductId), dbType: DbType.Int32, direction: ParameterDirection.Output);
 
-            await conn.ExecuteAsync("dbo.AddInventoryItem", parameters, commandType: CommandType.StoredProcedure);
+            await conn.ExecuteAsync("dbo.AddProduct", parameters, commandType: CommandType.StoredProcedure);
 
-            inventoryItem.ItemId = parameters.Get<int>(nameof(AddInventoryItemModel.NewItemId));
+            product.Id = parameters.Get<int>(nameof(AddInventoryItemModel.NewProductId));
 
-            if(inventoryItem.ItemId <= 0)
+            if(product.Id <= 0)
             {
                 throw new DbUpdateException("Failed to add inventory item");
             }
 
-            return inventoryItem;
+            return product;
         }
 
-        public async Task<IEnumerable<InventoryItem>> GetInventoryItemByItemId(InventoryItem inventoryItem)
+        public async Task<IEnumerable<Product>> GetProductById(Product product)
         {
             using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
 
-            Console.WriteLine("conn.ConnectionString");
-            Console.WriteLine(conn.ConnectionString);
-
             DynamicParameters parameters = new DynamicParameters();
-            parameters.Add(nameof(GetInventoryByItemIdModel.ItemId), inventoryItem.ItemId);
+            parameters.Add(nameof(GetProductByIdModel.ProductId), product.Id);
 
-            var result = await conn.QueryAsync<InventoryItem>("dbo.GetInventoryItemByItemId", parameters, commandType: CommandType.StoredProcedure);
+            var result = await conn.QueryAsync<Product>("dbo.GetProductById", parameters, commandType: CommandType.StoredProcedure);
 
-            if (result == null || result.Count() == 0)
+            if (result.IsNullOrEmpty())
             {
-                throw new DbUpdateException("Failed to get inventory item");
+                throw new DbUpdateException("Failed to get product");
             }
 
             return result;
         }
 
-        public async Task<IEnumerable<InventoryInfo>> GetInventoryInfoByItemName(InventoryItem inventoryItem)
+        public async Task<IEnumerable<InventoryInfo>> GetInventoryInfoByItemName(Product product)
         {
             using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
 
             DynamicParameters parameters = new DynamicParameters();
-            parameters.Add(nameof(GetInventoryInfoByItemNameModel.ItemName), inventoryItem.Name);
+            parameters.Add(nameof(GetInventoryByProductNameModel.ProductName), product.Name);
 
-            var result = await conn.QueryAsync<InventoryInfo>("dbo.GetInventoryInfoByItemName", parameters, commandType: CommandType.StoredProcedure);
+            var result = await conn.QueryAsync<InventoryInfo>("dbo.GetInventoryByProductName", parameters, commandType: CommandType.StoredProcedure);
 
-            if (result == null || result.Count() == 0)
+            if (result.IsNullOrEmpty())
             {
-                throw new DbUpdateException($"Failed to get inventory info for Item {inventoryItem.Name}");
+                throw new DbUpdateException($"Failed to get inventory info for Item {product.Name}");
             }
 
             return result;
