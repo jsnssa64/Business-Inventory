@@ -3,7 +3,7 @@
 	@newVersion INT = 1
 AS
 BEGIN TRY
-	IF NOT EXISTS (SELECT * FROM dbo._deployOnce as do WHERE do.FileName LIKE '%' + @fileName + '%')
+	IF NOT EXISTS (SELECT * FROM dbo._deployOnce as do WHERE do.[FileName] LIKE '%' + @fileName + '%')
 	BEGIN 
 		INSERT INTO dbo._deployOnce (Id, [FileName])
 		VALUES(@newVersion, @fileName)
@@ -20,7 +20,7 @@ BEGIN TRY
 
 			SELECT TOP 1 @oldVersion = do.Id	
 			FROM dbo._deployOnce do	
-			WHERE do.FileName LIKE '%' + @fileName + '%';
+			WHERE do.[FileName] LIKE '%' + @fileName + '%';
 			
 			PRINT('Skipped - FileName:' + @fileName + ', Current Version:' + CAST(@oldVersion AS VARCHAR) + ', New Version: ' + CAST(@newVersion AS VARCHAR)) 
 			RETURN 0;

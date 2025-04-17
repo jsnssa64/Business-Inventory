@@ -73,7 +73,7 @@
   <ItemGroup>
     <PreDeploy Include="Scripts\Pre-Deployment\Script.PreDeployment.sql" />
     <Build Include="dbo\Table\Inventory.sql" />
-    <Build Include="dbo\Table\InventoryItem.sql" />
+    <Build Include="dbo\Table\Product.sql" />
     <None Include="Scripts\Post-Deployment\SeedData.sql" />
   </ItemGroup>
   <ItemGroup>
@@ -105,10 +105,31 @@
     </ArtifactReference>
   </ItemGroup>
   <ItemGroup>
-    <Build Include="dbo\StoredProcedure\GetInventoryItemByItemId.sql" />
-    <Build Include="dbo\StoredProcedure\AddInventoryItem.sql" />
-    <Build Include="dbo\StoredProcedure\GetInventoryInfoByItemName.sql" />
-    <Build Include="dbo\StoredProcedure\AddItemToInventoryById.sql" />
-    <Build Include="dbo\StoredProcedure\AddItemToInventoryByName.sql" />
+    <Build Include="dbo\StoredProcedure\GetProductById.sql" />
+    <Build Include="dbo\StoredProcedure\AddProduct.sql" />
+    <Build Include="dbo\StoredProcedure\GetInventoryByProductId.sql" />
+    <Build Include="dbo\StoredProcedure\UpdateItemInInventory.sql" />
+    <Build Include="dbo\Table\User.sql" />
+    <Build Include="dbo\Table\Role.sql" />
+    <Build Include="dbo\Table\UsersRole.sql" />
+    <Build Include="dbo\Table\UserDetails.sql" />
+    <Build Include="dbo\Table\Password.sql" />
+    <Build Include="dbo\StoredProcedure\CreateUser.sql" />
+    <Build Include="dbo\StoredProcedure\AssignUserToRole.sql" />
+    <Build Include="dbo\StoredProcedure\DisableUser.sql" />
+    <Build Include="dbo\StoredProcedure\GetUserDetails.sql" />
+    <Build Include="dbo\StoredProcedure\GetProducts.sql" />
+    <Build Include="dbo\Table\ProductPrice.sql" />
+    <Build Include="dbo\StoredProcedure\UpdateProduct.sql" />
+    <Build Include="dbo\StoredProcedure\GetUserId.sql" />
+    <Build Include="dbo\StoredProcedure\GetProductId.sql" />
+    <Build Include="dbo\StoredProcedure\UpdateUserDetails.sql" />
+    <Build Include="dbo\StoredProcedure\EnableUser.sql" />
+    <Build Include="dbo\StoredProcedure\CreateNewPassword.sql" />
+    <Build Include="dbo\StoredProcedure\CreateRole.sql" />
+    <Build Include="dbo\StoredProcedure\GetInventoryItems.sql" />
+    <Build Include="dbo\StoredProcedure\GetUser.sql" />
+    <Build Include="dbo\StoredProcedure\GetDefaultRole.sql" />
+    <Build Include="dbo\StoredProcedure\IsValidRole.sql" />
   </ItemGroup>
 </Project>

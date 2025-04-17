@@ -2,7 +2,9 @@
 {
     public class InventoryItem
     {
-        public int ProductId { get; set; }
-        public int Quantity { get; set; }
+        public int Id { get; set; }
+        public string? ProductId { get; set; }
+        public int ProductName { get; set; }
+        public int InventoryQuantity { get; set; }
     }
 }

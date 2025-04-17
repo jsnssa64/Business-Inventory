@@ -11,16 +11,39 @@ namespace InventoryApi.Service.SecurityService
     {
         private IOptions<Security> _security;
 
+        private JwtSecurityTokenHandler _securityTokenHandler;
+
+        private RSA accessKey;
+        
+        private RSA refreshKey;
+
+        private RSA GetKey(bool isRefresh = false) => isRefresh ? refreshKey : accessKey;
+        private int GetExpiry(bool isRefresh = false) => isRefresh ? _security.Value.RefreshToken.Expiry : _security.Value.AccessToken.Expiry;
+
         public JWTUtility(IOptions<Security> security)
         {
             _security = security;
+            _securityTokenHandler = new JwtSecurityTokenHandler();
+            accessKey = LoadAccessKey();
+            refreshKey = LoadRefreshKey();
+        }
+
+        public async Task<ClaimsIdentity> GetTokenClaims(string? token, bool isRefresh = false)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new ArgumentNullException("Token is null or empty");
+            }
+
+            var result = await _securityTokenHandler.ValidateTokenAsync(token, GetDefaultTokenValidationParams(isRefresh));
+            return result.ClaimsIdentity;
         }
                 
-        public RSA LoadRefreshKey() => LoadRSAKey(_security.Value.RefreshToken.Key);
+        private RSA LoadRefreshKey() => LoadRSAKey(_security.Value.RefreshToken.Key ?? throw new ArgumentNullException("Failed to load RSA Key"));
 
-        public RSA LoadAccessKey() => LoadRSAKey(_security.Value.AccessToken.Key);
+        private RSA LoadAccessKey() => LoadRSAKey(_security.Value.AccessToken.Key ?? throw new ArgumentNullException("Failed to load RSA Key"));
 
-        public RSA LoadRSAKey(string key)
+        private RSA LoadRSAKey(string key)
         {
             if(key.IsNullOrEmpty())
             {
@@ -33,13 +56,11 @@ namespace InventoryApi.Service.SecurityService
             return rsa;
         }
 
-        public TokenValidationParameters GetDefaultTokenValidationParams(bool isRefresh = false)
+        private TokenValidationParameters GetDefaultTokenValidationParams(bool isRefresh = false)
         {
-            var key = isRefresh ? LoadRefreshKey() : LoadAccessKey();
-
             return new TokenValidationParameters
             {
-                IssuerSigningKey = new RsaSecurityKey(key),
+                IssuerSigningKey = new RsaSecurityKey(GetKey(isRefresh)),
                 ValidateIssuerSigningKey = true,
                 ValidateIssuer = true,
                 ValidateAudience = true,
@@ -47,46 +68,58 @@ namespace InventoryApi.Service.SecurityService
             };
         }
 
-        public bool ValidForRefresh(string accessToken, string refreshToken)
+
+        public bool HasTokenExpired(string? token, bool isRefresh = false)
         {
-            var handler = new JwtSecurityTokenHandler();
-            var now = DateTime.UtcNow;
-            DateTime accessExpired = DateTime.UtcNow;
-            ClaimsPrincipal accessClaims;
+            if (string.IsNullOrEmpty(token))
+            {
+                return true;
+            }
+
             try
             {
-                var key = LoadAccessKey();
-
-                var accessValidations = new TokenValidationParameters
+                var now = DateTime.UtcNow;
+                var validation = new TokenValidationParameters
                 {
-                    IssuerSigningKey = new RsaSecurityKey(key),
+                    IssuerSigningKey = new RsaSecurityKey(GetKey(isRefresh)),
                     ValidateIssuerSigningKey = true,
                     ValidateIssuer = true,
                     ValidateAudience = true
                     //  Without LifeTime Validation
                 };
 
-                accessClaims = handler.ValidateToken(accessToken, accessValidations, out var validAccessToken);
-                
-                //  LifeTime Validation
-                if (now >= validAccessToken.ValidTo)
-                {
-                    var refreshValidations = GetDefaultTokenValidationParams(true);
-                    handler.ValidateToken(refreshToken, refreshValidations, out var validRefreshToken);
+                _securityTokenHandler.ValidateToken(token, validation, out var validToken);
 
-                    return true;
-                }
-
-                return false;                
+                //  LifeTime Verification
+                return (now >= validToken.ValidTo);
             }
-            catch (Exception ex) {
-                throw new Exception("Token is invalid please re-enter credentials");
+            catch {
+                return true;
             }
         }
 
-        public string GenerateJWT(List<Claim> claims, RSA rsa, bool isRefresh)
+        public bool IsTokenValid(string? token, bool isRefresh = false)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
+            if(string.IsNullOrEmpty(token))
+            {
+                return false;
+            }
+
+            try
+            {
+                var validations = GetDefaultTokenValidationParams(isRefresh);
+                var claimsPrinciple = _securityTokenHandler.ValidateToken(token, validations, out var validToken);
+
+                return (claimsPrinciple is not null);
+            }
+            catch {
+                return false;
+            }
+        }
+
+        public string GenerateJWT(IEnumerable<Claim> claims, bool isRefresh = false)
+        {
+            var rsa = GetKey(isRefresh);
 
             // Create signing credentials with RSA
             var signingCredentials = new SigningCredentials(
@@ -98,20 +131,15 @@ namespace InventoryApi.Service.SecurityService
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddMinutes(isRefresh ? _security.Value.RefreshToken.Expiry : _security.Value.AccessToken.Expiry),
+                Expires = DateTime.UtcNow.AddMinutes(GetExpiry(isRefresh)),
                 Issuer = _security.Value.Issuer,
                 Audience = _security.Value.Audience,
                 SigningCredentials = signingCredentials
             };
 
             // Create and write the token
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+            var token = _securityTokenHandler.CreateToken(tokenDescriptor);
+            return _securityTokenHandler.WriteToken(token);
         }
-
-        public string EncryptPassword(string password, SecurityLevel securityLevel) =>
-            BCrypt.Net.BCrypt.HashPassword(password, (int)securityLevel, BCrypt.Net.SaltRevision.Revision2B);
-
-        public bool VerifyPassword(string password, string hashPassword) => BCrypt.Net.BCrypt.Verify(password, hashPassword);
     }
 }

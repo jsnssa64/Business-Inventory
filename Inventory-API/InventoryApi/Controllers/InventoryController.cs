@@ -1,14 +1,23 @@
 using Domain.Inventory;
-using InventoryApi.Model.DTO;
+using Domain.User;
+using InventoryApi.Controllers.CustomController;
+using InventoryApi.Model.DTO.Inventory;
 using InventoryApi.Model.Events.Inventory;
+using InventoryApi.Repository.Data;
+using InventoryApi.Repository.Data.Inventory;
+using InventoryApi.Repository.Data.Product;
+using InventoryApi.Repository.Data.User;
 using InventoryApi.Service.InventoryService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 
 namespace InventoryApi.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("[controller]")]
-    public class InventoryController : ControllerBase
+    public class InventoryController : BaseController
     {
         private readonly IInventoryService _inventoryService;
         private readonly ILogger<InventoryController> _logger;
@@ -19,22 +28,23 @@ namespace InventoryApi.Controllers
             _logger = logger;
         }
 
-        [HttpGet("GetInventoryItemById")]
-        public async Task<IActionResult> GetProductById(int productid, CancellationToken cancellationToken)
+        [HttpGet("GetInventoryItemByProductId")]
+        public async Task<IActionResult> GetInventoryItemByProductId(string productid, CancellationToken cancellationToken)
         {
             try
             {
-                if (productid == 0)
+                if (productid.IsNullOrEmpty())
                 {
                     throw new ArgumentNullException(nameof(productid));
                 }
 
-                var product = new Product
+                var productIdentifier = new ProductIdentifierModel
                 {
-                    Id = productid
+                    PublicProductId = productid,
+                    Username = GetUsername()
                 };
 
-                var inventoryItems = await _inventoryService.GetInventoryItemByProductId(product, cancellationToken);
+                var inventoryItems = await _inventoryService.GetInventoryItemByProductId(productIdentifier, cancellationToken);
 
                 return Ok(inventoryItems);
             }
@@ -45,32 +55,23 @@ namespace InventoryApi.Controllers
             }
         }
 
-        [HttpPost("AddInventoryItem")]
-        public async Task<IActionResult> AddInventoryItem(InventoryItemDTO dto, CancellationToken cancellationToken)
+        [HttpGet("GetInventory")]
+        public async Task<IActionResult> GetInventory(string productid, CancellationToken cancellationToken)
         {
             try
             {
-                if (dto == null)
+                if (productid.IsNullOrEmpty())
                 {
-                    throw new ArgumentNullException(nameof(dto));
+                    throw new ArgumentNullException(nameof(productid));
                 }
 
-                var product = new Product
-                {
-                    Name = dto.Name,
-                    Description = dto.Description,
-                    Price = dto.Price,
-                    CurrencyCode = dto.Currency,
-                    Quantity = dto.ItemQuantity
+                var userIdentifier = new UserIdentifierModel() { 
+                    Username = GetUsername() 
                 };
 
-                var inventory = new InventoryItem
-                {
-                    Quantity = dto.InventoryQuantity
-                };
+                var inventoryItems = await _inventoryService.GetInventoryItems(userIdentifier, cancellationToken);
 
-                var result = await _inventoryService.AddInventoryItem(product, inventory, cancellationToken);
-                return Ok(result);
+                return Ok(inventoryItems);
             }
             catch (Exception ex)
             {
@@ -79,28 +80,24 @@ namespace InventoryApi.Controllers
             }
         }
 
-        [HttpPost("AddItemToInventory")]
-        public async Task<IActionResult> AddItemToInventory(AddToInventoryDTO dto, CancellationToken cancellationToken)
+        [HttpPost("UpdateItemInInventory")]
+        public async Task<IActionResult> UpdateItemInInventory(UpdateInventoryItemDTO updateInventoryItemDTO, CancellationToken cancellationToken)
         {
             try
             {
-                if (dto == null)
+                var inventoryItemModel = new InventoryItemModel
                 {
-                    throw new ArgumentNullException(nameof(dto));
-                }
-
-                var inventoryItem = new Product
-                {
-                    Name = dto.Name
+                    Quantity = updateInventoryItemDTO.Quantity
                 };
 
-                var inventory = new InventoryItem
+                var productIdentifier = new ProductIdentifierModel()
                 {
-                    Quantity = dto.InventoryQuantity
+                    PublicProductId = updateInventoryItemDTO.Id,
+                    Username = GetUsername()
                 };
 
-                var result = await _inventoryService.AddItemToInventory(inventoryItem, inventory, cancellationToken);
-                return Ok(result);
+                await _inventoryService.UpdateItemToInventoryByProductId(productIdentifier, inventoryItemModel, cancellationToken);
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -110,11 +107,12 @@ namespace InventoryApi.Controllers
         }
 
         [HttpPost("AddInventoryToStream")]
-        public async Task<IActionResult> AddToStream(Product product)
+        public async Task<IActionResult> AddToStream(Product product, InventoryItem inventoryItem)
         {
             var restockedEvent = new InventoryItemRestocked
             {
-                InventoryItemId = product.Id,
+                ProductId = product.Id,
+                InventoryItemId = inventoryItem.Id,
                 Quantity = product.Quantity
             };
 
@@ -132,11 +130,12 @@ namespace InventoryApi.Controllers
         }
 
         [HttpPost("RemoveInventoryFromStream")]
-        public async Task<IActionResult> RemoveFromStream(Product product)
+        public async Task<IActionResult> RemoveFromStream(Product product, InventoryItem inventoryItem)
         {
             var removeEvent = new InventoryItemRemoved
             {
-                InventoryItemId = product.Id,
+                ProductId = product.Id,
+                InventoryItemId = inventoryItem.Id,
                 Quantity = product.Quantity
             };
 

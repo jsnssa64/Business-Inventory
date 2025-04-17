@@ -1,140 +1,159 @@
-using Domain.Inventory;
 using Domain.User;
-using EventStore.Client;
-using InventoryApi.Model.DTO;
-using InventoryApi.Model.Events.Inventory;
-using InventoryApi.Service;
-using InventoryApi.Service.InventoryService;
+using InventoryApi.Controllers.CustomController;
+using InventoryApi.Model.DTO.User;
+using InventoryApi.Repository.Data;
+using InventoryApi.Repository.Data.Product;
+using InventoryApi.Repository.Data.User;
+using InventoryApi.Service.UserService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InventoryApi.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("[controller]")]
-    public class UserController : ControllerBase
+    public class UserController : BaseController
     {
         private readonly ILogger<InventoryController> _logger;
-        private readonly IInventoryService _inventoryService;
+        private readonly IUserService _userService;
 
-        public UserController(ILogger<InventoryController> logger, IInventoryService inventoryService)
+        public UserController(ILogger<InventoryController> logger, IUserService userService)
         {
             _logger = logger;
-            _inventoryService = inventoryService;
+            _userService = userService;
         }
 
-        [HttpGet("Login")]
-        public async Task<IActionResult> UserLogin(User user, CancellationToken cancellationToken)
+        [HttpGet("RegisterUser")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RegisterUser(UserRegisterDTO userRegisterDTO,  CancellationToken cancellationToken)
         {
+            await _userService.RegisterDefaultUser(Response, new UserIdentifierModel() { 
+                Username = userRegisterDTO.Username,
+            }, 
+            new UserRegistrationModel() {
+                FirstName = userRegisterDTO.FirstName,
+                LastName = userRegisterDTO.LastName,
+                Email = userRegisterDTO.Email,
+                Password = userRegisterDTO.Password
+            });
             return Ok();
-
         }
 
-        [HttpPost("AddInventoryItem")]
-        public async Task<IActionResult> AddInventoryItem(InventoryItemDTO dto, CancellationToken cancellationToken)
+        [HttpGet("UpdateUser")]
+        [AllowAnonymous]
+        public async Task<IActionResult> UpdateUser(UpdateUserDetailsDTO updateUserDetailsDTO, CancellationToken cancellationToken)
         {
-            try
+            await _userService.UpdateUser(new UserIdentifierModel() { 
+                Username = GetUsername()
+            }, 
+            new UserDetailsModel()
             {
-                if (dto == null)
-                {
-                    throw new ArgumentNullException(nameof(dto));
-                }
-
-                var inventoryItem = new Product
-                {
-                    Name = dto.Name,
-                    Description = dto.Description,
-                    Price = dto.Price,
-                    CurrencyCode = dto.Currency,
-                    Quantity = dto.ItemQuantity
-                };
-
-                var inventory = new InventoryItem
-                {
-                    Quantity = dto.InventoryQuantity
-                };
-
-                var result = await _inventoryService.AddInventoryItem(inventoryItem, inventory, cancellationToken);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error adding inventory");
-                return StatusCode(500);
-            }
+                FirstName = updateUserDetailsDTO.FirstName,
+                LastName = updateUserDetailsDTO.LastName,
+                Email = updateUserDetailsDTO.Email,
+                ContactNumber = updateUserDetailsDTO.ContactNumber,
+                DOB = updateUserDetailsDTO.DOB,
+                FirstLineAddress = updateUserDetailsDTO.FirstLineAddress,
+                SecondLineAddress = updateUserDetailsDTO.SecondLineAddress,
+                Country = updateUserDetailsDTO.Country,
+                Gender = updateUserDetailsDTO.Gender,
+                PostCode = updateUserDetailsDTO.PostCode
+            });
+            return Ok();
         }
 
-        [HttpPost("AddItemToInventory")]
-        public async Task<IActionResult> AddItemToInventory(AddToInventoryDTO dto, CancellationToken cancellationToken)
+        [HttpGet("Register")]
+        public async Task<IActionResult> RegisterUserWithRole(UserWithRoleRegisterDTO userWithRoleRegisterDTO, CancellationToken cancellationToken)
         {
-            try
+            //  Validate
+
+            await _userService.RegisterUser(Response, new UserIdentifierModel() { 
+                Username = userWithRoleRegisterDTO.Username
+            }, 
+            new UserRegistrationModel()
             {
-                if (dto == null)
-                {
-                    throw new ArgumentNullException(nameof(dto));
-                }
-
-                var inventoryItem = new Product
-                {
-                    Name = dto.Name
-                };
-
-                var inventory = new InventoryItem
-                {
-                    Quantity = dto.InventoryQuantity
-                };
-
-                var result = await _inventoryService.AddItemToInventory(inventoryItem, inventory, cancellationToken);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error adding item to inventory");
-                return StatusCode(500);
-            }
+                FirstName = userWithRoleRegisterDTO.FirstName,
+                LastName = userWithRoleRegisterDTO.LastName,
+                Email = userWithRoleRegisterDTO.Email,
+                Password = userWithRoleRegisterDTO.Password,
+                RolePublicId = userWithRoleRegisterDTO.RolePublicId
+            });
+            return Ok();
         }
 
-        [HttpPost("AddInventoryToStream")]
-        public async Task<IActionResult> AddToStream(Product inventoryItem)
+
+        [HttpGet("LoginUser")]
+        [AllowAnonymous]
+        public async Task<IActionResult> LoginUser(UserLoginDTO userLoginDto, CancellationToken cancellationToken)
         {
-            var restockedEvent = new InventoryItemRestocked
+            var passwordModel = new PasswordModel()
             {
-                InventoryItemId = inventoryItem.ItemId,
-                Quantity = inventoryItem.Quantity
+                Password = userLoginDto.UserPassword
             };
 
-            try
+            var userIdentifierModel = new UserIdentifierModel()
             {
-                await _inventoryService.AddInventoryItemToStream(restockedEvent, "InventoryItemRestocked", 0);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error adding inventory");
-                return StatusCode(500);
-            }
+                Username = GetUsername()
+            };
 
+            await _userService.LoginUser(Response, userIdentifierModel, passwordModel);
             return Ok();
         }
 
-        [HttpPost("RemoveInventoryFromStream")]
-        public async Task<IActionResult> RemoveFromStream(InventoryItem item)
+        [HttpGet("LogoutUser")]
+        [AllowAnonymous]
+        public IActionResult LogoutUser(CancellationToken cancellationToken)
         {
-            var removeEvent = new InventoryItemRemoved
-            {
-                InventoryItemId = item.ItemId,
-                Quantity = item.Quantity
-            };
-
-            try
-            {
-                await _inventoryService.RemoveInventoryItemFromStream(removeEvent, "InventoryItemRemoved", 0);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error removing inventory");
-                return StatusCode(500);
-            }
-
+            _userService.LogoutUser(Response);
             return Ok();
+        }
+
+        [HttpGet("DisableUser")]
+        [AllowAnonymous]
+        public IActionResult DisableUser(CancellationToken cancellationToken)
+        {
+            var userIdentifier = new UserIdentifierModel() { Username = GetUsername() };
+            var statusModel = new StatusModel() {  Enabled = false };
+            _userService.SetUserStatus(userIdentifier, statusModel);
+            return Ok();
+        }
+
+        [HttpGet("EnableUser")]
+        [AllowAnonymous]
+        public IActionResult EnableUser(CancellationToken cancellationToken)
+        {
+            var userIdentifier = new UserIdentifierModel() { Username = GetUsername() };
+            var statusModel = new StatusModel() { Enabled = true };
+            _userService.SetUserStatus(userIdentifier, statusModel);
+            return Ok();
+        }
+
+        [HttpGet("AssignUserRole")]
+        public async Task<IActionResult> AssignUserRole(UsersRoleDTO usersRoleDTO, CancellationToken cancellationToken)
+        {
+            await _userService.AssignUserToRole(
+                new UserIdentifierModel() { 
+                    Username = usersRoleDTO.UserName,
+                }, 
+                new RoleIdentifierModel() { 
+                    RolePublicId = usersRoleDTO.RolePublicId
+                });
+            return Ok();
+        }
+
+        [HttpGet("GetUserDetailsByUser")]
+        public async Task<IActionResult> GetUserDetails(UsernameDTO usernameDTO, CancellationToken cancellationToken)
+        {
+            var allUserData = await _userService.GetUserDetails(new UserIdentifierModel() { Username = usernameDTO.UserName });
+            return Ok(allUserData);
+        }
+
+        [HttpGet("GetUserDetails")]
+        public async Task<IActionResult> GetUserDetails(CancellationToken cancellationToken)
+        {
+            var allUserData = await _userService.GetUserDetails(new UserIdentifierModel() { Username = GetUsername() });
+            return Ok(allUserData);
         }
     }
 }

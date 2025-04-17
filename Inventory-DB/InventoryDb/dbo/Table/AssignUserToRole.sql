@@ -1,9 +1,0 @@
-﻿CREATE TABLE [dbo].AssignUserToRole
-(
-	[Id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-	[RoleId] INT NOT NULL,
-	[UserId] INT NOT NULL,
-    CreatedAt DATETIME NOT NULL DEFAULT GETDATE()
-	CONSTRAINT [FK_AssignUserToRole_Role] FOREIGN KEY (RoleId) REFERENCES [dbo].[Role]([Id]),
-	CONSTRAINT [FK_AssignUserToRole_User] FOREIGN KEY (UserId) REFERENCES [dbo].[User]([Id])
-)

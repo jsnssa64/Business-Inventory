@@ -12,6 +12,8 @@ export default function inventoryTable({ itemsPerPage = 1, maxAmountPagesVisible
     const [subSetCurrentIndex, setSubSetCurrentIndex] = useState(0);
     const paginationRef = useRef<(HTMLButtonElement | null)[]>([]);
 
+    
+
     var myArray: Array<InventoryItem> = [];
     myArray.push({
         id: "2",

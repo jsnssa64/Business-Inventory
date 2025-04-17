@@ -2,21 +2,29 @@
 using InventoryApi.Factory;
 using System.Data.Entity.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using System.Configuration;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace InventoryApi.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddDapper(this IServiceCollection services, string connectionString)
+        public static IServiceCollection AddDapper(this IServiceCollection services, IConfigurationManager configuration)
         {
+            var connectionString = configuration.GetConnectionString(DatabaseConnections.InventoryDb.ToString());
+            if (connectionString == null)
+            {
+                throw new InvalidOperationException("Database:Address configuration is missing or invalid.");
+            }
+
             services.AddSingleton<IDbConnectionFactory, DapperDbConnectionFactory>(sp =>
             {
-                var connectionDict = new Dictionary<DatabaseConnections, string?>()
+                var connectionDict = new Dictionary<DatabaseConnections, string>()
                 {
-                    {
-                        DatabaseConnections.InventoryDb,
-                        connectionString
-                    }
+                        {
+                            DatabaseConnections.InventoryDb,
+                            connectionString
+                        }
                 };
 
                 return new DapperDbConnectionFactory(connectionDict);
@@ -25,8 +33,14 @@ namespace InventoryApi.Extensions
             return services;
         }
 
-        public static IServiceCollection AddEventStore(this IServiceCollection services, Uri eventStoreUri)
+        public static IServiceCollection AddEventStore(this IServiceCollection services, IConfigurationManager configuration)
         {
+            var eventStoreUri = configuration.GetSection("EventStore:Address").Get<Uri>();
+            if (eventStoreUri == null)
+            {
+                throw new InvalidOperationException("EventStore:Address configuration is missing or invalid.");
+            }
+
             services.AddSingleton(new EventStoreClient(new EventStoreClientSettings
             {
                 ConnectivitySettings = new EventStoreClientConnectivitySettings
@@ -40,25 +54,11 @@ namespace InventoryApi.Extensions
 
         public static IServiceCollection AddLoginAuthentication(this IServiceCollection services)
         {
+            //return services;
             services
-                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddBearerToken("", jwtOptions =>
-                {
-                    jwtOptions.MetadataAddress = builder.Configuration["Api:MetadataAddress"];
-                    // Optional if the MetadataAddress is specified
-                    jwtOptions.Authority = builder.Configuration["Api:Authority"];
-                    jwtOptions.Audience = builder.Configuration["Api:Audience"];
-                    jwtOptions.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidAudiences = builder.Configuration.GetSection("Api:ValidAudiences").Get<string[]>(),
-                        ValidIssuers = builder.Configuration.GetSection("Api:ValidIssuers").Get<string[]>()
-                    };
+                .AddAuthentication("JWTLogin");
 
-                    jwtOptions.MapInboundClaims = false;
-                });
+            return services;
         }
     }
 }

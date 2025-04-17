@@ -1,16 +1,20 @@
 ﻿CREATE PROCEDURE dbo.GetProductById
-    @ProductId INT
+    @PublicProductId UNIQUEIDENTIFIER,
+    @Username VARCHAR(150)
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT
-        Id,
-        [Name],
-        [Description],
-        Price,
-        CurrencyCode,
-        CreatedAt
-    FROM dbo.Product
-    WHERE Id = @ProductId;
+           p.[Name],
+           p.[Description],
+           p.EnabledPrice
+      FROM dbo.Product p
+      JOIN dbo.[User] u 
+        ON u.Id = p.Id
+     WHERE p.PublicId = @PublicProductId
+           AND u.Username = @Username
+           AND u.[Disabled] = 0
+           AND u.Confirmed = 1
+           AND p.[Disabled] = 0;
 END

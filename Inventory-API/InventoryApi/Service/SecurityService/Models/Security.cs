@@ -2,9 +2,9 @@
 {
     public class Security
     {
-        public Token AccessToken { get; set; }
-        public Token RefreshToken { get; set; }
-        public string Audience { get; set; }
-        public string Issuer {  get; set; }
+        public required Token AccessToken { get; set; }
+        public required Token RefreshToken { get; set; }
+        public required string Audience { get; set; }
+        public required string Issuer { get; set; }
     }
 }

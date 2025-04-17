@@ -1,14 +1,23 @@
 ﻿CREATE TABLE [dbo].[UserDetails]
 (
-	UserId INT NOT NULL UNIQUE,
-	FullName VARCHAR(50) NOT NULL,
-	EmailAddress VARCHAR(50) NOT NULL,
-	Gender VARCHAR(50) NOT NULL,
-	DOB DATE NOT NULL,
-	ContactNumber VARCHAR(50) NOT NULL,
-	FirstLineAddress VARCHAR(150) NOT NULL,
-	SecondLineAddress VARCHAR(150) NOT NULL,
-	PostCode VARCHAR(50) NOT NULL,
+	UserId INT NOT NULL PRIMARY KEY,
+	FirstName VARCHAR(50) NOT NULL,
+	LastName VARCHAR(50) NOT NULL,
+	ContactNumber VARCHAR(50) NULL,
+	Gender VARCHAR(50) NULL,
+	DOB DATE NULL,
+	FirstLineAddress VARCHAR(150) NULL,
+	SecondLineAddress VARCHAR(150) NULL,
+	Country VARCHAR(50) NULL,
+	PostCode VARCHAR(50) NULL,
     CreatedAt DATETIME NOT NULL DEFAULT GETDATE()
 	CONSTRAINT [FK_UserDetails_User] FOREIGN KEY (UserId) REFERENCES [dbo].[User]([Id])
 )
+
+GO
+
+CREATE NONCLUSTERED INDEX IX_UserDetails_UserId_Include
+ON UserDetails(UserId)
+INCLUDE (ContactNumber, FirstName, LastName, FirstLineAddress, SecondLineAddress, DOB, Country, Gender);
+
+GO

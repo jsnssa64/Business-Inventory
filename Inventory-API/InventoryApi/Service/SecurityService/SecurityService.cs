@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
-using Domain.User;
-using Microsoft.IdentityModel.Tokens;
+using InventoryApi.Constants;
+using InventoryApi.Service.SecurityService.Models;
 
 namespace InventoryApi.Service.SecurityService
 {
@@ -13,47 +13,42 @@ namespace InventoryApi.Service.SecurityService
             _JWTUtility = JWTUtility;
         }
 
-        public void SetCookieForLogin(HttpResponse httpResponse, string accessToken, string refreshToken, DateTimeOffset? expiry)
+        public void SetCookieForLogin(HttpResponse httpResponse, string accessToken, string refreshToken, DateTimeOffset cookieExpiry)
         {
-            var authObj = "{" + 
-                $"'AccessToken': '{ accessToken }'," +
-                $"'RefreshToken': '{ refreshToken }'" +
-            "}";
-
-
-            httpResponse.Cookies.Append("auth_Bearer", authObj, new CookieOptions
+            httpResponse.Cookies.Append(Cookie.AccessCookie, accessToken, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = false,
                 SameSite = SameSiteMode.Lax,
-                Expires = expiry
+                Expires = cookieExpiry
+            });
+
+            httpResponse.Cookies.Append(Cookie.RefreshCookie, refreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = false,
+                SameSite = SameSiteMode.Lax,
+                Expires = cookieExpiry
             });
         }
 
-        public (string AccessToken, string RefreshToken) GenerateLoginJWT(User user)
+        public void SetCookieForLogout(HttpResponse httpResponse)
         {
-            if (user.Email.IsNullOrEmpty() || 
-                !user.UserRole.HasValue || 
-                user.UserName.IsNullOrEmpty())
-            {
-                throw new Exception($"Unable to Generate Login for {user.Id}");
-            }
+            httpResponse.Cookies.Delete(Cookie.AccessCookie);
+            httpResponse.Cookies.Delete(Cookie.RefreshCookie);
+        }
 
-            var accessClaims = new List<Claim>()
-            {
-                new("EmailAddress", user.Email),
-                new("UserName", user.UserName),
-                new("Role", user.UserRole.ToString())
-            };
-
-            var refreshClaims = new List<Claim>();
-
-            var keys = _JWTUtility.LoadRsaKeys();
-
-            var accessToken = _JWTUtility.GenerateJWT(accessClaims, keys.accessRsa, false);
-            var refreshToken = _JWTUtility.GenerateJWT(refreshClaims, keys.refreshRsa, true);
+        public (string AccessToken, string RefreshToken) GenerateLoginJWT(IEnumerable<Claim> accessClaims, IEnumerable<Claim> refreshClaims)
+        {
+            var accessToken = _JWTUtility.GenerateJWT(accessClaims, false);
+            var refreshToken = _JWTUtility.GenerateJWT(refreshClaims, true);
 
             return (accessToken, refreshToken);
         }
+
+        public string EncryptPassword(string password, SecurityLevel securityLevel) =>
+            BCrypt.Net.BCrypt.HashPassword(password, (int)securityLevel, BCrypt.Net.SaltRevision.Revision2B);
+
+        public bool VerifyPassword(string password, string hashPassword) => BCrypt.Net.BCrypt.Verify(password, hashPassword);
     }
 }

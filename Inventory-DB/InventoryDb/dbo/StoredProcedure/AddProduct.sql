@@ -1,21 +1,26 @@
 ﻿CREATE PROCEDURE [dbo].[AddProduct]
-	@Name VARCHAR(100),
+    @Username VARCHAR(100),
+	@ProductName VARCHAR(100),
 	@Description VARCHAR(100),
-	@Price DECIMAL(19, 4),
 	@Quantity INT,
-	@CurrencyCode CHAR(3),
-    @NewProductId INT OUTPUT
+    @EnabledPrice BIT,
+    @PublicProductId UNIQUEIDENTIFIER OUTPUT
 AS
 	SET NOCOUNT ON;
-
+    SET XACT_ABORT ON;
+    
     BEGIN TRY
-        BEGIN TRANSACTION;
+        BEGIN TRANSACTION
 
-		INSERT INTO dbo.Product([Name], [Description], Price, Quantity, CurrencyCode)
-		VALUES(@Name, @Description, @Price, @Quantity, @CurrencyCode)
+        DECLARE @UserId INT;
+        EXEC dbo.GetUserId @Username, @UserId OUTPUT;
+
+		INSERT INTO dbo.Product([UserId], [Name],  [Description], Quantity, EnabledPrice)
+		VALUES(@UserId, @ProductName, @Description, @Quantity, @EnabledPrice)
 
         -- Return the new ItemId
-        SET @NewProductId = SCOPE_IDENTITY();
+        DECLARE @NewProductId INT;
+        SET @PublicProductId = SCOPE_IDENTITY();
 
         COMMIT TRANSACTION;
         RETURN 0;  -- success
@@ -25,7 +30,7 @@ AS
             ROLLBACK TRANSACTION;
 
         -- Optional: log the error here
-
-        RETURN ERROR_NUMBER();  -- return the SQL Server error number
+        DECLARE @errMessage VARCHAR(100) = 'Error: ' + ERROR_MESSAGE();
+        THROW 50001, @errMessage, 1;
     END CATCH
 RETURN 0

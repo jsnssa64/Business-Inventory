@@ -14,7 +14,8 @@
     <PackageReference Include="Dapper" Version="2.1.66" />
     <PackageReference Include="EntityFramework" Version="6.5.1" />
     <PackageReference Include="EventStore.Client.Grpc.Streams" Version="23.3.8" />
-    <PackageReference Include="jose-jwt" Version="5.1.1" />
+    <PackageReference Include="FluentValidation" Version="11.11.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.15" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
@@ -23,10 +24,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Domain\Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="NewFolder\" />
   </ItemGroup>
 
 </Project>

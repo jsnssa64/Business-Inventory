@@ -1,13 +1,14 @@
 ﻿using System.Security.Claims;
-using System.Security.Cryptography;
-using Domain.User;
 using InventoryApi.Service.SecurityService.Models;
 
 namespace InventoryApi.Service.SecurityService
 {
     public interface ISecurityService
     {
-        (string AccessToken, string RefreshToken) GenerateLoginJWT(User user);
-        void SetCookieForLogin(HttpResponse httpResponse, string accessToken, string refreshToken, DateTimeOffset? expiry);
+        string EncryptPassword(string password, SecurityLevel securityLevel);
+        (string AccessToken, string RefreshToken) GenerateLoginJWT(IEnumerable<Claim> accessClaims, IEnumerable<Claim> refreshClaims);
+        void SetCookieForLogin(HttpResponse httpResponse, string accessToken, string refreshToken, DateTimeOffset cookieExpiry);
+        void SetCookieForLogout(HttpResponse httpResponse);
+        bool VerifyPassword(string password, string hashPassword);
     }
 }

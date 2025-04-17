@@ -1,9 +1,8 @@
 ﻿namespace Domain.User
 {
-    public enum Role
+    public class Role
     {
-        ReadOnly,
-        ReadWrite,
-        Administrator
+        public string? Id { get; set; } 
+        public string? Rolename { get; set; }
     }
 }

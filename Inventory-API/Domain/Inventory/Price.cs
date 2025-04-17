@@ -8,9 +8,8 @@ namespace Domain.Inventory
 {
     public class Price
     {
-        public string PriceId
-        { get; set; }
+        public string? PriceId { get; set; }
         public decimal Amount { get; set; }
-        public string Currency { get; set; }
+        public string? Currency { get; set; }
     }
 }
