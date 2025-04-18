@@ -4,6 +4,8 @@ using System.Data.Entity.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using System.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using InventoryApi.Authentication;
+using Microsoft.AspNetCore.Authentication;
 
 namespace InventoryApi.Extensions
 {
@@ -35,11 +37,13 @@ namespace InventoryApi.Extensions
 
         public static IServiceCollection AddEventStore(this IServiceCollection services, IConfigurationManager configuration)
         {
-            var eventStoreUri = configuration.GetSection("EventStore:Address").Get<Uri>();
-            if (eventStoreUri == null)
+            var connectionString = configuration.GetConnectionString(DatabaseConnections.EventStoreDb.ToString());
+            if (connectionString == null)
             {
-                throw new InvalidOperationException("EventStore:Address configuration is missing or invalid.");
+                throw new InvalidOperationException("Database:Address configuration is missing or invalid.");
             }
+
+            var eventStoreUri = new Uri(connectionString);
 
             services.AddSingleton(new EventStoreClient(new EventStoreClientSettings
             {
@@ -56,7 +60,14 @@ namespace InventoryApi.Extensions
         {
             //return services;
             services
-                .AddAuthentication("JWTLogin");
+                .AddAuthentication("CookieJwtScheme")
+                .AddScheme<AuthenticationSchemeOptions, CookieJwtHandler>("CookieJwtScheme", options => { });
+
+            services.Configure<AuthenticationOptions>(options =>
+            {
+                options.DefaultAuthenticateScheme = "CookieJwtScheme";
+                options.DefaultChallengeScheme = "CookieJwtScheme";
+            });
 
             return services;
         }

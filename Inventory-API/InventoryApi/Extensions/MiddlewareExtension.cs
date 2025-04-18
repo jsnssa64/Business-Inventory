@@ -8,5 +8,7 @@ namespace InventoryApi.Extensions
         {
             return app.UseMiddleware<JwtCookieAuthenticationMiddleware>();
         }
+
+
     }
 }

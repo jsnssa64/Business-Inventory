@@ -131,5 +131,10 @@
     <Build Include="dbo\StoredProcedure\GetUser.sql" />
     <Build Include="dbo\StoredProcedure\GetDefaultRole.sql" />
     <Build Include="dbo\StoredProcedure\IsValidRole.sql" />
+    <Build Include="dbo\StoredProcedure\GetRoles.sql" />
+    <Build Include="dbo\StoredProcedure\RemoveProductById.sql" />
+    <Build Include="dbo\StoredProcedure\AddProductToPrice.sql" />
+    <Build Include="dbo\StoredProcedure\UpdateProductPrice.sql" />
+    <Build Include="dbo\StoredProcedure\RemoveProductPrice.sql" />
   </ItemGroup>
 </Project>

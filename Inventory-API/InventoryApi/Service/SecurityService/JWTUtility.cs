@@ -45,13 +45,16 @@ namespace InventoryApi.Service.SecurityService
 
         private RSA LoadRSAKey(string key)
         {
-            if(key.IsNullOrEmpty())
+            if (string.IsNullOrEmpty(key))
             {
                 throw new Exception("Unable To Retrieve Keys");
             }
 
             var rsa = RSA.Create();
-            rsa.ImportFromPem(key.ToCharArray());
+            var decodedKey = Convert.FromBase64String(key);
+            // Convert the key string to a ReadOnlySpan<char> and import it
+            var pemString = System.Text.Encoding.UTF8.GetString(decodedKey);
+            rsa.ImportFromPem(pemString.AsSpan());
 
             return rsa;
         }

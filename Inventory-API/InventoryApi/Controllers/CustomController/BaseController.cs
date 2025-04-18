@@ -3,9 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace InventoryApi.Controllers.CustomController
 {
-    public class BaseController : Controller
+    [ApiController]
+    public abstract class BaseController : Controller
     {
-        public string GetUsername()
+        protected string GetUsername()
         {
             var userName = User.FindFirst("username")?.Value;
 

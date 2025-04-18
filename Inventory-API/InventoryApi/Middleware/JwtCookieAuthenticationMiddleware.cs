@@ -24,6 +24,7 @@ namespace InventoryApi.Middleware
             if (!context.Request.Cookies.TryGetValue(Cookie.AccessCookie, out accessToken) &&
                 !context.Request.Cookies.TryGetValue(Cookie.RefreshCookie, out refreshToken))
             {
+                //  Let through
                 await _next(context);
                 return;
             }
