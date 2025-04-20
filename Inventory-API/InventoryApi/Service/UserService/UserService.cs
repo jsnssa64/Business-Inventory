@@ -17,12 +17,14 @@ namespace InventoryApi.Service.UserService
         private IRoleRepository _roleRepository;
         private ISecurityService _securityService;
         private IUserUtility _userUtility;
+        private IJWTUtility _jwtUtility;
 
-        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, ISecurityService securityService, IUserUtility userUtility) {
+        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, ISecurityService securityService, IUserUtility userUtility, IJWTUtility jwtUtility) {
             _userRepository = userRepository;
             _roleRepository = roleRepository;
             _securityService = securityService;
             _userUtility = userUtility;
+            _jwtUtility = jwtUtility;
         }
 
         public async Task RegisterUser(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, UserRegistrationModel userRegistrationModel)
@@ -77,6 +79,7 @@ namespace InventoryApi.Service.UserService
                     Password = userRegistrationModel.Password 
                 };
 
+                //  Temp - 
                 await this.ActivateUser(userIdentifierModel);
 
                 await LoginUser(httpResponse, userIdentifierModel, passwordModel);
@@ -89,7 +92,7 @@ namespace InventoryApi.Service.UserService
             }
         }
 
-        public async Task ActivateUser(UserIdentifierModel userIdentifierModel)
+        private async Task ActivateUser(UserIdentifierModel userIdentifierModel)
         {
             try
             {
@@ -123,6 +126,30 @@ namespace InventoryApi.Service.UserService
             {
                 throw new Exception($"Failed to register new User: {ex.Message}");
             }
+        }
+
+        public async Task UserConfirmation(string token)
+        {
+            var tokenClaims = await _jwtUtility.GetTokenClaims(token, KeyType.confirmation);
+
+            var userIdentifier = new UserIdentifierModel()
+            {
+                Username = _userUtility.GetClaimForUser(tokenClaims.Claims, UserClaim.Username)
+            };
+
+            await this.ActivateUser(userIdentifier);
+        }
+
+        public async Task ResetPassword(string token, PasswordModel passwordModel)
+        {
+            var tokenClaims = await _jwtUtility.GetTokenClaims(token, KeyType.resetPassword);
+
+            var userIdentifier = new UserIdentifierModel()
+            {
+                Username = _userUtility.GetClaimForUser(tokenClaims.Claims, UserClaim.Username)
+            };
+
+            await _userRepository.ResetPassword(userIdentifier, passwordModel);
         }
 
         public async Task LoginUser(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, PasswordModel passwordModel)
@@ -163,11 +190,12 @@ namespace InventoryApi.Service.UserService
 
         public async Task ForgottenPasswordByEmail(UserEmailModel userEmailModel)
         {
-            if (!await _userRepository.IsValidUserByEmail(userEmailModel)) {
+            if (!await _userRepository.IsValidUserByEmail(userEmailModel)) 
+            {
                 throw new Exception("Invalid Email");
             }
 
-            //  Trigger Email
+            //  Trigger Email - Password - user.Email
         }
 
         public async Task ForgottenPasswordByUsername(UserIdentifierModel userIdentifierModel)
@@ -177,10 +205,12 @@ namespace InventoryApi.Service.UserService
                 throw new Exception("Invalid Username");
             }
 
-            //  Trigger Email
+            var user = await _userRepository.GetUser(userIdentifierModel);
+
+            //  Trigger Email - Password - user.Email
         }
 
-        public async Task ResetPassword(UserIdentifierModel userIdentifierModel, PasswordModel passwordModel)
+        public async Task ChangePassword(UserIdentifierModel userIdentifierModel, PasswordModel passwordModel)
         {
             try
             {
@@ -188,7 +218,7 @@ namespace InventoryApi.Service.UserService
             }
             catch (Exception ex)
             {
-                throw new Exception($"Failed to Reset USer password: {ex.Message}");
+                throw new Exception($"Failed to Reset User password: {ex.Message}");
             }
         }
 

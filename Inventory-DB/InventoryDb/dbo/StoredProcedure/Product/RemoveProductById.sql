@@ -7,7 +7,7 @@ BEGIN
 
     DECLARE @UserId INT;
 
-    EXEC dbo.GetActiveUserId @Username, @UserId OUTPUT;
+    EXEC dbo.GetActiveUserIdByUsername @Username, @UserId OUTPUT;
 
     UPDATE dbo.Product
     SET [Disabled] = 1,

@@ -19,7 +19,7 @@ AS
             
             DECLARE @UserId INT;
             -- Get internal ids
-            EXEC dbo.GetActiveUserId @Username, @UserId OUTPUT;
+            EXEC dbo.GetActiveUserIdByUsername @Username, @UserId OUTPUT;
 
             -- Make sure the product exists for this user
             IF (@UserId IS NULL)

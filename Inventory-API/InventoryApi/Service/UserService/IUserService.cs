@@ -9,6 +9,7 @@ namespace InventoryApi.Service.UserService
     public interface IUserService
     {
         Task AssignUserToRole(UserIdentifierModel userIdentifierModel, RoleIdModel roleIdModel);
+        Task ChangePassword(UserIdentifierModel userIdentifierModel, PasswordModel passwordModel);
         Task ForgottenPasswordByEmail(UserEmailModel userEmailModel);
         Task ForgottenPasswordByUsername(UserIdentifierModel userIdentifierModel);
         Task<(User, UserDetails)> GetUserDetails(UserIdentifierModel userName);
@@ -17,8 +18,9 @@ namespace InventoryApi.Service.UserService
         Task<IEnumerable<Claim>> RefreshLogin(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, Action<User>? validate = null);
         Task RegisterDefaultUser(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, UserRegistrationModel userRegistrationModel);
         Task RegisterUser(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, UserRegistrationModel userRegistrationModel);
-        Task ResetPassword(UserIdentifierModel userIdentifierModel, PasswordModel passwordModel);
+        Task ResetPassword(string token, PasswordModel passwordModel);
         Task SetUserStatus(UserIdentifierModel userIdentifierModel, StatusModel statusModel);
         Task UpdateUser(UserIdentifierModel userIdentifierModel, UserDetailsModel userDetailsModel);
+        Task UserConfirmation(string token);
     }
 }

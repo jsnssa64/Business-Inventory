@@ -7,7 +7,7 @@ namespace InventoryApi.Service.UserService.Utility
     {
         string GetClaimForUser(IEnumerable<Claim> claims, UserClaim userClaim);
         Claim GetUserClaim(User user, UserClaim userClaim);
-        UserClaims MapClaimsToUser(List<Claim> claims);
+        UserClaims MapClaimsToUser(IEnumerable<Claim> claims);
         IEnumerable<Claim> MapUserToClaims(User user);
     }
 }

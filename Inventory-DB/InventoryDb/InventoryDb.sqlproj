@@ -118,7 +118,7 @@
     <Build Include="Scripts\StoredProcedure\TrackFileExists.sql" />
     <Build Include="dbo\StoredProcedure\User\ActivateUser.sql" />
     <Build Include="dbo\StoredProcedure\User\AssignUserToRole.sql" />
-    <Build Include="dbo\StoredProcedure\User\CreateNewPassword.sql" />
+    <Build Include="dbo\StoredProcedure\User\ResetPassword.sql" />
     <Build Include="dbo\StoredProcedure\User\CreateUser.sql" />
     <Build Include="dbo\StoredProcedure\User\DisableUser.sql" />
     <Build Include="dbo\StoredProcedure\User\EnableUser.sql" />
@@ -148,6 +148,8 @@
     <Build Include="dbo\StoredProcedure\User\IsValidUsername.sql" />
     <Build Include="dbo\StoredProcedure\User\IsValidUserEmail.sql" />
     <Build Include="dbo\StoredProcedure\User\GetActiveUserIdByEmail.sql" />
+    <Build Include="dbo\StoredProcedure\User\GetDisabledUserIdByUsername.sql" />
+    <Build Include="dbo\StoredProcedure\User\GetEnabledUserIdByUsername.sql" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\StoredProcedure\Inventory\GetInventoryItems.sql" />

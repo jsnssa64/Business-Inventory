@@ -13,7 +13,7 @@ AS
 
         DECLARE @UserId INT;
 
-        EXEC dbo.GetActiveUserId @Username, @UserId OUTPUT;
+        EXEC dbo.GetActiveUserIdByUsername @Username, @UserId OUTPUT;
 
 		INSERT INTO dbo.Product([UserId], [Name],  [Description], Quantity)
 		VALUES(@UserId, @ProductName, @Description, @Quantity)

@@ -5,7 +5,7 @@ BEGIN
     SET NOCOUNT ON;
     DECLARE @UserId INT;
 
-    EXEC dbo.GetActiveUserId @Username, @UserId OUTPUT;
+    EXEC dbo.GetActiveUserIdByUsername @Username, @UserId OUTPUT;
 
     SELECT
            p.PublicId AS PublicProductId,

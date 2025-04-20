@@ -5,7 +5,7 @@ namespace InventoryApi.Service.UserService.Utility
 {
     public class UserUtility: IUserUtility
     {
-        public UserClaims MapClaimsToUser(List<Claim> claims)
+        public UserClaims MapClaimsToUser(IEnumerable<Claim> claims)
         {
             return new UserClaims()
             {

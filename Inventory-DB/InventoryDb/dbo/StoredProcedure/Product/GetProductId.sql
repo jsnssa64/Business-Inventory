@@ -9,7 +9,7 @@ BEGIN
     DECLARE @UserId INT;
     DECLARE @ProductCount INT;
 
-    EXEC dbo.GetActiveUserId @Username, @UserId OUTPUT;
+    EXEC dbo.GetActiveUserIdByUsername @Username, @UserId OUTPUT;
     
     SELECT @ProductCount = COUNT(*) 
     FROM dbo.Product p

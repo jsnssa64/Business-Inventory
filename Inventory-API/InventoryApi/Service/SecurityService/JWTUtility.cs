@@ -11,7 +11,8 @@ namespace InventoryApi.Service.SecurityService
     {
         refresh,
         access,
-        confirmation
+        confirmation,
+        resetPassword
     }
 
     public class JWTUtility: IJWTUtility
@@ -25,6 +26,7 @@ namespace InventoryApi.Service.SecurityService
         private RSA refreshKey;
 
         private RSA confirmationKey;
+        private RSA resetPasswordKey;
 
         
 
@@ -38,6 +40,8 @@ namespace InventoryApi.Service.SecurityService
                     return accessKey;
                 case KeyType.confirmation:
                     return confirmationKey;
+                case KeyType.resetPassword:
+                    return resetPasswordKey;
                 default:
                     throw new NotImplementedException();
             };
@@ -53,10 +57,11 @@ namespace InventoryApi.Service.SecurityService
                     return _security.Value.AccessToken.Expiry;
                 case KeyType.confirmation:
                     return _security.Value.ConfirmationToken.Expiry;
+                case KeyType.resetPassword:
+                    return _security.Value.ResetPasswordToken.Expiry;
                 default:
                     throw new NotImplementedException();
-            }
-            ;
+            };
         }
 
         public JWTUtility(IOptions<Security> security)
@@ -66,6 +71,7 @@ namespace InventoryApi.Service.SecurityService
             accessKey = LoadAccessKey();
             refreshKey = LoadRefreshKey();
             confirmationKey = LoadConfirmationKey();
+            resetPasswordKey = LoadResetPasswordKey();
         }
 
         public async Task<ClaimsIdentity> GetTokenClaims(string? token, KeyType keyType)
@@ -83,6 +89,7 @@ namespace InventoryApi.Service.SecurityService
 
         private RSA LoadAccessKey() => LoadRSAKey(_security.Value.AccessToken.Key ?? throw new ArgumentNullException("Failed to load RSA Key"));
         private RSA LoadConfirmationKey() => LoadRSAKey(_security.Value.ConfirmationToken.Key ?? throw new ArgumentNullException("Failed to load RSA Key"));
+        private RSA LoadResetPasswordKey() => LoadRSAKey(_security.Value.ResetPasswordToken.Key ?? throw new ArgumentNullException("Failed to load RSA Key"));
 
         private RSA LoadRSAKey(string key)
         {
