@@ -10,8 +10,8 @@ namespace InventoryApi.Service.InventoryService
     {
         Task<ProductIdModel> AddProductAsync(UserIdentifierModel userIdentifierModel, ProductDetailsModel productDetailsModel, PriceModel? priceModel);
         Task<Product> GetProductByIdAsync(ProductIdentifierModel productIdentifierModel, CancellationToken cancellationToken);
-        Task<IEnumerable<Product>> GetProducts(string userName, CancellationToken cancellationToken);
+        Task<IEnumerable<Product>> GetProducts(UserIdentifierModel userIdentifierModel, CancellationToken cancellationToken);
         Task RemoveProduct(ProductIdentifierModel productIdentifierModel, CancellationToken cancellationToken);
-        Task<Product> UpdateProduct(ProductIdentifierModel productIdentifierModel, UpdateProductDetailsModel updateProductDetailsModel, CancellationToken cancellationToken);
+        Task UpdateProduct(ProductIdentifierModel productIdentifierModel, UpdateProductDetailsModel updateProductDetailsModel, CancellationToken cancellationToken);
     }
 }

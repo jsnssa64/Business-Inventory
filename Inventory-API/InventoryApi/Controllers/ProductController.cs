@@ -2,11 +2,9 @@ using InventoryApi.Controllers.CustomController;
 using InventoryApi.Model.DTO.Product;
 using InventoryApi.Repository.Data;
 using InventoryApi.Repository.Data.Product;
-using InventoryApi.Repository.Data.User;
 using InventoryApi.Service.InventoryService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 
 namespace InventoryApi.Controllers
 {
@@ -86,8 +84,9 @@ namespace InventoryApi.Controllers
         {
             try
             {
+                var userIdentifierModel = new UserIdentifierModel() { Username = GetUsername() };
 
-                var productId = await _productService.GetProducts(GetUsername(), cancellationToken);
+                var productId = await _productService.GetProducts(userIdentifierModel, cancellationToken);
                 return Ok(productId);
             }
             catch (Exception ex)
@@ -138,15 +137,15 @@ namespace InventoryApi.Controllers
                 };
 
                 if (updateProductDTO.Price != null) {
-                    usersProduct.Price = new PriceModel()
+                    usersProduct.Price = new UpdatePriceModel()
                     {
                         CurrencyCode = updateProductDTO.Price.CurrencyCode,
                         Price = updateProductDTO.Price.Price
                     };
                 }
 
-                var productId = await _productService.UpdateProduct(productIdentifier, usersProduct, cancellationToken);
-                return Ok(productId);
+                await _productService.UpdateProduct(productIdentifier, usersProduct, cancellationToken);
+                return Ok();
             }
             catch (Exception ex)
             {

@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [dbo].[CreateNewPassword]
+﻿CREATE PROCEDURE [dbo].[ResetPassword]
     @Username VARCHAR(100),
     @Password VARBINARY(60) = NULL
 AS
@@ -10,8 +10,8 @@ AS
             
             DECLARE @UserId INT;
             -- Get internal ids
-            EXEC dbo.GetActiveUserId @Username, @UserId OUTPUT;
-            
+            EXEC dbo.GetActiveUserIdByUsername @Username, @UserId OUTPUT;
+
             --  Disable the users passwords
             UPDATE dbo.[Password]
             SET 

@@ -7,6 +7,13 @@ using System.Security.Cryptography;
 
 namespace InventoryApi.Service.SecurityService
 {
+    public enum KeyType
+    {
+        refresh,
+        access,
+        confirmation
+    }
+
     public class JWTUtility: IJWTUtility
     {
         private IOptions<Security> _security;
@@ -17,8 +24,40 @@ namespace InventoryApi.Service.SecurityService
         
         private RSA refreshKey;
 
-        private RSA GetKey(bool isRefresh = false) => isRefresh ? refreshKey : accessKey;
-        private int GetExpiry(bool isRefresh = false) => isRefresh ? _security.Value.RefreshToken.Expiry : _security.Value.AccessToken.Expiry;
+        private RSA confirmationKey;
+
+        
+
+        private RSA GetKey(KeyType keyType)
+        {
+            switch (keyType)
+            {
+                case KeyType.refresh:
+                    return refreshKey;
+                case KeyType.access:
+                    return accessKey;
+                case KeyType.confirmation:
+                    return confirmationKey;
+                default:
+                    throw new NotImplementedException();
+            };
+        }
+
+        private int GetExpiry(KeyType keyType)
+        {
+            switch (keyType)
+            {
+                case KeyType.refresh:
+                    return _security.Value.RefreshToken.Expiry;
+                case KeyType.access:
+                    return _security.Value.AccessToken.Expiry;
+                case KeyType.confirmation:
+                    return _security.Value.ConfirmationToken.Expiry;
+                default:
+                    throw new NotImplementedException();
+            }
+            ;
+        }
 
         public JWTUtility(IOptions<Security> security)
         {
@@ -26,22 +65,24 @@ namespace InventoryApi.Service.SecurityService
             _securityTokenHandler = new JwtSecurityTokenHandler();
             accessKey = LoadAccessKey();
             refreshKey = LoadRefreshKey();
+            confirmationKey = LoadConfirmationKey();
         }
 
-        public async Task<ClaimsIdentity> GetTokenClaims(string? token, bool isRefresh = false)
+        public async Task<ClaimsIdentity> GetTokenClaims(string? token, KeyType keyType)
         {
             if (string.IsNullOrEmpty(token))
             {
                 throw new ArgumentNullException("Token is null or empty");
             }
 
-            var result = await _securityTokenHandler.ValidateTokenAsync(token, GetDefaultTokenValidationParams(isRefresh));
+            var result = await _securityTokenHandler.ValidateTokenAsync(token, GetDefaultTokenValidationParams(keyType));
             return result.ClaimsIdentity;
         }
                 
         private RSA LoadRefreshKey() => LoadRSAKey(_security.Value.RefreshToken.Key ?? throw new ArgumentNullException("Failed to load RSA Key"));
 
         private RSA LoadAccessKey() => LoadRSAKey(_security.Value.AccessToken.Key ?? throw new ArgumentNullException("Failed to load RSA Key"));
+        private RSA LoadConfirmationKey() => LoadRSAKey(_security.Value.ConfirmationToken.Key ?? throw new ArgumentNullException("Failed to load RSA Key"));
 
         private RSA LoadRSAKey(string key)
         {
@@ -59,11 +100,11 @@ namespace InventoryApi.Service.SecurityService
             return rsa;
         }
 
-        private TokenValidationParameters GetDefaultTokenValidationParams(bool isRefresh = false)
+        private TokenValidationParameters GetDefaultTokenValidationParams(KeyType keyType)
         {
             return new TokenValidationParameters
             {
-                IssuerSigningKey = new RsaSecurityKey(GetKey(isRefresh)),
+                IssuerSigningKey = new RsaSecurityKey(GetKey(keyType)),
                 ValidateIssuerSigningKey = true,
                 ValidateIssuer = true,
                 ValidateAudience = true,
@@ -72,7 +113,7 @@ namespace InventoryApi.Service.SecurityService
         }
 
 
-        public bool HasTokenExpired(string? token, bool isRefresh = false)
+        public bool HasTokenExpired(string? token, KeyType keyType)
         {
             if (string.IsNullOrEmpty(token))
             {
@@ -84,7 +125,7 @@ namespace InventoryApi.Service.SecurityService
                 var now = DateTime.UtcNow;
                 var validation = new TokenValidationParameters
                 {
-                    IssuerSigningKey = new RsaSecurityKey(GetKey(isRefresh)),
+                    IssuerSigningKey = new RsaSecurityKey(GetKey(keyType)),
                     ValidateIssuerSigningKey = true,
                     ValidateIssuer = true,
                     ValidateAudience = true
@@ -101,7 +142,7 @@ namespace InventoryApi.Service.SecurityService
             }
         }
 
-        public bool IsTokenValid(string? token, bool isRefresh = false)
+        public bool IsTokenValid(string? token, KeyType keyType)
         {
             if(string.IsNullOrEmpty(token))
             {
@@ -110,7 +151,7 @@ namespace InventoryApi.Service.SecurityService
 
             try
             {
-                var validations = GetDefaultTokenValidationParams(isRefresh);
+                var validations = GetDefaultTokenValidationParams(keyType);
                 var claimsPrinciple = _securityTokenHandler.ValidateToken(token, validations, out var validToken);
 
                 return (claimsPrinciple is not null);
@@ -120,9 +161,9 @@ namespace InventoryApi.Service.SecurityService
             }
         }
 
-        public string GenerateJWT(IEnumerable<Claim> claims, bool isRefresh = false)
+        public string GenerateJWT(IEnumerable<Claim> claims, KeyType keyType)
         {
-            var rsa = GetKey(isRefresh);
+            var rsa = GetKey(keyType);
 
             // Create signing credentials with RSA
             var signingCredentials = new SigningCredentials(
@@ -134,7 +175,7 @@ namespace InventoryApi.Service.SecurityService
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddMinutes(GetExpiry(isRefresh)),
+                Expires = DateTime.UtcNow.AddMinutes(GetExpiry(keyType)),
                 Issuer = _security.Value.Issuer,
                 Audience = _security.Value.Audience,
                 SigningCredentials = signingCredentials

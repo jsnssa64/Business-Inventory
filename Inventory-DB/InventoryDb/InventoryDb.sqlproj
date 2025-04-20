@@ -122,7 +122,7 @@
     <Build Include="dbo\StoredProcedure\User\CreateUser.sql" />
     <Build Include="dbo\StoredProcedure\User\DisableUser.sql" />
     <Build Include="dbo\StoredProcedure\User\EnableUser.sql" />
-    <Build Include="dbo\StoredProcedure\User\GetActiveUserId.sql" />
+    <Build Include="dbo\StoredProcedure\User\GetActiveUserIdUsername.sql" />
     <Build Include="dbo\StoredProcedure\Role\GetRoles.sql" />
     <Build Include="dbo\StoredProcedure\Role\GetDefaultRole.sql" />
     <Build Include="dbo\StoredProcedure\Role\CreateRole.sql" />
@@ -144,6 +144,10 @@
     <Build Include="dbo\StoredProcedure\Product\UpdateProduct.sql" />
     <Build Include="dbo\StoredProcedure\Product\UpdateProductPrice.sql" />
     <Build Include="dbo\StoredProcedure\User\UpdateUserDetails.sql" />
+    <Build Include="dbo\StoredProcedure\User\GetValidUserId.sql" />
+    <Build Include="dbo\StoredProcedure\User\IsValidUsername.sql" />
+    <Build Include="dbo\StoredProcedure\User\IsValidUserEmail.sql" />
+    <Build Include="dbo\StoredProcedure\User\GetActiveUserIdByEmail.sql" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\StoredProcedure\Inventory\GetInventoryItems.sql" />

@@ -1,11 +1,15 @@
-using Domain.User;
+using System.CodeDom;
+using System.Security.Claims;
 using InventoryApi.Controllers.CustomController;
 using InventoryApi.Model.DTO.User;
-using InventoryApi.Repository.Data;
 using InventoryApi.Repository.Data.Product;
+using InventoryApi.Repository.Data.Role;
 using InventoryApi.Repository.Data.User;
+using InventoryApi.Service.SecurityService;
 using InventoryApi.Service.UserService;
+using InventoryApi.Service.UserService.Utility;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InventoryApi.Controllers
@@ -17,11 +21,15 @@ namespace InventoryApi.Controllers
     {
         private readonly ILogger<InventoryController> _logger;
         private readonly IUserService _userService;
+        private readonly IJWTUtility _jwtUtility;
+        private readonly IUserUtility _userUtility;
 
-        public UserController(ILogger<InventoryController> logger, IUserService userService)
+        public UserController(ILogger<InventoryController> logger, IUserService userService, IJWTUtility jwtUtility, IUserUtility userUtility)
         {
             _logger = logger;
             _userService = userService;
+            _jwtUtility = jwtUtility;
+            _userUtility = userUtility;
         }
 
         [HttpGet("Register")]
@@ -53,7 +61,7 @@ namespace InventoryApi.Controllers
                 LastName = userWithRoleRegisterDTO.LastName,
                 Email = userWithRoleRegisterDTO.Email,
                 Password = userWithRoleRegisterDTO.Password,
-                RolePublicId = userWithRoleRegisterDTO.RolePublicId
+                PublicRoleId = userWithRoleRegisterDTO.RoleId
             });
             return Ok();
         }
@@ -119,23 +127,49 @@ namespace InventoryApi.Controllers
             return Ok();
         }
 
-        [HttpGet("Activate")]
+        [HttpGet("Confirmation")]
         [AllowAnonymous]
-        public IActionResult ActivateUser(CancellationToken cancellationToken)
+        public async Task<IActionResult> Confirmation(TokenDTO tokenDTO, CancellationToken cancellationToken)
         {
-            var userIdentifier = new UserIdentifierModel() { Username = GetUsername() };
-            var statusModel = new StatusModel() { Enabled = true };
-            _userService.SetUserStatus(userIdentifier, statusModel);
+            if(!_jwtUtility.IsTokenValid(tokenDTO.token, KeyType.confirmation))
+                throw new Exception("Confirmation no longer valid");
+
+            var tokenClaims = await _jwtUtility.GetTokenClaims(tokenDTO.token, KeyType.confirmation);
+
+            var userIdentifier = new UserIdentifierModel() { 
+                Username = _userUtility.GetClaimForUser(tokenClaims.Claims, UserClaim.Username)
+            };
+            
+            var statusModel = new StatusModel() { 
+                Enabled = true 
+            };
+
+            await _userService.SetUserStatus(userIdentifier, statusModel);
             return Ok();
         }
 
-        [HttpGet("Login/Activate")]
-        [AllowAnonymous]
-        public IActionResult LoginActivateUser(CancellationToken cancellationToken)
+        public class TokenDTO
         {
-            var userIdentifier = new UserIdentifierModel() { Username = GetUsername() };
-            var statusModel = new StatusModel() { Enabled = true };
-            _userService.SetUserStatus(userIdentifier, statusModel);
+            public required string token { get; set; }
+        }
+
+        public class UserDTO
+        {
+            public required string Username { get; set; }
+        }
+
+        [HttpGet("DeActivateUser")]
+        [AllowAnonymous]
+        public IActionResult DeActivateUser(UserDTO userDTO, CancellationToken cancellationToken)
+        {
+            _userService.SetUserStatus(
+            new UserIdentifierModel() { 
+                Username = userDTO.Username 
+            }, 
+            new StatusModel() { 
+                Enabled = false 
+            });
+
             return Ok();
         }
 
@@ -146,8 +180,8 @@ namespace InventoryApi.Controllers
                 new UserIdentifierModel() { 
                     Username = usersRoleDTO.UserName,
                 }, 
-                new RoleIdentifierModel() { 
-                    RolePublicId = usersRoleDTO.RolePublicId
+                new RoleIdModel() { 
+                    PublicRoleId = usersRoleDTO.RoleId
                 });
             return Ok();
         }

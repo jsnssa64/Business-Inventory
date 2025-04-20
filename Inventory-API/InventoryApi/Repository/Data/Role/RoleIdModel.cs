@@ -2,7 +2,7 @@
 {
     public class RoleIdModel
     {
-        public required string PublicRoleId { get; set; }
+        public required Guid PublicRoleId { get; set; }
 
     }
 }

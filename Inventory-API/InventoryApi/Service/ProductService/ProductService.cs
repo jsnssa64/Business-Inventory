@@ -44,14 +44,15 @@ namespace InventoryApi.Service.InventoryService
 
             var resultId = await _productRepository.AddProduct(userIdentifierModel, productDetailsModel, priceModel);
 
-
-            if (string.IsNullOrWhiteSpace(resultId.PublicProductId))
-                throw new ArgumentException("Failed to public product id", nameof(resultId.PublicProductId));
-
-
             var inventoryItemModel = new InventoryItemModel()
             {
                 Quantity = productDetailsModel.InventoryQuantity < 0 ? 0 : productDetailsModel.InventoryQuantity
+            };
+
+
+            var productIdentifierModel = new ProductIdentifierModel() { 
+                PublicProductId = resultId.PublicProductId,
+                Username = userIdentifierModel.Username,
             };
 
             await _inventoryRepository.UpdateItemToInventoryByProductId(productIdentifierModel, inventoryItemModel);
@@ -71,11 +72,9 @@ namespace InventoryApi.Service.InventoryService
             return await _productRepository.GetProducts(userIdentifierModel);
         }
 
-        public async Task<Product> UpdateProduct(ProductIdentifierModel productIdentifierModel, UpdateProductDetailsModel updateProductDetailsModel, CancellationToken cancellationToken)
+        public async Task UpdateProduct(ProductIdentifierModel productIdentifierModel, UpdateProductDetailsModel updateProductDetailsModel, CancellationToken cancellationToken)
         {
-            var result = await _productRepository.UpdateProduct(productIdentifierModel, updateProductDetailsModel);
-
-            return result;
+            await _productRepository.UpdateProduct(productIdentifierModel, updateProductDetailsModel);
         }
 
         public async Task RemoveProduct(ProductIdentifierModel productIdentifierModel, CancellationToken cancellationToken)

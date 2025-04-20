@@ -1,7 +1,9 @@
 ﻿namespace InventoryApi.Model.DTO.RoleDTO
 {
-    public class RoleIdOnlyDTO
+    public class CreateRoleDTO
     {
-        public required string RolePublicId { get; set; }
+        public required string RoleName { get; set; }
+        public bool SetAsDefault { get; set; } = false;
+
     }
 }

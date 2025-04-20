@@ -4,9 +4,9 @@ namespace InventoryApi.Service.SecurityService
 {
     public interface IJWTUtility
     {
-        string GenerateJWT(IEnumerable<Claim> claims, bool isRefresh = false);
-        Task<ClaimsIdentity> GetTokenClaims(string? token, bool isRefresh = false);
-        bool HasTokenExpired(string? token, bool isRefresh = false);
-        bool IsTokenValid(string? token, bool isRefresh = false);
+        string GenerateJWT(IEnumerable<Claim> claims, KeyType keyType);
+        Task<ClaimsIdentity> GetTokenClaims(string? token, KeyType keyType);
+        bool HasTokenExpired(string? token, KeyType keyType);
+        bool IsTokenValid(string? token, KeyType keyType);
     }
 }

@@ -1,14 +1,13 @@
 ﻿using System.Security.Claims;
 using Domain.User;
 using InventoryApi.Repository;
-using InventoryApi.Repository.Data;
 using InventoryApi.Repository.Data.Product;
 using InventoryApi.Repository.Data.Role;
 using InventoryApi.Repository.Data.User;
 using InventoryApi.Repository.RoleRepo;
-using InventoryApi.Repository.UserRepo.Enum;
 using InventoryApi.Service.SecurityService;
 using InventoryApi.Service.SecurityService.Models;
+using InventoryApi.Service.UserService.Utility;
 
 namespace InventoryApi.Service.UserService
 {
@@ -17,29 +16,32 @@ namespace InventoryApi.Service.UserService
         private IUserRepository _userRepository;
         private IRoleRepository _roleRepository;
         private ISecurityService _securityService;
+        private IUserUtility _userUtility;
 
-        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, ISecurityService securityService) {
+        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, ISecurityService securityService, IUserUtility userUtility) {
             _userRepository = userRepository;
             _roleRepository = roleRepository;
             _securityService = securityService;
+            _userUtility = userUtility;
         }
 
         public async Task RegisterUser(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, UserRegistrationModel userRegistrationModel)
         {
             try
             {
-                if(string.IsNullOrEmpty(userRegistrationModel.RolePublicId))
-                    throw new Exception("RolePublicId is required");
+                if (userRegistrationModel.PublicRoleId is null)
+                    throw new Exception("Unable to register user: Role Id missing");
 
-                var roleIdModel = new RoleIdentifierModel()
+                var roleIdModel = new RoleIdModel()
                 {
-                    PublicRoleId = userRegistrationModel.RolePublicId
+                    PublicRoleId = (Guid)userRegistrationModel.PublicRoleId
                 };
 
                 if (!await _roleRepository.IsValidRole(roleIdModel))
                     throw new Exception("Invalid Role");
 
-                await this.CreateUser(httpResponse, userIdentifierModel, userRegistrationModel);
+                var userIdModel = await this.CreateUser(httpResponse, userIdentifierModel, userRegistrationModel);
+                
                 await this.AssignUserToRole(userIdentifierModel, roleIdModel);
             }
             catch (Exception ex)
@@ -52,7 +54,8 @@ namespace InventoryApi.Service.UserService
         {
             try
             {
-                userRegistrationModel.RolePublicId = await _roleRepository.GetDefaultRole();
+                var roleModel = await _roleRepository.GetDefaultRole();
+                userRegistrationModel.PublicRoleId = roleModel.PublicRoleId;
 
                 await this.CreateUser(httpResponse, userIdentifierModel, userRegistrationModel);
             }
@@ -62,21 +65,37 @@ namespace InventoryApi.Service.UserService
             }
         }
 
-        private async Task CreateUser(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, UserRegistrationModel userRegistrationModel)
+        private async Task<UserIdModel> CreateUser(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, UserRegistrationModel userRegistrationModel)
         {
             try
             {
                 userRegistrationModel.Password = _securityService.EncryptPassword(userRegistrationModel.Password, SecurityLevel.Mid);
 
-                await _userRepository.CreateUser(userIdentifierModel, userRegistrationModel);
+                var userIdModel = await _userRepository.CreateUser(userIdentifierModel, userRegistrationModel);
 
                 var passwordModel = new PasswordModel() { 
                     Password = userRegistrationModel.Password 
                 };
 
+                await this.ActivateUser(userIdentifierModel);
+
                 await LoginUser(httpResponse, userIdentifierModel, passwordModel);
+
+                return userIdModel;
             }
             catch(Exception ex)
+            {
+                throw new Exception($"Failed to register new User: {ex.Message}");
+            }
+        }
+
+        public async Task ActivateUser(UserIdentifierModel userIdentifierModel)
+        {
+            try
+            {
+                await _userRepository.ActivateUser(userIdentifierModel);
+            }
+            catch (Exception ex)
             {
                 throw new Exception($"Failed to register new User: {ex.Message}");
             }
@@ -106,32 +125,6 @@ namespace InventoryApi.Service.UserService
             }
         }
 
-        public UserClaims MapClaimsToUser(List<Claim> claims)
-        {
-            return new UserClaims()
-            {
-                Username =  claims.FirstOrDefault(c => c.Type == nameof(ClaimTypes.Name))?.Value ??  throw new Exception("Unable to generate Username claim"),
-                Email =     claims.FirstOrDefault(c => c.Type == nameof(ClaimTypes.Email))?.Value ?? throw new Exception("Unable to generate Email claim"),
-                RoleName =  claims.FirstOrDefault(c => c.Type == nameof(ClaimTypes.Role))?.Value ??  throw new Exception("Unable to generate Role claim")
-            };
-        }
-
-        public IEnumerable<Claim> MapUserToClaims(User user)
-        {
-            if (user is null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-
-            var claims = new List<Claim>()
-            {
-                new(ClaimTypes.Email,user.Email    ??  throw new Exception("Unable to generate Email claim")),     // Ensure non-null value
-                new(ClaimTypes.Name, user.Username ??  throw new Exception("Unable to generate Username claim")),  // Ensure non-null value
-                new(ClaimTypes.Role, user.Role?.Rolename ??  throw new Exception("Unable to generate Role claim"))       // Ensure non-null value
-            };
-            return claims;
-        }
-
         public async Task LoginUser(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, PasswordModel passwordModel)
         {
             await this.RefreshLogin(httpResponse, userIdentifierModel, (usersRole) =>
@@ -145,14 +138,14 @@ namespace InventoryApi.Service.UserService
 
         public async Task<IEnumerable<Claim>> RefreshLogin(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, Action<User>? validate = null)
         {
-            var user = await _userRepository.GetUser(userIdentifierModel, UserType.role) ?? throw new Exception("User not found");
+            var user = await _userRepository.GetUser(userIdentifierModel) ?? throw new Exception("User not found");
 
             if (validate is not null)
             {
                 validate(user);
             }
 
-            var claims = this.MapUserToClaims(user);
+            var claims = _userUtility.MapUserToClaims(user);
 
             var cookieExpiry = DateTimeOffset.UtcNow.AddDays(1);
 
@@ -165,21 +158,57 @@ namespace InventoryApi.Service.UserService
 
         public async Task<(User, UserDetails)> GetUserDetails(UserIdentifierModel userName)
         {
-            var userDetails = await _userRepository.GetUserDetails(userName);
+            return await _userRepository.GetUserDetails(userName);
+        }
 
-            return userDetails;
+        public async Task ForgottenPasswordByEmail(UserEmailModel userEmailModel)
+        {
+            if (!await _userRepository.IsValidUserByEmail(userEmailModel)) {
+                throw new Exception("Invalid Email");
+            }
+
+            //  Trigger Email
+        }
+
+        public async Task ForgottenPasswordByUsername(UserIdentifierModel userIdentifierModel)
+        {
+            if (!await _userRepository.IsValidUserByUsername(userIdentifierModel))
+            {
+                throw new Exception("Invalid Username");
+            }
+
+            //  Trigger Email
+        }
+
+        public async Task ResetPassword(UserIdentifierModel userIdentifierModel, PasswordModel passwordModel)
+        {
+            try
+            {
+                await _userRepository.ResetPassword(userIdentifierModel, passwordModel);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to Reset USer password: {ex.Message}");
+            }
         }
 
         public void LogoutUser(HttpResponse httpResponse)
         {
-            _securityService.SetCookieForLogout(httpResponse);
+            try
+            {
+                _securityService.SetCookieForLogout(httpResponse);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to Set User Cookie: {ex.Message}");
+            }
         }
 
-        public async Task AssignUserToRole(UserIdentifierModel userIdentifierModel, RoleIdentifierModel roleIdentifierModel)
+        public async Task AssignUserToRole(UserIdentifierModel userIdentifierModel, RoleIdModel roleIdModel)
         {
             try
             {
-                await _userRepository.AssignRoleToUser(userIdentifierModel, roleIdentifierModel);
+                await _userRepository.AssignRoleToUser(userIdentifierModel, roleIdModel);
             }
             catch (Exception ex)
             {

@@ -1,7 +1,5 @@
-﻿using Domain.User;
-using InventoryApi.Repository.Data.Role;
+﻿using InventoryApi.Repository.Data.Role;
 using InventoryApi.Repository.RoleRepo;
-using Microsoft.IdentityModel.Tokens;
 
 namespace InventoryApi.Service.RoleService
 {
@@ -16,6 +14,16 @@ namespace InventoryApi.Service.RoleService
         public async Task<RoleModel> CreateRole(CreateRoleModel createRoleModel)
         {
             return await _roleRepository.CreateRole(createRoleModel);
+        }
+
+        public async Task<IEnumerable<RoleModel>> GetRoles()
+        {
+            return await _roleRepository.GetRoles();
+        }
+
+        public async Task<RoleModel> GetDefaultRole()
+        {
+            return await _roleRepository.GetDefaultRole();
         }
     }
 }

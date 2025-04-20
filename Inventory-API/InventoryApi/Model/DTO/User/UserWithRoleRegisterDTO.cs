@@ -2,6 +2,6 @@
 {
     public class UserWithRoleRegisterDTO: UserRegisterDTO
     {
-        public required string RolePublicId { get; set; }
+        public required Guid RoleId { get; set; }
     }
 }

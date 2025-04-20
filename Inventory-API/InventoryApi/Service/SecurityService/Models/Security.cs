@@ -4,6 +4,7 @@
     {
         public required Token AccessToken { get; set; }
         public required Token RefreshToken { get; set; }
+        public required Token ConfirmationToken { get; set; }
         public required string Audience { get; set; }
         public required string Issuer { get; set; }
     }

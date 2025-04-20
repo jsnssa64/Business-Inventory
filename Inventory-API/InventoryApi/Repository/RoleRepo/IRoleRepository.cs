@@ -9,6 +9,6 @@ namespace InventoryApi.Repository.RoleRepo
         Task<RoleModel> CreateRole(CreateRoleModel createRole);
         Task<RoleModel> GetDefaultRole();
         Task<IEnumerable<RoleModel>> GetRoles();
-        Task<bool> IsValidRole(RoleIdentifierModel roleIdentifier);
+        Task<bool> IsValidRole(RoleIdModel roleIdModel);
     }
 }

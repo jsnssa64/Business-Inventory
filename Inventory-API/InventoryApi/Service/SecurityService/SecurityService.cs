@@ -40,8 +40,8 @@ namespace InventoryApi.Service.SecurityService
 
         public (string AccessToken, string RefreshToken) GenerateLoginJWT(IEnumerable<Claim> accessClaims, IEnumerable<Claim> refreshClaims)
         {
-            var accessToken = _JWTUtility.GenerateJWT(accessClaims, false);
-            var refreshToken = _JWTUtility.GenerateJWT(refreshClaims, true);
+            var accessToken = _JWTUtility.GenerateJWT(accessClaims, KeyType.access);
+            var refreshToken = _JWTUtility.GenerateJWT(refreshClaims, KeyType.refresh);
 
             return (accessToken, refreshToken);
         }

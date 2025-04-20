@@ -32,9 +32,9 @@ namespace InventoryApi.Middleware
             try
             {
                 /*  Valid Access Token*/
-                if (!_JWTUtility.HasTokenExpired(accessToken))
+                if (!_JWTUtility.HasTokenExpired(accessToken, KeyType.access))
                 {
-                    var claimIdentity = await _JWTUtility.GetTokenClaims(accessToken);
+                    var claimIdentity = await _JWTUtility.GetTokenClaims(accessToken, KeyType.access);
                     context.User = new ClaimsPrincipal(claimIdentity);
 
                     await _next(context);
@@ -42,9 +42,9 @@ namespace InventoryApi.Middleware
                 }
 
                 /*  Valid Refresh Token */
-                if (_JWTUtility.IsTokenValid(refreshToken, true))
+                if (_JWTUtility.IsTokenValid(refreshToken, KeyType.refresh))
                 {
-                    var refreshClaimIdentity = await _JWTUtility.GetTokenClaims(refreshToken, true);
+                    var refreshClaimIdentity = await _JWTUtility.GetTokenClaims(refreshToken, KeyType.refresh);
 
 
                     var currentClaims = _userService.MapClaimsToUser(refreshClaimIdentity.Claims.ToList());
