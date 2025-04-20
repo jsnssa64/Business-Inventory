@@ -3,6 +3,9 @@
 AS
 BEGIN
     SET NOCOUNT ON;
+    DECLARE @UserId INT;
+
+    EXEC dbo.GetActiveUserId @Username, @UserId OUTPUT;
 
     SELECT
            u.Id,
@@ -16,12 +19,9 @@ BEGIN
            ud.Country,
            ud.PostCode,
            ud.DOB,
-           ud.Country,
            ud.Gender
       FROM dbo.[User] u
       JOIN dbo.UserDetails ud
         ON u.Id = ud.UserId
-     WHERE u.UserName = @Username 
-           AND u.[Disabled] = 0
-           AND u.Confirmed = 1;
+     WHERE u.Id = @UserId
 END

@@ -69,6 +69,10 @@
     <Folder Include="Security\Login" />
     <Folder Include="Scripts\Function" />
     <Folder Include="Scripts\StoredProcedure" />
+    <Folder Include="dbo\StoredProcedure\User" />
+    <Folder Include="dbo\StoredProcedure\Inventory" />
+    <Folder Include="dbo\StoredProcedure\Role" />
+    <Folder Include="dbo\StoredProcedure\Product" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\Pre-Deployment\Script.PreDeployment.sql" />
@@ -105,36 +109,44 @@
     </ArtifactReference>
   </ItemGroup>
   <ItemGroup>
-    <Build Include="dbo\StoredProcedure\GetProductById.sql" />
-    <Build Include="dbo\StoredProcedure\AddProduct.sql" />
-    <Build Include="dbo\StoredProcedure\GetInventoryByProductId.sql" />
-    <Build Include="dbo\StoredProcedure\UpdateItemInInventory.sql" />
     <Build Include="dbo\Table\User.sql" />
     <Build Include="dbo\Table\Role.sql" />
     <Build Include="dbo\Table\UsersRole.sql" />
     <Build Include="dbo\Table\UserDetails.sql" />
     <Build Include="dbo\Table\Password.sql" />
-    <Build Include="dbo\StoredProcedure\CreateUser.sql" />
-    <Build Include="dbo\StoredProcedure\AssignUserToRole.sql" />
-    <Build Include="dbo\StoredProcedure\DisableUser.sql" />
-    <Build Include="dbo\StoredProcedure\GetUserDetails.sql" />
-    <Build Include="dbo\StoredProcedure\GetProducts.sql" />
     <Build Include="dbo\Table\ProductPrice.sql" />
-    <Build Include="dbo\StoredProcedure\UpdateProduct.sql" />
-    <Build Include="dbo\StoredProcedure\GetUserId.sql" />
-    <Build Include="dbo\StoredProcedure\GetProductId.sql" />
-    <Build Include="dbo\StoredProcedure\UpdateUserDetails.sql" />
-    <Build Include="dbo\StoredProcedure\EnableUser.sql" />
-    <Build Include="dbo\StoredProcedure\CreateNewPassword.sql" />
-    <Build Include="dbo\StoredProcedure\CreateRole.sql" />
-    <Build Include="dbo\StoredProcedure\GetInventoryItems.sql" />
-    <Build Include="dbo\StoredProcedure\GetUser.sql" />
-    <Build Include="dbo\StoredProcedure\GetDefaultRole.sql" />
-    <Build Include="dbo\StoredProcedure\IsValidRole.sql" />
-    <Build Include="dbo\StoredProcedure\GetRoles.sql" />
-    <Build Include="dbo\StoredProcedure\RemoveProductById.sql" />
-    <Build Include="dbo\StoredProcedure\AddProductToPrice.sql" />
-    <Build Include="dbo\StoredProcedure\UpdateProductPrice.sql" />
-    <Build Include="dbo\StoredProcedure\RemoveProductPrice.sql" />
+    <Build Include="Scripts\StoredProcedure\TrackFileExists.sql" />
+    <Build Include="dbo\StoredProcedure\User\ActivateUser.sql" />
+    <Build Include="dbo\StoredProcedure\User\AssignUserToRole.sql" />
+    <Build Include="dbo\StoredProcedure\User\CreateNewPassword.sql" />
+    <Build Include="dbo\StoredProcedure\User\CreateUser.sql" />
+    <Build Include="dbo\StoredProcedure\User\DisableUser.sql" />
+    <Build Include="dbo\StoredProcedure\User\EnableUser.sql" />
+    <Build Include="dbo\StoredProcedure\User\GetActiveUserId.sql" />
+    <Build Include="dbo\StoredProcedure\Role\GetRoles.sql" />
+    <Build Include="dbo\StoredProcedure\Role\GetDefaultRole.sql" />
+    <Build Include="dbo\StoredProcedure\Role\CreateRole.sql" />
+    <Build Include="dbo\StoredProcedure\User\GetUser.sql" />
+    <Build Include="dbo\StoredProcedure\User\GetUserDetails.sql" />
+    <Build Include="dbo\StoredProcedure\User\IsUserInactive.sql" />
+    <Build Include="dbo\StoredProcedure\Product\AddProduct.sql" />
+    <Build Include="dbo\StoredProcedure\Product\AddProductPrice.sql" />
+    <Build Include="dbo\StoredProcedure\Product\GetProductById.sql" />
+    <Build Include="dbo\StoredProcedure\Product\GetProductByInternalId.sql" />
+    <Build Include="dbo\StoredProcedure\Product\GetProductId.sql" />
+    <Build Include="dbo\StoredProcedure\Product\GetProducts.sql" />
+    <Build Include="dbo\StoredProcedure\Inventory\GetInventoryByProductId.sql" />
+    <Build Include="dbo\StoredProcedure\Role\GetRoleId.sql" />
+    <Build Include="dbo\StoredProcedure\Role\IsValidRole.sql" />
+    <Build Include="dbo\StoredProcedure\User\GetUnconfirmedUserId.sql" />
+    <Build Include="dbo\StoredProcedure\Product\RemoveProductById.sql" />
+    <Build Include="dbo\StoredProcedure\Product\RemoveProductPrice.sql" />
+    <Build Include="dbo\StoredProcedure\Product\UpdateProduct.sql" />
+    <Build Include="dbo\StoredProcedure\Product\UpdateProductPrice.sql" />
+    <Build Include="dbo\StoredProcedure\User\UpdateUserDetails.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="dbo\StoredProcedure\Inventory\GetInventoryItems.sql" />
+    <Build Include="dbo\StoredProcedure\Inventory\UpdateItemInInventory.sql" />
   </ItemGroup>
 </Project>

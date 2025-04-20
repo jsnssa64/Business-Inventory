@@ -32,8 +32,8 @@ namespace InventoryApi.Repository.Inventory
                 using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
 
                 DynamicParameters parameters = new DynamicParameters();
-                parameters.Add(nameof(ProductIdentifierModel.PublicProductId), productIdentifier.PublicProductId);
                 parameters.Add(nameof(ProductIdentifierModel.Username), productIdentifier.Username);
+                parameters.Add(nameof(ProductIdentifierModel.PublicProductId), productIdentifier.PublicProductId);
                 parameters.Add(nameof(InventoryItemModel.Quantity), inventoryItemModel.Quantity);
 
                 var result = await conn.ExecuteAsync("dbo.UpdateItemInInventory", parameters, commandType: CommandType.StoredProcedure);

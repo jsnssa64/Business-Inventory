@@ -3,14 +3,14 @@
 AS
 BEGIN
     SET NOCOUNT ON;
-
     DECLARE @UserId INT;
-    EXEC dbo.GetUserId @Username, @UserId OUTPUT;
+
+    EXEC dbo.GetActiveUserId @Username, @UserId OUTPUT;
 
     SELECT
            u.Username,
            u.Email,
-           r.PublicId AS RoleId,
+           r.PublicId AS PublicRoleId,
            r.[Name] AS RoleName,
            p.PasswordHash
     FROM dbo.[User] u

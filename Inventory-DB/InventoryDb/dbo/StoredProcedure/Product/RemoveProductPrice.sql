@@ -7,16 +7,11 @@ AS
     
     BEGIN TRY
         BEGIN TRANSACTION
-            DECLARE @UserId INT;
             DECLARE @ProductId INT;
 
             -- Get internal ids
             EXEC dbo.GetProductId @Username, @PublicProductId, @ProductId OUTPUT;
 
-            -- Make sure the product exists for this user
-            IF (@ProductId IS NULL OR @UserId IS NULL)
-                THROW 50002, 'Product not found or does not belong to user.', 1;
-            
             DELETE dbo.ProductPrice
             WHERE ProductId = @ProductId;
             
@@ -28,7 +23,7 @@ AS
             ROLLBACK TRANSACTION;
 
         -- Optional: log the error here
-        DECLARE @errMessage VARCHAR(100) = 'Error: ' + ERROR_MESSAGE();
+        DECLARE @errMessage VARCHAR(1200) = 'Error: ' + CAST(ERROR_NUMBER() AS VARCHAR(100)) + ' at line ' + CAST(ERROR_LINE() AS VARCHAR(100)) + ' in ' + ISNULL(ERROR_PROCEDURE(), 'Ad-hoc') + ': ' + ERROR_MESSAGE();
         THROW 50001, @errMessage, 1;
     END CATCH
 RETURN 0

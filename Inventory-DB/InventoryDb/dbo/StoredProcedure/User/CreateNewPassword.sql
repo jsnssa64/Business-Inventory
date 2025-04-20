@@ -1,6 +1,6 @@
 ﻿CREATE PROCEDURE [dbo].[CreateNewPassword]
     @Username VARCHAR(100),
-    @Password VARCHAR(50) = NULL
+    @Password VARBINARY(60) = NULL
 AS
 	SET NOCOUNT ON;
     SET XACT_ABORT ON;
@@ -10,13 +10,9 @@ AS
             
             DECLARE @UserId INT;
             -- Get internal ids
-            EXEC dbo.GetUserId @Username, @UserId OUTPUT;
-
-            -- User not found
-            IF (@UserId IS NULL)
-                THROW 50002, 'Product not found or does not belong to user.', 1;
+            EXEC dbo.GetActiveUserId @Username, @UserId OUTPUT;
             
-            --  Disable all users passwords
+            --  Disable the users passwords
             UPDATE dbo.[Password]
             SET 
                 [Disabled] = 1,
@@ -35,7 +31,7 @@ AS
             ROLLBACK TRANSACTION;
 
         -- Optional: log the error here
-        DECLARE @errMessage VARCHAR(100) = 'Error: ' + ERROR_MESSAGE();
+        DECLARE @errMessage VARCHAR(1200) = 'Error: ' + CAST(ERROR_NUMBER() AS VARCHAR(100)) + ' at line ' + CAST(ERROR_LINE() AS VARCHAR(100)) + ' in ' + ISNULL(ERROR_PROCEDURE(), 'Ad-hoc') + ': ' + ERROR_MESSAGE();
         THROW 50001, @errMessage, 1;
     END CATCH
 RETURN 0

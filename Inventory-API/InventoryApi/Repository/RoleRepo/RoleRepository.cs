@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using Domain.User;
 using InventoryApi.Factory;
 using System.Data.Entity.Infrastructure;
 using System.Data;
@@ -19,25 +18,27 @@ namespace InventoryApi.Repository.RoleRepo
             _dbConnectionFactory = dbConnectionFactory;
         }
 
-        public async Task<Role> CreateRole(RoleNameModel roleModel)
+        public async Task<RoleModel> CreateRole(CreateRoleModel createRole)
         {
             try
             {
                 using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
 
                 var parameters = new DynamicParameters();
-                parameters.Add(nameof(RoleNameModel.RoleName), roleModel);
-                parameters.Add(nameof(RoleIdModel.RolePublicId), dbType: DbType.Int32, direction: ParameterDirection.Output);
+                parameters.Add(nameof(CreateRoleModel.RoleName), createRole.RoleName);
+                parameters.Add(nameof(CreateRoleModel.IsDefault), createRole.IsDefault);
+                parameters.Add(nameof(RoleIdModel.PublicRoleId), dbType: DbType.Int32, direction: ParameterDirection.Output);
 
                 var result = await conn.ExecuteAsync("dbo.CreateRole", parameters, commandType: CommandType.StoredProcedure);
 
                 if (result <= 0)
                     throw new DbUpdateException($"Role: Not created");
 
-                return new Role
+                return new RoleModel
                 {
-                    Id = parameters.Get<string>(nameof(RoleIdModel.RolePublicId)),
-                    Rolename = roleModel.RoleName,
+                    PublicRoleId = parameters.Get<Guid>(nameof(RoleIdModel.PublicRoleId)),
+                    RoleName = createRole.RoleName,
+                    IsDefault = createRole.IsDefault
                 };
             }
             catch (Exception ex)
@@ -46,14 +47,14 @@ namespace InventoryApi.Repository.RoleRepo
             }
         }
 
-        public async Task<bool> IsValidRole(string rolePublicId)
+        public async Task<bool> IsValidRole(RoleIdModel roleIdModel)
         {
             try
             {
                 using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
 
                 var parameters = new DynamicParameters();
-                parameters.Add("RolePublicId", rolePublicId);
+                parameters.Add(nameof(RoleIdModel.PublicRoleId), roleIdModel.PublicRoleId);
                 parameters.Add("ReturnValue", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
                 await conn.ExecuteAsync("dbo.IsValidRole", parameters, commandType: CommandType.StoredProcedure);
 
@@ -67,17 +68,23 @@ namespace InventoryApi.Repository.RoleRepo
             }
         }
 
-        public async Task<IEnumerable<Role>> GetRoles()
+        public async Task<IEnumerable<RoleModel>> GetRoles()
         {
             try
             {
                 using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
 
-                var parameters = new DynamicParameters();
+                var result = await conn.QueryAsync<dynamic>("dbo.GetRoles", new DynamicParameters(), commandType: CommandType.StoredProcedure);
 
-                var result = await conn.QueryAsync<Role>("dbo.GetRoles", new DynamicParameters(), commandType: CommandType.StoredProcedure);
+                if (result.IsNullOrEmpty())
+                    throw new DbUpdateException("No roles found");
 
-                return result;
+                return result.Select((role) => new RoleModel()
+                {
+                    RoleName = role.RoleName,
+                    IsDefault = role.IsDefault,
+                    PublicRoleId = role.PublicRoleId
+                });
             }
             catch (Exception ex)
             {
@@ -85,7 +92,7 @@ namespace InventoryApi.Repository.RoleRepo
             }
         }
 
-        public async Task<string> GetDefaultRole()
+        public async Task<RoleModel> GetDefaultRole()
         {
             try
             {
@@ -93,12 +100,17 @@ namespace InventoryApi.Repository.RoleRepo
 
                 var parameters = new DynamicParameters();
 
-                var result = await conn.QuerySingleAsync<string>("dbo.GetDefaultRole", new DynamicParameters(), commandType: CommandType.StoredProcedure);
+                var result = await conn.QuerySingleAsync<dynamic>("dbo.GetDefaultRole", new DynamicParameters(), commandType: CommandType.StoredProcedure);
 
-                if (result.IsNullOrEmpty())
+                if (result is null)
                     throw new DbUpdateException($"Role not found");
 
-                return result;
+                return new RoleModel()
+                {
+                    RoleName = result.RoleName,
+                    IsDefault = result.IsDefault,
+                    PublicRoleId = result.PublicRoleId
+                };
             }
             catch (Exception ex)
             {

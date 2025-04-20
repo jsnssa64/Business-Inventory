@@ -12,10 +12,6 @@ AS
             DECLARE @ProductId INT;
             EXEC dbo.GetProductId @Username, @PublicProductId, @ProductId OUTPUT;
 
-            -- Make sure the product exists for this user
-            IF (@ProductId IS NULL)
-                THROW 50002, 'Product not found or does not belong to user.', 1;
-            
             --  Declare Existing Values
             DECLARE  
                 @CurrentPrice BIT,
@@ -36,10 +32,7 @@ AS
             
             --  Price not updated
             IF(@@ROWCOUNT = 0)
-            BEGIN 
-                INSERT INTO dbo.ProductPrice(ProductId, Price, CurrencyCode)
-                VALUES(@ProductId, @Price, @CurrencyCode);
-            END 
+                THROW 50001, 'Unable to update product price', 1;
             
         COMMIT TRANSACTION;
         RETURN 0;  -- success
@@ -49,7 +42,7 @@ AS
             ROLLBACK TRANSACTION;
 
         -- Optional: log the error here
-        DECLARE @errMessage VARCHAR(100) = 'Error: ' + ERROR_MESSAGE();
+        DECLARE @errMessage VARCHAR(1200) = 'Error: ' + CAST(ERROR_NUMBER() AS VARCHAR(100)) + ' at line ' + CAST(ERROR_LINE() AS VARCHAR(100)) + ' in ' + ISNULL(ERROR_PROCEDURE(), 'Ad-hoc') + ': ' + ERROR_MESSAGE();
         THROW 50001, @errMessage, 1;
     END CATCH
 RETURN 0

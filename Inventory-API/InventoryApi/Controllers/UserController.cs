@@ -24,7 +24,7 @@ namespace InventoryApi.Controllers
             _userService = userService;
         }
 
-        [HttpGet("RegisterUser")]
+        [HttpGet("Register")]
         [AllowAnonymous]
         public async Task<IActionResult> RegisterUser(UserRegisterDTO userRegisterDTO,  CancellationToken cancellationToken)
         {
@@ -40,7 +40,26 @@ namespace InventoryApi.Controllers
             return Ok();
         }
 
-        [HttpGet("UpdateUser")]
+        [HttpGet("RegisterRole")]
+        public async Task<IActionResult> RegisterUserWithRole(UserWithRoleRegisterDTO userWithRoleRegisterDTO, CancellationToken cancellationToken)
+        {
+            await _userService.RegisterUser(Response, new UserIdentifierModel()
+            {
+                Username = userWithRoleRegisterDTO.Username
+            },
+            new UserRegistrationModel()
+            {
+                FirstName = userWithRoleRegisterDTO.FirstName,
+                LastName = userWithRoleRegisterDTO.LastName,
+                Email = userWithRoleRegisterDTO.Email,
+                Password = userWithRoleRegisterDTO.Password,
+                RolePublicId = userWithRoleRegisterDTO.RolePublicId
+            });
+            return Ok();
+        }
+
+
+        [HttpGet("Update")]
         [AllowAnonymous]
         public async Task<IActionResult> UpdateUser(UpdateUserDetailsDTO updateUserDetailsDTO, CancellationToken cancellationToken)
         {
@@ -63,27 +82,8 @@ namespace InventoryApi.Controllers
             return Ok();
         }
 
-        [HttpGet("Register")]
-        public async Task<IActionResult> RegisterUserWithRole(UserWithRoleRegisterDTO userWithRoleRegisterDTO, CancellationToken cancellationToken)
-        {
-            //  Validate
 
-            await _userService.RegisterUser(Response, new UserIdentifierModel() { 
-                Username = userWithRoleRegisterDTO.Username
-            }, 
-            new UserRegistrationModel()
-            {
-                FirstName = userWithRoleRegisterDTO.FirstName,
-                LastName = userWithRoleRegisterDTO.LastName,
-                Email = userWithRoleRegisterDTO.Email,
-                Password = userWithRoleRegisterDTO.Password,
-                RolePublicId = userWithRoleRegisterDTO.RolePublicId
-            });
-            return Ok();
-        }
-
-
-        [HttpGet("LoginUser")]
+        [HttpGet("Login")]
         [AllowAnonymous]
         public async Task<IActionResult> LoginUser(UserLoginDTO userLoginDto, CancellationToken cancellationToken)
         {
@@ -101,7 +101,7 @@ namespace InventoryApi.Controllers
             return Ok();
         }
 
-        [HttpGet("LogoutUser")]
+        [HttpGet("Logout")]
         [AllowAnonymous]
         public IActionResult LogoutUser(CancellationToken cancellationToken)
         {
@@ -109,7 +109,7 @@ namespace InventoryApi.Controllers
             return Ok();
         }
 
-        [HttpGet("DisableUser")]
+        [HttpGet("Disable")]
         [AllowAnonymous]
         public IActionResult DisableUser(CancellationToken cancellationToken)
         {
@@ -119,9 +119,19 @@ namespace InventoryApi.Controllers
             return Ok();
         }
 
-        [HttpGet("EnableUser")]
+        [HttpGet("Activate")]
         [AllowAnonymous]
-        public IActionResult EnableUser(CancellationToken cancellationToken)
+        public IActionResult ActivateUser(CancellationToken cancellationToken)
+        {
+            var userIdentifier = new UserIdentifierModel() { Username = GetUsername() };
+            var statusModel = new StatusModel() { Enabled = true };
+            _userService.SetUserStatus(userIdentifier, statusModel);
+            return Ok();
+        }
+
+        [HttpGet("Login/Activate")]
+        [AllowAnonymous]
+        public IActionResult LoginActivateUser(CancellationToken cancellationToken)
         {
             var userIdentifier = new UserIdentifierModel() { Username = GetUsername() };
             var statusModel = new StatusModel() { Enabled = true };

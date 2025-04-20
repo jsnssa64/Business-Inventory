@@ -1,9 +1,12 @@
 ﻿CREATE PROCEDURE dbo.GetProductById
-    @PublicProductId UNIQUEIDENTIFIER,
-    @Username VARCHAR(150)
+    @Username VARCHAR(100),
+    @PublicProductId UNIQUEIDENTIFIER
 AS
 BEGIN
     SET NOCOUNT ON;
+    DECLARE @UserId INT;
+
+    EXEC dbo.GetActiveUserId @Username, @UserId OUTPUT;
 
     SELECT
            p.[Name],
@@ -13,8 +16,6 @@ BEGIN
       JOIN dbo.[User] u 
         ON u.Id = p.Id
      WHERE p.PublicId = @PublicProductId
-           AND u.Username = @Username
-           AND u.[Disabled] = 0
-           AND u.Confirmed = 1
+           AND u.Id = @UserId
            AND p.[Disabled] = 0;
 END

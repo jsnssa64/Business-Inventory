@@ -1,6 +1,6 @@
 ﻿CREATE PROCEDURE [dbo].[AssignUserToRole]
 	@Username VARCHAR(100),
-    @RolePublicId VARCHAR(100)
+    @PublicRoleId UNIQUEIDENTIFIER
 AS
 	SET NOCOUNT ON;
     SET XACT_ABORT ON;
@@ -17,15 +17,8 @@ AS
         DECLARE @RoleId INT;
         DECLARE @UserId INT;
 
-        SET @RoleId = (SELECT r1.Id FROM dbo.[Role] r1 WHERE r1.PublicId = @RolePublicId);
-        SET @UserId = (SELECT u.Id FROM dbo.[User] u WHERE u.Username = @Username);
-
-        /*  NULL Check, in case of accidental table column missing constraint double check */
-        IF @RoleId IS NULL
-            THROW 50001, 'Role not found.', 1;
-
-        IF @UserId IS NULL
-            THROW 50001, 'User not found.', 1;
+        EXEC dbo.GetRoleId @PublicRoleId, @RoleId OUTPUT;
+        EXEC dbo.GetValidUserId @Username, @UserId OUTPUT;
 
         UPDATE dbo.UsersRole
         SET RoleId = @RoleId,
@@ -47,7 +40,7 @@ AS
             ROLLBACK TRANSACTION;
 
         -- Optional: log the error here
-        DECLARE @errMessage VARCHAR(100) = 'Error: ' + ERROR_MESSAGE();
+        DECLARE @errMessage VARCHAR(1200) = 'Error: ' + CAST(ERROR_NUMBER() AS VARCHAR(100)) + ' at line ' + CAST(ERROR_LINE() AS VARCHAR(100)) + ' in ' + ISNULL(ERROR_PROCEDURE(), 'Ad-hoc') + ': ' + ERROR_MESSAGE();
         THROW 50001, @errMessage, 1;
     END CATCH
 RETURN 0

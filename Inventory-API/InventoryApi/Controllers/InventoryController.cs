@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 namespace InventoryApi.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("[controller]")]
     public class InventoryController : BaseController
     {
@@ -24,15 +25,10 @@ namespace InventoryApi.Controllers
 
         [HttpGet("GetInventoryItemByProductId")]
         [Authorize]
-        public async Task<IActionResult> GetInventoryItemByProductId(string productid, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetInventoryItemByProductId(Guid productid, CancellationToken cancellationToken)
         {
             try
             {
-                if (productid.IsNullOrEmpty())
-                {
-                    throw new ArgumentNullException(nameof(productid));
-                }
-
                 var productIdentifier = new ProductIdentifierModel
                 {
                     PublicProductId = productid,
@@ -87,7 +83,7 @@ namespace InventoryApi.Controllers
 
                 var productIdentifier = new ProductIdentifierModel()
                 {
-                    PublicProductId = updateInventoryItemDTO.Id,
+                    PublicProductId = updateInventoryItemDTO.ProductId,
                     Username = GetUsername()
                 };
 

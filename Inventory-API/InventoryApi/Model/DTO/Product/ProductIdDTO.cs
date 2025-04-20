@@ -2,6 +2,6 @@
 {
     public class ProductIdDTO
     {
-        public required string ProductId { get; set; }
+        public required Guid ProductId { get; set; }
     }
 }

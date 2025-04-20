@@ -1,13 +1,14 @@
 ﻿using Domain.User;
 using InventoryApi.Repository.Data.Role;
+using InventoryApi.Repository.Data.User;
 
 namespace InventoryApi.Repository.RoleRepo
 {
     public interface IRoleRepository
     {
-        Task<Role> CreateRole(RoleNameModel roleModel);
-        Task<string> GetDefaultRole();
-        Task<IEnumerable<Role>> GetRoles();
-        Task<bool> IsValidRole(string rolePublicId);
+        Task<RoleModel> CreateRole(CreateRoleModel createRole);
+        Task<RoleModel> GetDefaultRole();
+        Task<IEnumerable<RoleModel>> GetRoles();
+        Task<bool> IsValidRole(RoleIdentifierModel roleIdentifier);
     }
 }

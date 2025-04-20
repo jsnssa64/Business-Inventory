@@ -1,10 +1,10 @@
 ﻿CREATE PROCEDURE dbo.IsValidRole
-    @RolePublicId UNIQUEIDENTIFIER
+    @PublicRoleId UNIQUEIDENTIFIER
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    IF EXISTS (SELECT 1 FROM dbo.[Role] WHERE PublicId  = @RolePublicId)
+    IF EXISTS (SELECT 1 FROM dbo.[Role] WHERE PublicId  = @PublicRoleId)
         RETURN 1;
     ELSE
         RETURN 0;

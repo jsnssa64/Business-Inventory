@@ -19,7 +19,7 @@ AS
             
             DECLARE @UserId INT;
             -- Get internal ids
-            EXEC dbo.GetUserId @Username, @UserId OUTPUT;
+            EXEC dbo.GetActiveUserId @Username, @UserId OUTPUT;
 
             -- Make sure the product exists for this user
             IF (@UserId IS NULL)
@@ -79,7 +79,7 @@ AS
             ROLLBACK TRANSACTION;
 
         -- Optional: log the error here
-        DECLARE @errMessage VARCHAR(100) = 'Error: ' + ERROR_MESSAGE();
+        DECLARE @errMessage VARCHAR(1200) = 'Error: ' + CAST(ERROR_NUMBER() AS VARCHAR(100)) + ' at line ' + CAST(ERROR_LINE() AS VARCHAR(100)) + ' in ' + ISNULL(ERROR_PROCEDURE(), 'Ad-hoc') + ': ' + ERROR_MESSAGE();
         THROW 50001, @errMessage, 1;
     END CATCH
 RETURN 0

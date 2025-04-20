@@ -5,7 +5,6 @@ using Domain.User;
 using InventoryApi.Factory;
 using InventoryApi.Repository.Data.Product;
 using InventoryApi.Repository.Data.User;
-using InventoryApi.Repository.UserRepo.Enum;
 
 namespace InventoryApi.Repository
 {
@@ -32,16 +31,15 @@ namespace InventoryApi.Repository
                 parameters.Add(nameof(UserRegistrationModel.FirstName), userRegisterModel.FirstName);
                 parameters.Add(nameof(UserRegistrationModel.LastName), userRegisterModel.LastName);
                 parameters.Add(nameof(UserRegistrationModel.Password), userRegisterModel.Password);
-                parameters.Add(nameof(UserRegistrationModel.RolePublicId), userRegisterModel.RolePublicId);
-                parameters.Add(nameof(UserRegistrationModel.Id), dbType: DbType.Int32, direction: ParameterDirection.Output);
+                parameters.Add(nameof(UserRegistrationModel.UserId), dbType: DbType.Int32, direction: ParameterDirection.Output);
 
                 var result = await conn.ExecuteAsync("dbo.CreateUser", parameters, commandType: CommandType.StoredProcedure);
 
-                var userId = parameters.Get<int>(nameof(UserRegistrationModel.Id));
+                var userId = parameters.Get<int>(nameof(UserRegistrationModel.UserId));
 
-                if (userId <= 0)
-                    throw new DbUpdateException($"No User was registered");                
-
+                if (userId <= 0 || result < 0)
+                    throw new DbUpdateException($"No User was registered");
+                
                 return userId;
             }
             catch (Exception ex)
@@ -69,14 +67,34 @@ namespace InventoryApi.Repository
                 parameters.Add(nameof(UserDetailsModel.Country), useDetailsModel.Country);
                 parameters.Add(nameof(UserDetailsModel.PostCode), useDetailsModel.PostCode);
                 
-                var result = await conn.QuerySingleAsync("dbo.UpdateUserDetails", parameters, commandType: CommandType.StoredProcedure);
+                var result = await conn.ExecuteAsync("dbo.UpdateUserDetails", parameters, commandType: CommandType.StoredProcedure);
 
-                if (result != 0)
+                if (result < 0)
                     throw new DbUpdateException($"Unable to process request");
             }
             catch (Exception ex)
             {
                 throw new DbUpdateException($"Failed to register new User: {ex.Message}");
+            }
+        }
+
+        public async Task ActivateUser(UserIdentifierModel userIdentifier)
+        {
+            try
+            {
+                using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
+
+                var parameters = new DynamicParameters();
+                parameters.Add(nameof(UserIdentifierModel.Username), userIdentifier.Username);
+                
+                var result = await conn.ExecuteAsync("dbo.ActivateUser", parameters, commandType: CommandType.StoredProcedure);
+
+                if (result < 0)
+                    throw new DbUpdateException($"Unable to activate user");
+            }
+            catch (Exception ex)
+            {
+                throw new DbUpdateException($"Failed to assign User to Role: {ex.Message}");
             }
         }
 
@@ -92,7 +110,7 @@ namespace InventoryApi.Repository
 
                 var result = await conn.ExecuteAsync("dbo.AssignUserToRole", parameters, commandType: CommandType.StoredProcedure);
 
-                if (result <= 0)
+                if (result < 0)
                     throw new DbUpdateException($"No Changes To Role");
             }
             catch (Exception ex)
@@ -113,7 +131,7 @@ namespace InventoryApi.Repository
 
                 var result = await conn.ExecuteAsync("dbo.CreateNewPassword", parameters, commandType: CommandType.StoredProcedure);
 
-                if (result <= 0)
+                if (result < 0)
                     throw new DbUpdateException($"{nameof(PasswordModel.Password)} Unchanged");
             }
             catch (Exception ex)
@@ -135,7 +153,7 @@ namespace InventoryApi.Repository
                 
                 var result = await conn.ExecuteAsync(proc, parameters, commandType: CommandType.StoredProcedure);
                 
-                if (result <= 0)
+                if (result < 0)
                     throw new DbUpdateException($"User: Unable to {status} user");
             }
             catch (Exception ex)
@@ -144,7 +162,7 @@ namespace InventoryApi.Repository
             }
         }
 
-        public async Task<User> GetUser(UserIdentifierModel userIdentifierModel, UserType userType)
+        public async Task<User> GetUser(UserIdentifierModel userIdentifierModel)
         {
             try
             {
@@ -158,13 +176,7 @@ namespace InventoryApi.Repository
                 if (result == null)
                     throw new DbUpdateException($"User not found for username: {userIdentifierModel.Username}");
 
-                var user = new User()
-                {
-                    Username = result.Username,
-                    Email = result.Email,
-                    RoleName = userType == UserType.role ? result.RoleName : null,
-                    PasswordHash = userType == UserType.password ? result.PasswordHash : null
-                };
+                var user = new User().Map(result);
 
                 return user;
             }
@@ -183,7 +195,7 @@ namespace InventoryApi.Repository
                 var parameters = new DynamicParameters();
                 parameters.Add(nameof(UserIdentifierModel.Username), userIdentifierModel.Username);
 
-                dynamic? result = await conn.QueryFirstOrDefaultAsync<dynamic>("dbo.GetUserDetails", parameters, commandType: CommandType.StoredProcedure);
+                var result = await conn.QueryFirstOrDefaultAsync<dynamic>("dbo.GetUserDetails", parameters, commandType: CommandType.StoredProcedure);
 
                 if (result == null)
                     throw new DbUpdateException($"User details not found for username: {userIdentifierModel.Username}");

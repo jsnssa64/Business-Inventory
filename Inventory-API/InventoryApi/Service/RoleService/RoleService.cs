@@ -13,14 +13,9 @@ namespace InventoryApi.Service.RoleService
         {
             _roleRepository = roleRepository;
         }
-        public async Task<Role> CreateRole(string roleName)
+        public async Task<RoleModel> CreateRole(CreateRoleModel createRoleModel)
         {
-            if (roleName.IsNullOrEmpty())
-            {
-                throw new Exception("RolePublicId is required");
-            }
-
-            return await _roleRepository.CreateRole(new RoleNameModel() { RoleName = roleName });
+            return await _roleRepository.CreateRole(createRoleModel);
         }
     }
 }

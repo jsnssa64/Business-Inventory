@@ -5,13 +5,17 @@
         public string? Username { get; set; }
         public string? Email { get; set; }
         public string? PasswordHash { get; set; }
-        public string? RoleName { get; set; }
+        public Role? Role { get; set; }
         public void Map(dynamic user)
         {
             Username = user.Username;
             Email = user.Email;
             PasswordHash = user.PasswordHash;
-            RoleName = user.RoleName;
+            Role = new Role()
+            {
+                Id = user.PublicRoleId,
+                Rolename = user.RoleName
+            };
         }
     }
 }

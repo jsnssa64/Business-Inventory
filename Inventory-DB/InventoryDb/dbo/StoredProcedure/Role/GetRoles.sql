@@ -4,7 +4,8 @@ BEGIN
     SET NOCOUNT ON;
 
     SELECT
-           r.PublicId AS RolePublicId,
+           r.PublicId AS PublicRoleId,
+           r.[Default] AS IsDefault,
            r.[Name] AS RoleName
     FROM dbo.[Role] r;
 END

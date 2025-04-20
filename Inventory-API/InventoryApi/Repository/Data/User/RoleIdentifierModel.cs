@@ -2,6 +2,6 @@
 {
     public class RoleIdentifierModel
     {
-        public required string RolePublicId { get; set; }
+        public required string PublicRoleId { get; set; }
     }
 }

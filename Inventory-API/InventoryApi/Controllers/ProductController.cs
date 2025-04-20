@@ -25,15 +25,10 @@ namespace InventoryApi.Controllers
         }
 
         [HttpGet("GetProductById")]
-        public async Task<IActionResult> GetProductById(string productid, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetProductById(Guid productid, CancellationToken cancellationToken)
         {
             try
             {
-                if (productid.IsNullOrEmpty())
-                {
-                    throw new ArgumentNullException(nameof(productid));
-                }
-
                 var productIdentifierModel = new ProductIdentifierModel()
                 {
                     Username = GetUsername(),
@@ -58,25 +53,25 @@ namespace InventoryApi.Controllers
             {
                 var productDetailsModel = new ProductDetailsModel
                 {
-                    Name = productDTO.Name,
+                    ProductName = productDTO.Name,
                     Description = productDTO.Description,
                     Quantity = productDTO.ItemQuantity,
                     EnabledPrice = productDTO.EnabledPrice,
                     InventoryQuantity = productDTO.InventoryQuantity,
                 };
 
-                var productIdentifier = new ProductIdentifierModel() {
-                    PublicProductId = "",
+                var userIdentifierModel = new UserIdentifierModel() {
                     Username = GetUsername()
                 };
 
-                var priceModel = new PriceModel()
+                //  Do an OR check to error out if only one is null
+                var priceModel = (productDTO.Price is not null && productDTO.Currency is not null) ? new PriceModel()
                 {
-                    Price = productDTO.Price,
+                    Price = (decimal)productDTO.Price,
                     CurrencyCode = productDTO.Currency
-                };
+                } : null;
 
-                var productId = await _productService.AddProductAsync(productIdentifier, productDetailsModel, priceModel);
+                var productId = await _productService.AddProductAsync(userIdentifierModel, productDetailsModel, priceModel);
                 return Ok(productId);
             }
             catch (Exception ex)

@@ -3,6 +3,7 @@ using Domain.User;
 using InventoryApi.Repository;
 using InventoryApi.Repository.Data;
 using InventoryApi.Repository.Data.Product;
+using InventoryApi.Repository.Data.Role;
 using InventoryApi.Repository.Data.User;
 using InventoryApi.Repository.RoleRepo;
 using InventoryApi.Repository.UserRepo.Enum;
@@ -30,10 +31,16 @@ namespace InventoryApi.Service.UserService
                 if(string.IsNullOrEmpty(userRegistrationModel.RolePublicId))
                     throw new Exception("RolePublicId is required");
 
-                if (!await _roleRepository.IsValidRole(userRegistrationModel.RolePublicId))
+                var roleIdModel = new RoleIdentifierModel()
+                {
+                    PublicRoleId = userRegistrationModel.RolePublicId
+                };
+
+                if (!await _roleRepository.IsValidRole(roleIdModel))
                     throw new Exception("Invalid Role");
 
                 await this.CreateUser(httpResponse, userIdentifierModel, userRegistrationModel);
+                await this.AssignUserToRole(userIdentifierModel, roleIdModel);
             }
             catch (Exception ex)
             {
@@ -120,7 +127,7 @@ namespace InventoryApi.Service.UserService
             {
                 new(ClaimTypes.Email,user.Email    ??  throw new Exception("Unable to generate Email claim")),     // Ensure non-null value
                 new(ClaimTypes.Name, user.Username ??  throw new Exception("Unable to generate Username claim")),  // Ensure non-null value
-                new(ClaimTypes.Role, user.RoleName ??  throw new Exception("Unable to generate Role claim"))       // Ensure non-null value
+                new(ClaimTypes.Role, user.Role?.Rolename ??  throw new Exception("Unable to generate Role claim"))       // Ensure non-null value
             };
             return claims;
         }

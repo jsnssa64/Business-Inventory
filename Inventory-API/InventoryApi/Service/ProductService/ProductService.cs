@@ -22,9 +22,9 @@ namespace InventoryApi.Service.InventoryService
             _inventoryRepository = inventoryRepository;
         }
 
-        public async Task<ProductIdModel> AddProductAsync(ProductIdentifierModel productIdentifierModel, ProductDetailsModel productDetailsModel, PriceModel? priceModel)
+        public async Task<ProductIdModel> AddProductAsync(UserIdentifierModel userIdentifierModel, ProductDetailsModel productDetailsModel, PriceModel? priceModel)
         {
-            if (string.IsNullOrEmpty(productIdentifierModel.Username))
+            if (string.IsNullOrEmpty(userIdentifierModel.Username))
             {
                 throw new Exception("User cannot be null or empty");
             }
@@ -42,7 +42,7 @@ namespace InventoryApi.Service.InventoryService
             //    }
             //}
 
-            var resultId = await _productRepository.AddProduct(productIdentifierModel, productDetailsModel, priceModel);
+            var resultId = await _productRepository.AddProduct(userIdentifierModel, productDetailsModel, priceModel);
 
 
             if (string.IsNullOrWhiteSpace(resultId.PublicProductId))
@@ -66,9 +66,9 @@ namespace InventoryApi.Service.InventoryService
             return result;
         }
 
-        public async Task<IEnumerable<Product>> GetProducts(string userName, CancellationToken cancellationToken)
+        public async Task<IEnumerable<Product>> GetProducts(UserIdentifierModel userIdentifierModel, CancellationToken cancellationToken)
         {
-            return await _productRepository.GetProducts(userName);
+            return await _productRepository.GetProducts(userIdentifierModel);
         }
 
         public async Task<Product> UpdateProduct(ProductIdentifierModel productIdentifierModel, UpdateProductDetailsModel updateProductDetailsModel, CancellationToken cancellationToken)

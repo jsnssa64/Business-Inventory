@@ -6,6 +6,7 @@
 	Confirmed BIT NOT NULL DEFAULT 0,
 	[Disabled] BIT NOT NULL DEFAULT 0,
 	DisabledAt DATETIME NULL,
+	ConfirmedAt DATETIME NULL,
     CreatedAt DATETIME NOT NULL DEFAULT GETDATE()
 )
 

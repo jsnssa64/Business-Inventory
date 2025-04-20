@@ -2,11 +2,10 @@
 {
     public class ProductDetailsModel
     {
-        public string? Name { get; set; } = null;
-        public string? Description { get; set; } = null;
+        public required string ProductName { get; set; }
+        public required string Description { get; set; }
         public int Quantity { get; set; } = 0;
-        public string? ProductName { get; set; } = null;
-        public bool? EnabledPrice { get; set; } = null;
+        public bool EnabledPrice { get; set; } = false;
         public int InventoryQuantity { get; set; } = 0;
     }
 }

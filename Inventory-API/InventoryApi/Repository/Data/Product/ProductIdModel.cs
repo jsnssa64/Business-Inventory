@@ -2,6 +2,6 @@
 {
     public class ProductIdModel
     {
-        public required string PublicProductId { get; set; }
+        public required Guid PublicProductId { get; set; }
     }
 }
