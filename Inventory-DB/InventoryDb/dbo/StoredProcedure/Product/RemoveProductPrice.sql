@@ -10,7 +10,7 @@ AS
             DECLARE @ProductId INT;
 
             -- Get internal ids
-            EXEC dbo.GetProductId @Username, @PublicProductId, @ProductId OUTPUT;
+            EXEC dbo.GetProductId @PublicProductId, @Username, @ProductId OUTPUT;
 
             DELETE dbo.ProductPrice
             WHERE ProductId = @ProductId;

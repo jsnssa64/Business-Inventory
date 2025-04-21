@@ -3,7 +3,7 @@
 	@Email VARCHAR(50),
 	@FirstName VARCHAR(50),
 	@LastName VARCHAR(50),
-	@Password VARCHAR(150),
+	@Password CHAR(60),
     @UserId INT OUTPUT
 AS
 	SET NOCOUNT ON;

@@ -10,7 +10,7 @@ AS
     BEGIN TRY
         BEGIN TRANSACTION
             DECLARE @ProductId INT;
-            EXEC dbo.GetProductId @Username, @PublicProductId, @ProductId OUTPUT;
+            EXEC dbo.GetProductId @PublicProductId, @Username, @ProductId OUTPUT;
 
             IF NOT EXISTS(SELECT 1 FROM dbo.Product p WHERE p.Id = @ProductId AND p.EnabledPrice = 1)
             BEGIN

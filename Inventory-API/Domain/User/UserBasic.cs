@@ -6,8 +6,12 @@
         public string? Email { get; set; }
         public string? PasswordHash { get; set; }
         public Role? Role { get; set; }
-        public void Map(dynamic user)
+        public void Map(dynamic? user)
         {
+            if (user is null)
+            {
+                throw new ArgumentNullException(nameof(user));                
+            }
             Username = user.Username;
             Email = user.Email;
             PasswordHash = user.PasswordHash;

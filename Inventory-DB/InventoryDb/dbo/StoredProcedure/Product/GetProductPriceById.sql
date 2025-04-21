@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE dbo.GetProductById
+﻿CREATE PROCEDURE dbo.GetProductPriceById
     @Username VARCHAR(100),
     @PublicProductId UNIQUEIDENTIFIER
 AS
@@ -9,13 +9,13 @@ BEGIN
     EXEC dbo.GetActiveUserIdByUsername @Username, @UserId OUTPUT;
 
     SELECT
-           p.[Name],
-           p.[Description],
-           p.Quantity,
-           p.EnabledPrice
-      FROM dbo.Product p
-      JOIN dbo.[User] u 
+           pp.Price,
+           pp.CurrencyCode
+    FROM dbo.Product p
+    JOIN dbo.[User] u 
         ON u.Id = p.Id
+    JOIN dbo.ProductPrice pp
+        ON p.Id = pp.ProductId
      WHERE p.PublicId = @PublicProductId
            AND u.Id = @UserId
            AND p.[Disabled] = 0;

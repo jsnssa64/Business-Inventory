@@ -7,6 +7,7 @@ using InventoryApi.Service.RoleService;
 using InventoryApi.Service.SecurityService;
 using InventoryApi.Service.SecurityService.Models;
 using InventoryApi.Service.UserService;
+using InventoryApi.Service.UserService.Utility;
 
 internal class Program
 {
@@ -26,6 +27,7 @@ internal class Program
 
         builder.Services.AddSingleton<ISecurityService, SecurityService>();
         builder.Services.AddSingleton<IJWTUtility, JWTUtility>();
+        builder.Services.AddSingleton<IUserUtility, UserUtility>();
         builder.Services.AddSingleton<IUserService, UserService>();
         builder.Services.AddSingleton<IUserRepository, UserRepository>();
         builder.Services.AddSingleton<IInventoryService, InventoryService>();

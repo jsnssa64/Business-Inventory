@@ -46,7 +46,7 @@ namespace InventoryApi.Service.SecurityService
             return (accessToken, refreshToken);
         }
 
-        public string EncryptPassword(string password, SecurityLevel securityLevel) =>
+        public string EncryptPassword(string password, SecurityLevel securityLevel = SecurityLevel.Default) =>
             BCrypt.Net.BCrypt.HashPassword(password, (int)securityLevel, BCrypt.Net.SaltRevision.Revision2B);
 
         public bool VerifyPassword(string password, string hashPassword) => BCrypt.Net.BCrypt.Verify(password, hashPassword);

@@ -20,25 +20,23 @@ namespace InventoryApi.Repository
             _dbConnectionFactory = dbConnectionFactory;
         }
 
-        public async Task<UserIdModel> CreateUser(UserIdentifierModel userIdentifier, UserRegistrationModel userRegisterModel)
+        public async Task<UserIdModel> CreateUser(IDbConnection dbConnection, UserIdentifierModel userIdentifier, UserRegistrationModel userRegisterModel, IDbTransaction? dbTransaction = null)
         {
             try
             {
-                using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
-
                 var parameters = new DynamicParameters();
                 parameters.Add(nameof(UserIdentifierModel.Username), userIdentifier.Username);
                 parameters.Add(nameof(UserRegistrationModel.Email), userRegisterModel.Email);
                 parameters.Add(nameof(UserRegistrationModel.FirstName), userRegisterModel.FirstName);
                 parameters.Add(nameof(UserRegistrationModel.LastName), userRegisterModel.LastName);
-                parameters.Add(nameof(UserRegistrationModel.Password), userRegisterModel.Password);
+                parameters.Add(nameof(UserRegistrationModel.Password), userRegisterModel.EncryptedPassword);
                 parameters.Add(nameof(UserRegistrationModel.UserId), dbType: DbType.Int32, direction: ParameterDirection.Output);
 
-                var result = await conn.ExecuteAsync("dbo.CreateUser", parameters, commandType: CommandType.StoredProcedure);
+                var result = await dbConnection.ExecuteScalarAsync<int>("dbo.CreateUser", parameters, commandType: CommandType.StoredProcedure, transaction: dbTransaction);
 
                 var userId = parameters.Get<int>(nameof(UserRegistrationModel.UserId));
 
-                if (userId <= 0 || result < 0)
+                if (userId <= 0 || result != 0)
                     throw new DbUpdateException($"No User was registered");
 
                 return new UserIdModel()
@@ -70,10 +68,10 @@ namespace InventoryApi.Repository
                 parameters.Add(nameof(UserDetailsModel.SecondLineAddress), useDetailsModel.SecondLineAddress);
                 parameters.Add(nameof(UserDetailsModel.Country), useDetailsModel.Country);
                 parameters.Add(nameof(UserDetailsModel.PostCode), useDetailsModel.PostCode);
-                
-                var result = await conn.ExecuteAsync("dbo.UpdateUserDetails", parameters, commandType: CommandType.StoredProcedure);
 
-                if (result < 0)
+                var result = await conn.ExecuteScalarAsync<int>("dbo.UpdateUserDetails", parameters, commandType: CommandType.StoredProcedure);
+
+                if (result != 0)
                     throw new DbUpdateException($"Unable to process request");
             }
             catch (Exception ex)
@@ -82,18 +80,16 @@ namespace InventoryApi.Repository
             }
         }
 
-        public async Task ActivateUser(UserIdentifierModel userIdentifier)
+        public async Task ActivateUser(IDbConnection dbConnection, UserIdentifierModel userIdentifier, IDbTransaction? dbTransaction = null)
         {
             try
             {
-                using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
-
                 var parameters = new DynamicParameters();
                 parameters.Add(nameof(UserIdentifierModel.Username), userIdentifier.Username);
                 
-                var result = await conn.ExecuteAsync("dbo.ActivateUser", parameters, commandType: CommandType.StoredProcedure);
+                var result = await dbConnection.ExecuteScalarAsync<int>("dbo.ActivateUser", parameters, commandType: CommandType.StoredProcedure, transaction: dbTransaction);
 
-                if (result < 0)
+                if (result != 0)
                     throw new DbUpdateException($"Unable to activate user");
             }
             catch (Exception ex)
@@ -102,19 +98,17 @@ namespace InventoryApi.Repository
             }
         }
 
-        public async Task AssignRoleToUser(UserIdentifierModel userIdentifier, RoleIdModel roleIdModel)
+        public async Task AssignRoleToUser(IDbConnection dbConnection, UserIdentifierModel userIdentifier, RoleIdModel roleIdModel, IDbTransaction? dbTransaction = null)
         {
             try
             {
-                using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
-
                 var parameters = new DynamicParameters();
                 parameters.Add(nameof(UserIdentifierModel.Username), userIdentifier.Username);
                 parameters.Add(nameof(RoleIdModel.PublicRoleId), roleIdModel.PublicRoleId);
 
-                var result = await conn.ExecuteAsync("dbo.AssignUserToRole", parameters, commandType: CommandType.StoredProcedure);
+                var result = await dbConnection.ExecuteScalarAsync<int>("dbo.AssignUserToRole", parameters, commandType: CommandType.StoredProcedure, transaction: dbTransaction);
 
-                if (result < 0)
+                if (result != 0)
                     throw new DbUpdateException($"No Changes To Role");
             }
             catch (Exception ex)
@@ -133,9 +127,9 @@ namespace InventoryApi.Repository
                 parameters.Add(nameof(UserIdentifierModel.Username), userIdentifier.Username);
                 parameters.Add(nameof(PasswordModel.Password), passwordModel.Password);
 
-                var result = await conn.ExecuteAsync("dbo.ResetPassword", parameters, commandType: CommandType.StoredProcedure);
+                var result = await conn.ExecuteScalarAsync<int>("dbo.ResetPassword", parameters, commandType: CommandType.StoredProcedure);
 
-                if (result < 0)
+                if (result != 0)
                     throw new DbUpdateException($"{nameof(PasswordModel.Password)} Unchanged");
             }
             catch (Exception ex)
@@ -155,9 +149,9 @@ namespace InventoryApi.Repository
                 var parameters = new DynamicParameters();
                 parameters.Add(nameof(UserIdentifierModel.Username), userIdentifier.Username);
                 
-                var result = await conn.ExecuteAsync(proc, parameters, commandType: CommandType.StoredProcedure);
+                var result = await conn.ExecuteScalarAsync<int>(proc, parameters, commandType: CommandType.StoredProcedure);
                 
-                if (result < 0)
+                if (result != 0)
                     throw new DbUpdateException($"User: Unable to {status} user");
             }
             catch (Exception ex)
@@ -180,7 +174,8 @@ namespace InventoryApi.Repository
                 if (result == null)
                     throw new DbUpdateException($"User not found for username: {userIdentifierModel.Username}");
 
-                var user = new User().Map(result);
+                var user = new User();
+                user.Map(result);
 
                 return user;
             }
@@ -199,7 +194,7 @@ namespace InventoryApi.Repository
                 var parameters = new DynamicParameters();
                 parameters.Add(nameof(UserEmailModel.Email), userEmailModel.Email);
 
-                var result = await conn.ExecuteAsync("dbo.IsValidUserEmail", parameters, commandType: CommandType.StoredProcedure);
+                var result = await conn.ExecuteScalarAsync<int>("dbo.IsValidUserEmail", parameters, commandType: CommandType.StoredProcedure);
 
                 return result == 1;
             }
@@ -218,7 +213,7 @@ namespace InventoryApi.Repository
                 var parameters = new DynamicParameters();
                 parameters.Add(nameof(UserIdentifierModel.Username), userIdentifierModel.Username);
 
-                var result = await conn.ExecuteAsync("dbo.IsValidUserUsername", parameters, commandType: CommandType.StoredProcedure);
+                var result = await conn.ExecuteScalarAsync<int>("dbo.IsValidUserUsername", parameters, commandType: CommandType.StoredProcedure);
 
                 return result == 1;
             }

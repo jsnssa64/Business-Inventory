@@ -16,7 +16,7 @@ AS
 
             -- Get internal ids
             EXEC dbo.GetActiveUserIdByUsername @Username, @UserId OUTPUT;
-            EXEC dbo.GetProductId @Username, @PublicProductId, @ProductId OUTPUT;
+            EXEC dbo.GetProductId @PublicProductId, @Username, @ProductId OUTPUT;
 
             -- Make sure the product exists for this user
             IF (@ProductId IS NULL OR @UserId IS NULL)

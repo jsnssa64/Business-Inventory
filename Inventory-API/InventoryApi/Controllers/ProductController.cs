@@ -79,12 +79,14 @@ namespace InventoryApi.Controllers
             }
         }
 
-        [HttpPost("GetProducts")]
+        [HttpGet("GetProducts")]
         public async Task<IActionResult> GetProducts(CancellationToken cancellationToken)
         {
             try
             {
-                var userIdentifierModel = new UserIdentifierModel() { Username = GetUsername() };
+                var userIdentifierModel = new UserIdentifierModel() { 
+                    Username = GetUsername() 
+                };
 
                 var productId = await _productService.GetProducts(userIdentifierModel, cancellationToken);
                 return Ok(productId);

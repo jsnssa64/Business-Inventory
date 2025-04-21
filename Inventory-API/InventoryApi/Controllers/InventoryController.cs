@@ -5,7 +5,6 @@ using InventoryApi.Repository.Data.Product;
 using InventoryApi.Service.InventoryService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 
 namespace InventoryApi.Controllers
 {
@@ -24,7 +23,6 @@ namespace InventoryApi.Controllers
         }
 
         [HttpGet("GetInventoryItemByProductId")]
-        [Authorize]
         public async Task<IActionResult> GetInventoryItemByProductId(Guid productid, CancellationToken cancellationToken)
         {
             try
@@ -47,15 +45,10 @@ namespace InventoryApi.Controllers
         }
 
         [HttpGet("GetInventory")]
-        public async Task<IActionResult> GetInventory(string productid, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetInventory(CancellationToken cancellationToken)
         {
             try
             {
-                if (productid.IsNullOrEmpty())
-                {
-                    throw new ArgumentNullException(nameof(productid));
-                }
-
                 var userIdentifier = new UserIdentifierModel() { 
                     Username = GetUsername() 
                 };

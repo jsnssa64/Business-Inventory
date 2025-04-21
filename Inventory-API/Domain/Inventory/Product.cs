@@ -6,11 +6,10 @@
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public int Quantity { get; set; }
-        public decimal Price { get; set; }
         public bool EnabledPrice { get; set; }
-        public string CurrencyCode { get; set; } = string.Empty;
+        public Price? Price { get; set; } = null;
 
-        public void Map(dynamic product)
+        public void Map(dynamic product, dynamic? price)
         {
             if (product == null)
             {
@@ -20,9 +19,18 @@
             Name = product.Name;
             Description = product.Description;
             Quantity = product.Quantity;
-            Price = product.Price;
             EnabledPrice = product.EnabledPrice;
-            CurrencyCode = product.CurrencyCode;
+
+            Price = null;
+
+            if (price != null)
+            {
+                Price = new Price()
+                {
+                    Amount = product.Price,
+                    Currency = product.CurrencyCode
+                };
+            }       
         }
     }
 }

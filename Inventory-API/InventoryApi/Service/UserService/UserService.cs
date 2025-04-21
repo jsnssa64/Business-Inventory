@@ -1,5 +1,8 @@
-﻿using System.Security.Claims;
+﻿using System.Data.Entity.Infrastructure;
+using System.Data;
+using System.Security.Claims;
 using Domain.User;
+using InventoryApi.Factory;
 using InventoryApi.Repository;
 using InventoryApi.Repository.Data.Product;
 using InventoryApi.Repository.Data.Role;
@@ -18,33 +21,27 @@ namespace InventoryApi.Service.UserService
         private ISecurityService _securityService;
         private IUserUtility _userUtility;
         private IJWTUtility _jwtUtility;
+        private IDbConnectionFactory _dbConnectionFactory;
 
-        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, ISecurityService securityService, IUserUtility userUtility, IJWTUtility jwtUtility) {
+        public UserService(IUserRepository userRepository, 
+            IRoleRepository roleRepository, 
+            ISecurityService securityService, 
+            IUserUtility userUtility, 
+            IJWTUtility jwtUtility,
+            IDbConnectionFactory dbConnectionFactory) {
             _userRepository = userRepository;
             _roleRepository = roleRepository;
             _securityService = securityService;
             _userUtility = userUtility;
             _jwtUtility = jwtUtility;
+            _dbConnectionFactory = dbConnectionFactory; 
         }
 
         public async Task RegisterUser(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, UserRegistrationModel userRegistrationModel)
         {
             try
             {
-                if (userRegistrationModel.PublicRoleId is null)
-                    throw new Exception("Unable to register user: Role Id missing");
-
-                var roleIdModel = new RoleIdModel()
-                {
-                    PublicRoleId = (Guid)userRegistrationModel.PublicRoleId
-                };
-
-                if (!await _roleRepository.IsValidRole(roleIdModel))
-                    throw new Exception("Invalid Role");
-
                 var userIdModel = await this.CreateUser(httpResponse, userIdentifierModel, userRegistrationModel);
-                
-                await this.AssignUserToRole(userIdentifierModel, roleIdModel);
             }
             catch (Exception ex)
             {
@@ -69,18 +66,35 @@ namespace InventoryApi.Service.UserService
 
         private async Task<UserIdModel> CreateUser(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, UserRegistrationModel userRegistrationModel)
         {
+            using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
+            conn.Open();
+            var transaction = conn.BeginTransaction();
+
             try
             {
-                userRegistrationModel.Password = _securityService.EncryptPassword(userRegistrationModel.Password, SecurityLevel.Mid);
+                if (userRegistrationModel.PublicRoleId is null)
+                    throw new Exception("Unable to register user: Role Id missing");
 
-                var userIdModel = await _userRepository.CreateUser(userIdentifierModel, userRegistrationModel);
+                userRegistrationModel.EncryptedPassword = _securityService.EncryptPassword(userRegistrationModel.Password, SecurityLevel.Mid);
 
-                var passwordModel = new PasswordModel() { 
-                    Password = userRegistrationModel.Password 
+                var userIdModel = await _userRepository.CreateUser(conn, userIdentifierModel, userRegistrationModel, transaction);
+
+                var roleIdModel = new RoleIdModel
+                {
+                    PublicRoleId = (Guid)userRegistrationModel.PublicRoleId
                 };
 
+                await _userRepository.AssignRoleToUser(conn, userIdentifierModel, roleIdModel, transaction);
+                
                 //  Temp - 
-                await this.ActivateUser(userIdentifierModel);
+                await _userRepository.ActivateUser(conn, userIdentifierModel, transaction);
+
+                transaction.Commit();
+                
+                var passwordModel = new PasswordModel()
+                {
+                    Password = userRegistrationModel.Password
+                };
 
                 await LoginUser(httpResponse, userIdentifierModel, passwordModel);
 
@@ -88,6 +102,8 @@ namespace InventoryApi.Service.UserService
             }
             catch(Exception ex)
             {
+                if(transaction?.Connection != null)
+                    transaction.Rollback();
                 throw new Exception($"Failed to register new User: {ex.Message}");
             }
         }
@@ -96,7 +112,8 @@ namespace InventoryApi.Service.UserService
         {
             try
             {
-                await _userRepository.ActivateUser(userIdentifierModel);
+                using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
+                await _userRepository.ActivateUser(conn, userIdentifierModel);
             }
             catch (Exception ex)
             {
@@ -154,7 +171,7 @@ namespace InventoryApi.Service.UserService
 
         public async Task LoginUser(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, PasswordModel passwordModel)
         {
-            await this.RefreshLogin(httpResponse, userIdentifierModel, (usersRole) =>
+            await this.GenerateLogin(httpResponse, userIdentifierModel, (usersRole) =>
             {
                 if (!_securityService.VerifyPassword(passwordModel.Password, usersRole.PasswordHash ?? throw new Exception("Unable to verify password")))
                 {
@@ -163,14 +180,12 @@ namespace InventoryApi.Service.UserService
             });
         }
 
-        public async Task<IEnumerable<Claim>> RefreshLogin(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, Action<User>? validate = null)
+        public async Task<IEnumerable<Claim>> GenerateLogin(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, Action<User>? validate = null)
         {
             var user = await _userRepository.GetUser(userIdentifierModel) ?? throw new Exception("User not found");
 
             if (validate is not null)
-            {
                 validate(user);
-            }
 
             var claims = _userUtility.MapUserToClaims(user);
 
@@ -238,7 +253,9 @@ namespace InventoryApi.Service.UserService
         {
             try
             {
-                await _userRepository.AssignRoleToUser(userIdentifierModel, roleIdModel);
+                using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
+
+                await _userRepository.AssignRoleToUser(conn, userIdentifierModel, roleIdModel);
             }
             catch (Exception ex)
             {

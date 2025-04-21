@@ -1,7 +1,7 @@
 ﻿CREATE PROCEDURE [dbo].[CreateRole]
     @RoleName VARCHAR(50),
     @IsDefault BIT = 0,
-    @PublicRoleId UNIQUEIDENTIFIER OUTPUT
+    @PublicRoleId UNIQUEIDENTIFIER = NULL OUTPUT
 AS
 	SET NOCOUNT ON;
     SET XACT_ABORT ON;

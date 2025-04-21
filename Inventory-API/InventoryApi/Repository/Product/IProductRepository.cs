@@ -12,7 +12,6 @@ namespace InventoryApi.Repository.Inventory
         Task<IEnumerable<Product>> GetProducts(UserIdentifierModel username);
         Task RemoveProductById(ProductIdentifierModel productIdentifierModel);
         Task RemoveProductPrice(ProductIdentifierModel productIdentifierModel);
-        Task UpdatePrice(ProductIdentifierModel productIdentifierModel, UpdatePriceModel updatePrice);
         Task UpdateProduct(ProductIdentifierModel productIdentifierModel, UpdateProductDetailsModel updateProductDetailsModel);
         Task UpdateProductPrice(ProductIdentifierModel productIdentifierModel, UpdatePriceModel updatePrice);
     }

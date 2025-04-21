@@ -1,10 +1,6 @@
-using Domain.User;
 using InventoryApi.Model.DTO.RoleDTO;
-using InventoryApi.Model.DTO.User;
-using InventoryApi.Repository.Data;
 using InventoryApi.Repository.Data.Role;
 using InventoryApi.Service.RoleService;
-using InventoryApi.Service.UserService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,7 +20,7 @@ namespace InventoryApi.Controllers
             _roleService = roleService;
         }
 
-        [HttpGet("CreateRole")]
+        [HttpPost("CreateRole")]
         public async Task<IActionResult> CreateRole(CreateRoleDTO createRoleDTO)
         {
             var createRoleModel = new CreateRoleModel()

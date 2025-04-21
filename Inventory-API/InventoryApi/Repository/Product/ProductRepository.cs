@@ -5,7 +5,6 @@ using Domain.Inventory;
 using InventoryApi.Factory;
 using InventoryApi.Repository.Data;
 using InventoryApi.Repository.Data.Product;
-using Microsoft.IdentityModel.Tokens;
 
 namespace InventoryApi.Repository.Inventory
 {
@@ -31,9 +30,9 @@ namespace InventoryApi.Repository.Inventory
             parameters.Add(nameof(ProductDetailsModel.Quantity), productDetailsModel.Quantity);
             parameters.Add(nameof(ProductIdModel.PublicProductId), dbType: DbType.Guid, direction: ParameterDirection.Output);
 
-            var result = await conn.ExecuteAsync("dbo.AddProduct", parameters, commandType: CommandType.StoredProcedure);
+            var result = await conn.ExecuteScalarAsync<int>("dbo.AddProduct", parameters, commandType: CommandType.StoredProcedure);
 
-            if (result < 0)
+            if (result != 0)
                 throw new Exception("Unable to add product");
 
             var productIdentifierModel = new ProductIdentifierModel()
@@ -71,21 +70,10 @@ namespace InventoryApi.Repository.Inventory
             parameters.Add(nameof(PriceModel.Price), price.Price);
             parameters.Add(nameof(PriceModel.CurrencyCode), price.CurrencyCode);
 
-            await conn.ExecuteAsync("dbo.AddProductPrice", parameters, commandType: CommandType.StoredProcedure);
-        }
+            var result = await conn.ExecuteScalarAsync<int>("dbo.AddProductPrice", parameters, commandType: CommandType.StoredProcedure);
 
-        public async Task UpdatePrice(ProductIdentifierModel productIdentifierModel, UpdatePriceModel updatePrice)
-        {
-            using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
-
-            DynamicParameters parameters = new DynamicParameters();
-            parameters.Add(nameof(ProductIdentifierModel.Username), productIdentifierModel.Username);
-            parameters.Add(nameof(ProductIdentifierModel.PublicProductId), productIdentifierModel.PublicProductId);
-            parameters.Add(nameof(UpdatePriceModel.Price), updatePrice.Price);
-            parameters.Add(nameof(UpdatePriceModel.CurrencyCode), updatePrice.CurrencyCode);
-
-            await conn.ExecuteAsync("dbo.UpdateProductPrice", parameters, commandType: CommandType.StoredProcedure);
-
+            if (result != 0)
+                throw new Exception("Unable to add product price");
         }
 
         public async Task<Product> GetProductById(ProductIdentifierModel productIdentifierModel)
@@ -96,21 +84,21 @@ namespace InventoryApi.Repository.Inventory
             parameters.Add(nameof(ProductIdentifierModel.Username), productIdentifierModel.Username);
             parameters.Add(nameof(ProductIdentifierModel.PublicProductId), productIdentifierModel.PublicProductId);
 
-            var resultProduct = await conn.QuerySingleAsync<Product>("dbo.GetProductById", parameters, commandType: CommandType.StoredProcedure);
+            var resultProduct = await conn.QuerySingleAsync<dynamic>("dbo.GetProductById", parameters, commandType: CommandType.StoredProcedure);
 
             if (resultProduct is null)
-            {
                 throw new DbUpdateException("Failed to get product");
+
+            dynamic? resultPrice = null;
+
+            if (resultProduct.EnabledPrice)
+            {
+                resultPrice = await conn.QuerySingleAsync<dynamic>("dbo.GetProductPriceById", parameters, commandType: CommandType.StoredProcedure);
             }
 
-            var resultPrice = await conn.QuerySingleAsync<Product>("dbo.GetProductById", parameters, commandType: CommandType.StoredProcedure);
-            
-            if (resultPrice is null)
-            {
-                throw new DbUpdateException("Failed to get product");
-            }
+            var product = new Product().Map(resultProduct, resultPrice);
 
-            return resultProduct;
+            return product;
         }
 
         public async Task RemoveProductById(ProductIdentifierModel productIdentifierModel)
@@ -121,7 +109,10 @@ namespace InventoryApi.Repository.Inventory
             parameters.Add(nameof(ProductIdentifierModel.Username), productIdentifierModel.Username);
             parameters.Add(nameof(ProductIdentifierModel.PublicProductId), productIdentifierModel.PublicProductId);
 
-            await conn.ExecuteAsync("dbo.RemoveProductById", parameters, commandType: CommandType.StoredProcedure);
+            var result = await conn.ExecuteScalarAsync<int>("dbo.RemoveProductById", parameters, commandType: CommandType.StoredProcedure);
+
+            if (result != 0)
+                throw new Exception("Unable to remove product");
         }
 
         public async Task RemoveProductPrice(ProductIdentifierModel productIdentifierModel)
@@ -132,7 +123,10 @@ namespace InventoryApi.Repository.Inventory
             parameters.Add(nameof(ProductIdentifierModel.Username), productIdentifierModel.Username);
             parameters.Add(nameof(ProductIdentifierModel.PublicProductId), productIdentifierModel.PublicProductId);
 
-            await conn.ExecuteAsync("dbo.RemoveProductPrice", parameters, commandType: CommandType.StoredProcedure);
+            var result = await conn.ExecuteScalarAsync<int>("dbo.RemoveProductPrice", parameters, commandType: CommandType.StoredProcedure);
+
+            if (result != 0)
+                throw new Exception("Unable to remove product price");
         }
 
         public async Task<IEnumerable<Product>> GetProducts(UserIdentifierModel username)
@@ -165,9 +159,7 @@ namespace InventoryApi.Repository.Inventory
             var result = await conn.ExecuteAsync("dbo.UpdateProductPrice", parameters, commandType: CommandType.StoredProcedure);
 
             if (result != 0)
-            {
-                throw new DbUpdateException("Failed to get products");
-            }
+                throw new DbUpdateException("Failed to update product price");
         }
 
         public async Task UpdateProduct(ProductIdentifierModel productIdentifierModel, UpdateProductDetailsModel updateProductDetailsModel)
@@ -182,7 +174,10 @@ namespace InventoryApi.Repository.Inventory
             parameters.Add(nameof(UpdateProductDetailsModel.Quantity), updateProductDetailsModel.Quantity);
             parameters.Add(nameof(UpdateProductDetailsModel.EnabledPrice), updateProductDetailsModel.EnabledPrice);
 
-            await conn.ExecuteAsync("dbo.UpdateProduct", parameters, commandType: CommandType.StoredProcedure);
+            var result = await conn.ExecuteScalarAsync<int>("dbo.UpdateProduct", parameters, commandType: CommandType.StoredProcedure);
+
+            if (result != 0)
+                throw new Exception("Unable to update product");
         }
     }
 }

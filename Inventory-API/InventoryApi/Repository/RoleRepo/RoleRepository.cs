@@ -29,9 +29,9 @@ namespace InventoryApi.Repository.RoleRepo
                 parameters.Add(nameof(CreateRoleModel.IsDefault), createRole.IsDefault);
                 parameters.Add(nameof(RoleIdModel.PublicRoleId), dbType: DbType.Int32, direction: ParameterDirection.Output);
 
-                var result = await conn.ExecuteAsync("dbo.CreateRole", parameters, commandType: CommandType.StoredProcedure);
+                var result = await conn.ExecuteScalarAsync<int>("dbo.CreateRole", parameters, commandType: CommandType.StoredProcedure);
 
-                if (result <= 0)
+                if (result != 0)
                     throw new DbUpdateException($"Role: Not created");
 
                 return new RoleModel
@@ -56,6 +56,7 @@ namespace InventoryApi.Repository.RoleRepo
                 var parameters = new DynamicParameters();
                 parameters.Add(nameof(RoleIdModel.PublicRoleId), roleIdModel.PublicRoleId);
                 parameters.Add("ReturnValue", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
+                
                 await conn.ExecuteAsync("dbo.IsValidRole", parameters, commandType: CommandType.StoredProcedure);
 
                 var roleExists = parameters.Get<int>("ReturnValue");

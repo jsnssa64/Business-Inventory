@@ -20,9 +20,12 @@ namespace InventoryApi.Middleware
             string? refreshToken = null;
             context.User = new ClaimsPrincipal(new ClaimsIdentity());
 
+            var validAccessToken = context.Request.Cookies.TryGetValue(Cookie.AccessCookie, out accessToken);
+            var validRefreshToken = context.Request.Cookies.TryGetValue(Cookie.RefreshCookie, out refreshToken);
+
             /*  No Tokens available */
-            if (!context.Request.Cookies.TryGetValue(Cookie.AccessCookie, out accessToken) &&
-                !context.Request.Cookies.TryGetValue(Cookie.RefreshCookie, out refreshToken))
+            if (!validAccessToken &&
+                !validRefreshToken)
             {
                 //  Let through
                 await _next(context);
@@ -31,7 +34,7 @@ namespace InventoryApi.Middleware
 
             try
             {
-                /*  Valid Access Token*/
+                /*  Validate Access Token*/
                 if (!_JWTUtility.HasTokenExpired(accessToken, KeyType.access))
                 {
                     var claimIdentity = await _JWTUtility.GetTokenClaims(accessToken, KeyType.access);
@@ -41,7 +44,7 @@ namespace InventoryApi.Middleware
                     return;
                 }
 
-                /*  Valid Refresh Token */
+                /*  Validate Refresh Token */
                 if (_JWTUtility.IsTokenValid(refreshToken, KeyType.refresh))
                 {
                     var refreshClaimIdentity = await _JWTUtility.GetTokenClaims(refreshToken, KeyType.refresh);
@@ -53,7 +56,7 @@ namespace InventoryApi.Middleware
                         Username = currentClaims.Username
                     };
 
-                    var latestUserClaims = await _userService.RefreshLogin(context.Response, userIdentifier);
+                    var latestUserClaims = await _userService.GenerateLogin(context.Response, userIdentifier);
 
                     context.User = new ClaimsPrincipal(new ClaimsIdentity(latestUserClaims));
                 }
@@ -61,6 +64,7 @@ namespace InventoryApi.Middleware
             catch (Exception ex)
             {
                 // TODO: Logout Exception
+                _userService.LogoutUser(context.Response);
                 throw new Exception($"Failed to validate JWT: {ex.Message}");
             }
 

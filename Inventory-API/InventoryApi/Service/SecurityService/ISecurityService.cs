@@ -5,7 +5,7 @@ namespace InventoryApi.Service.SecurityService
 {
     public interface ISecurityService
     {
-        string EncryptPassword(string password, SecurityLevel securityLevel);
+        string EncryptPassword(string password, SecurityLevel securityLevel = SecurityLevel.Default);
         (string AccessToken, string RefreshToken) GenerateLoginJWT(IEnumerable<Claim> accessClaims, IEnumerable<Claim> refreshClaims);
         void SetCookieForLogin(HttpResponse httpResponse, string accessToken, string refreshToken, DateTimeOffset cookieExpiry);
         void SetCookieForLogout(HttpResponse httpResponse);

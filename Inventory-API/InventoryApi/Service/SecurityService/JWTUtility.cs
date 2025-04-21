@@ -115,7 +115,9 @@ namespace InventoryApi.Service.SecurityService
                 ValidateIssuerSigningKey = true,
                 ValidateIssuer = true,
                 ValidateAudience = true,
-                ValidateLifetime = true
+                ValidateLifetime = true,
+                ValidAudience = _security.Value.Audience,
+                ValidIssuer = _security.Value.Issuer
             };
         }
 
@@ -135,7 +137,9 @@ namespace InventoryApi.Service.SecurityService
                     IssuerSigningKey = new RsaSecurityKey(GetKey(keyType)),
                     ValidateIssuerSigningKey = true,
                     ValidateIssuer = true,
-                    ValidateAudience = true
+                    ValidateAudience = true,
+                    ValidAudience = _security.Value.Audience,
+                    ValidIssuer = _security.Value.Issuer
                     //  Without LifeTime Validation
                 };
 

@@ -10,7 +10,7 @@ AS
     BEGIN TRY
         BEGIN TRANSACTION
             DECLARE @ProductId INT;
-            EXEC dbo.GetProductId @Username, @PublicProductId, @ProductId OUTPUT;
+            EXEC dbo.GetProductId @PublicProductId, @Username, @ProductId OUTPUT;
 
             --  Declare Existing Values
             DECLARE  
