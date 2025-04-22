@@ -1,11 +1,8 @@
 ﻿using Domain.Inventory;
-using Domain.User;
 using InventoryApi.Repository.Data;
 using InventoryApi.Repository.Data.Inventory;
 using InventoryApi.Repository.Data.Product;
-using InventoryApi.Repository.Data.User;
 using InventoryApi.Repository.Inventory;
-using Microsoft.IdentityModel.Tokens;
 
 namespace InventoryApi.Service.InventoryService
 {

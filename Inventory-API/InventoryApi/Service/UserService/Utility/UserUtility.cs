@@ -40,7 +40,7 @@ namespace InventoryApi.Service.UserService.Utility
                 case UserClaim.Username:
                     return new(ClaimTypes.Name, user.Username ?? throw new Exception("Unable to generate Username claim"));        // Ensure non-null value
                 case UserClaim.Role:
-                    return new(ClaimTypes.Role, user.Role?.Rolename ?? throw new Exception("Unable to generate Role claim"));       // Ensure non-null value
+                    return new(ClaimTypes.Role, user.Role?.Rolename?.ToString() ?? throw new Exception("Unable to generate Role claim"));       // Ensure non-null value
                 default:
                     throw new NotImplementedException();
             }

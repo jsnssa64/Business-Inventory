@@ -9,10 +9,10 @@ namespace InventoryApi.Repository
     public interface IUserRepository
     {
         Task ActivateUser(IDbConnection dbConnection, UserIdentifierModel userIdentifier, IDbTransaction? dbTransaction = null);
-        Task AssignRoleToUser(IDbConnection dbConnection, UserIdentifierModel userIdentifier, RoleIdModel roleIdModel, IDbTransaction? dbTransaction = null);
+        Task AssignRoleToUser(IDbConnection dbConnection, UserIdentifierModel userIdentifier, RoleNameModel roleIdModel, IDbTransaction? dbTransaction = null);
         Task SetUserStatus(UserIdentifierModel userIdentifier, StatusModel statusModel);
         Task<User> GetUser(UserIdentifierModel userIdentifierModel);
-        Task<(User, UserDetails)> GetUserDetails(UserIdentifierModel userIdentifierModel);
+        Task<UserDetails> GetUserDetails(UserIdentifierModel userIdentifierModel);
         Task UpdateUserDetails(UserIdentifierModel userIdentifier, UserDetailsModel useDetailsModel);
         Task<UserIdModel> CreateUser(IDbConnection dbConnection, UserIdentifierModel userIdentifier, UserRegistrationModel userRegisterModel, IDbTransaction? dbTransaction = null);
         Task<bool> IsValidUserByUsername(UserIdentifierModel userIdentifierModel);

@@ -3,16 +3,15 @@ using FluentValidation;
 
 namespace InventoryApi.Validation
 {
-    public class RoleValidator: AbstractValidator<Role>
+    public class RoleValidator: AbstractValidator<UserRole>
     {
         public RoleValidator()
         {
             RuleFor(u => u.Rolename)
                 .NotEmpty()
-                .WithMessage($"{nameof(Role.Rolename)} is empty.")
+                .WithMessage($"{nameof(UserRole.Rolename)} is empty.")
                 .NotNull()
-                .WithMessage($"{nameof(Role.Rolename)} is required.")
-                .MaximumLength(50);
+                .WithMessage($"{nameof(UserRole.Rolename)} is required.");
         }
     }
 }

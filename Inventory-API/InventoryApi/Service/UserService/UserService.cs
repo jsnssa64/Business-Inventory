@@ -17,20 +17,17 @@ namespace InventoryApi.Service.UserService
     public class UserService : IUserService
     {
         private IUserRepository _userRepository;
-        private IRoleRepository _roleRepository;
         private ISecurityService _securityService;
         private IUserUtility _userUtility;
         private IJWTUtility _jwtUtility;
         private IDbConnectionFactory _dbConnectionFactory;
 
-        public UserService(IUserRepository userRepository, 
-            IRoleRepository roleRepository, 
+        public UserService(IUserRepository userRepository,
             ISecurityService securityService, 
             IUserUtility userUtility, 
             IJWTUtility jwtUtility,
             IDbConnectionFactory dbConnectionFactory) {
             _userRepository = userRepository;
-            _roleRepository = roleRepository;
             _securityService = securityService;
             _userUtility = userUtility;
             _jwtUtility = jwtUtility;
@@ -53,9 +50,7 @@ namespace InventoryApi.Service.UserService
         {
             try
             {
-                var roleModel = await _roleRepository.GetDefaultRole();
-                userRegistrationModel.PublicRoleId = roleModel.PublicRoleId;
-
+                userRegistrationModel.RoleName = Roles.DefaultRole.ToString();
                 await this.CreateUser(httpResponse, userIdentifierModel, userRegistrationModel);
             }
             catch (Exception ex)
@@ -72,19 +67,16 @@ namespace InventoryApi.Service.UserService
 
             try
             {
-                if (userRegistrationModel.PublicRoleId is null)
-                    throw new Exception("Unable to register user: Role Id missing");
-
                 userRegistrationModel.EncryptedPassword = _securityService.EncryptPassword(userRegistrationModel.Password, SecurityLevel.Mid);
 
                 var userIdModel = await _userRepository.CreateUser(conn, userIdentifierModel, userRegistrationModel, transaction);
 
-                var roleIdModel = new RoleIdModel
+                var roleNameModel = new RoleNameModel
                 {
-                    PublicRoleId = (Guid)userRegistrationModel.PublicRoleId
+                    RoleName = userRegistrationModel.RoleName.ToString()
                 };
 
-                await _userRepository.AssignRoleToUser(conn, userIdentifierModel, roleIdModel, transaction);
+                await _userRepository.AssignRoleToUser(conn, userIdentifierModel, roleNameModel, transaction);
                 
                 //  Temp - 
                 await _userRepository.ActivateUser(conn, userIdentifierModel, transaction);
@@ -182,7 +174,7 @@ namespace InventoryApi.Service.UserService
 
         public async Task<IEnumerable<Claim>> GenerateLogin(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, Action<User>? validate = null)
         {
-            var user = await _userRepository.GetUser(userIdentifierModel) ?? throw new Exception("User not found");
+            var user = await _userRepository.GetUser(userIdentifierModel);
 
             if (validate is not null)
                 validate(user);
@@ -198,9 +190,27 @@ namespace InventoryApi.Service.UserService
             return claims;
         }
 
-        public async Task<(User, UserDetails)> GetUserDetails(UserIdentifierModel userName)
+        public async Task<UserDetails> GetUserDetails(UserIdentifierModel userName)
         {
-            return await _userRepository.GetUserDetails(userName);
+            var userDetails = await _userRepository.GetUserDetails(userName);
+
+            if (userDetails is null)
+                throw new Exception("Not valid userdetails");
+
+            if (Roles.IsValidRoleLevel(userDetails.Role?.Rolename))
+                throw new Exception("Not Valid Role");
+
+            return userDetails;
+        }
+
+        public async Task<User> GetUser(UserIdentifierModel userName)
+        {
+            var user = await _userRepository.GetUser(userName);
+
+            if (Roles.IsValidRoleLevel(user.Role?.Rolename))
+                throw new Exception("Not Valid Role");
+
+            return user;
         }
 
         public async Task ForgottenPasswordByEmail(UserEmailModel userEmailModel)
@@ -249,7 +259,7 @@ namespace InventoryApi.Service.UserService
             }
         }
 
-        public async Task AssignUserToRole(UserIdentifierModel userIdentifierModel, RoleIdModel roleIdModel)
+        public async Task AssignUserToRole(UserIdentifierModel userIdentifierModel, RoleNameModel roleIdModel)
         {
             try
             {

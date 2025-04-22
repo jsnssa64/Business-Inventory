@@ -10,14 +10,11 @@ BEGIN
     SELECT
            u.Username,
            u.Email,
-           r.PublicId AS PublicRoleId,
-           r.[Name] AS RoleName,
+           ur.[Role] AS RoleName,
            p.PasswordHash
     FROM dbo.[User] u
     JOIN dbo.UsersRole ur
         ON u.Id =  ur.UserId
-    JOIN dbo.[Role] r
-        ON ur.RoleId = r.Id
     JOIN dbo.[Password] p
         ON u.Id = p.UserId
     WHERE u.Id = @UserId;

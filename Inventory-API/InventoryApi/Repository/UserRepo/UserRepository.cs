@@ -98,13 +98,13 @@ namespace InventoryApi.Repository
             }
         }
 
-        public async Task AssignRoleToUser(IDbConnection dbConnection, UserIdentifierModel userIdentifier, RoleIdModel roleIdModel, IDbTransaction? dbTransaction = null)
+        public async Task AssignRoleToUser(IDbConnection dbConnection, UserIdentifierModel userIdentifier, RoleNameModel roleNameModel, IDbTransaction? dbTransaction = null)
         {
             try
             {
                 var parameters = new DynamicParameters();
                 parameters.Add(nameof(UserIdentifierModel.Username), userIdentifier.Username);
-                parameters.Add(nameof(RoleIdModel.PublicRoleId), roleIdModel.PublicRoleId);
+                parameters.Add(nameof(RoleNameModel.RoleName), roleNameModel.RoleName);
 
                 var result = await dbConnection.ExecuteScalarAsync<int>("dbo.AssignUserToRole", parameters, commandType: CommandType.StoredProcedure, transaction: dbTransaction);
 
@@ -169,13 +169,12 @@ namespace InventoryApi.Repository
                 var parameters = new DynamicParameters();
                 parameters.Add(nameof(UserIdentifierModel.Username), userIdentifierModel.Username);
 
-                var result = await conn.QueryFirstOrDefaultAsync<dynamic>("dbo.GetUser", parameters, commandType: CommandType.StoredProcedure);
+                var result = await conn.QueryFirstAsync<dynamic>("dbo.GetUser", parameters, commandType: CommandType.StoredProcedure);
 
-                if (result == null)
+                if (result is null)
                     throw new DbUpdateException($"User not found for username: {userIdentifierModel.Username}");
 
-                var user = new User();
-                user.Map(result);
+                var user = new User().Map(result);
 
                 return user;
             }
@@ -223,7 +222,7 @@ namespace InventoryApi.Repository
             }
         }
 
-        public async Task<(User, UserDetails)> GetUserDetails(UserIdentifierModel userIdentifierModel)
+        public async Task<UserDetails> GetUserDetails(UserIdentifierModel userIdentifierModel)
         {
             try
             {
@@ -237,12 +236,9 @@ namespace InventoryApi.Repository
                 if (result == null)
                     throw new DbUpdateException($"User details not found for username: {userIdentifierModel.Username}");
 
-                var user = new User();
-                var userDetails = new UserDetails();
-                userDetails.Map(result);
-                user.Map(result);
+                var userDetails = new UserDetails().Map(result);
 
-                return (user, userDetails);
+                return userDetails;
             }
             catch (Exception ex)
             {

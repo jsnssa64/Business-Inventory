@@ -1,6 +1,6 @@
 ﻿CREATE PROCEDURE [dbo].[AssignUserToRole]
 	@Username VARCHAR(100),
-    @PublicRoleId UNIQUEIDENTIFIER
+    @RoleName VARCHAR(50)
 AS
 	SET NOCOUNT ON;
     SET XACT_ABORT ON;
@@ -14,21 +14,19 @@ AS
             BEGIN TRANSACTION
         END
 
-        DECLARE @RoleId INT;
         DECLARE @UserId INT;
 
-        EXEC dbo.GetRoleId @PublicRoleId, @RoleId OUTPUT;
         EXEC dbo.GetValidUserId @Username, @UserId OUTPUT;
 
         UPDATE dbo.UsersRole
-        SET RoleId = @RoleId,
+        SET [Role] = @RoleName,
             UserId = @UserId
         WHERE UserId = @UserId;
 
         IF(@@ROWCOUNT = 0) 
         BEGIN
-            INSERT INTO dbo.UsersRole(UserId, RoleId)
-            VALUES(@UserId, @RoleId);
+            INSERT INTO dbo.UsersRole(UserId, [Role])
+            VALUES(@UserId, @RoleName);
         END
 
         IF(@TransactionStarted = 1)

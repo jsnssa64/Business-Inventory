@@ -5,6 +5,7 @@ using Domain.Inventory;
 using InventoryApi.Factory;
 using InventoryApi.Repository.Data;
 using InventoryApi.Repository.Data.Product;
+using Microsoft.IdentityModel.Tokens;
 
 namespace InventoryApi.Repository.Inventory
 {
@@ -49,9 +50,9 @@ namespace InventoryApi.Repository.Inventory
                 priceParam.Add(nameof(PriceModel.Price), priceModel.Price);
                 priceParam.Add(nameof(PriceModel.CurrencyCode), priceModel.CurrencyCode);
 
-                var priceResult = await conn.ExecuteAsync("dbo.AddProductPrice", parameters, commandType: CommandType.StoredProcedure);
+                var priceResult = await conn.ExecuteScalarAsync<int>("dbo.AddProductPrice", parameters, commandType: CommandType.StoredProcedure);
 
-                if (priceResult < 0)
+                if (priceResult != 0)
                     throw new Exception("Unable to Add price to product");
             }
 
@@ -94,6 +95,10 @@ namespace InventoryApi.Repository.Inventory
             if (resultProduct.EnabledPrice)
             {
                 resultPrice = await conn.QuerySingleAsync<dynamic>("dbo.GetProductPriceById", parameters, commandType: CommandType.StoredProcedure);
+
+
+                if (resultProduct is null)
+                    throw new DbUpdateException("Failed to get price");
             }
 
             var product = new Product().Map(resultProduct, resultPrice);
@@ -138,7 +143,7 @@ namespace InventoryApi.Repository.Inventory
 
             var result = await conn.QueryAsync<Product>("dbo.GetProducts", parameters, commandType: CommandType.StoredProcedure);
 
-            if (result is null)
+            if (result.IsNullOrEmpty())
             {
                 throw new DbUpdateException("Failed to get products");
             }

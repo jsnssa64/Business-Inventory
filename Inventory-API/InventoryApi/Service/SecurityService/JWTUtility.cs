@@ -28,8 +28,6 @@ namespace InventoryApi.Service.SecurityService
         private RSA confirmationKey;
         private RSA resetPasswordKey;
 
-        
-
         private RSA GetKey(KeyType keyType)
         {
             switch (keyType)
@@ -86,7 +84,6 @@ namespace InventoryApi.Service.SecurityService
         }
                 
         private RSA LoadRefreshKey() => LoadRSAKey(_security.Value.RefreshToken.Key ?? throw new ArgumentNullException("Failed to load RSA Key"));
-
         private RSA LoadAccessKey() => LoadRSAKey(_security.Value.AccessToken.Key ?? throw new ArgumentNullException("Failed to load RSA Key"));
         private RSA LoadConfirmationKey() => LoadRSAKey(_security.Value.ConfirmationToken.Key ?? throw new ArgumentNullException("Failed to load RSA Key"));
         private RSA LoadResetPasswordKey() => LoadRSAKey(_security.Value.ResetPasswordToken.Key ?? throw new ArgumentNullException("Failed to load RSA Key"));
@@ -100,7 +97,6 @@ namespace InventoryApi.Service.SecurityService
 
             var rsa = RSA.Create();
             var decodedKey = Convert.FromBase64String(key);
-            // Convert the key string to a ReadOnlySpan<char> and import it
             var pemString = System.Text.Encoding.UTF8.GetString(decodedKey);
             rsa.ImportFromPem(pemString.AsSpan());
 
@@ -120,7 +116,6 @@ namespace InventoryApi.Service.SecurityService
                 ValidIssuer = _security.Value.Issuer
             };
         }
-
 
         public bool HasTokenExpired(string? token, KeyType keyType)
         {

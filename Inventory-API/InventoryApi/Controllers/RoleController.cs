@@ -20,8 +20,8 @@ namespace InventoryApi.Controllers
             _roleService = roleService;
         }
 
-        [HttpPost("CreateRole")]
-        public async Task<IActionResult> CreateRole(CreateRoleDTO createRoleDTO)
+        [Obsolete]
+        private async Task<IActionResult> CreateRole(CreateRoleDTO createRoleDTO)
         {
             var createRoleModel = new CreateRoleModel()
             {
@@ -34,16 +34,16 @@ namespace InventoryApi.Controllers
         }
 
         [HttpGet("GetRoles")]
-        public async Task<IActionResult> GetRoles()
+        public IActionResult GetRoles()
         {
-            var roles = await _roleService.GetRoles();
+            var roles = _roleService.GetRoles();
             return Ok(roles);
         }
 
         [HttpGet("GetDefaultRole")]
-        public async Task<IActionResult> GetDefaultRole()
+        public IActionResult GetDefaultRole()
         {
-            var role = await _roleService.GetDefaultRole();
+            var role = _roleService.GetDefaultRole();
             return Ok(role);
         }
     }

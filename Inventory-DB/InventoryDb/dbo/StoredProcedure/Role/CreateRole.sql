@@ -7,7 +7,7 @@ AS
     SET XACT_ABORT ON;
     
     BEGIN TRY
-        BEGIN TRANSACTION
+        BEGIN TRANSACTION;
 
         INSERT INTO dbo.[Role] ([Name])
         VALUES (@RoleName);

@@ -1,4 +1,5 @@
-﻿using InventoryApi.Repository.Data.Role;
+﻿using Domain.User;
+using InventoryApi.Repository.Data.Role;
 using InventoryApi.Repository.RoleRepo;
 
 namespace InventoryApi.Service.RoleService
@@ -11,19 +12,33 @@ namespace InventoryApi.Service.RoleService
         {
             _roleRepository = roleRepository;
         }
+
+        [Obsolete]
         public async Task<RoleModel> CreateRole(CreateRoleModel createRoleModel)
         {
             return await _roleRepository.CreateRole(createRoleModel);
         }
 
-        public async Task<IEnumerable<RoleModel>> GetRoles()
+        public IEnumerable<RoleModel> GetRoles()
         {
-            return await _roleRepository.GetRoles();
+            var roles = Roles.AllRoles.Select(roleName =>
+            {
+                return new RoleModel
+                {
+                    IsDefault = Roles.DefaultRole == roleName,
+                    RoleName = roleName.ToString()
+                };
+            });
+
+            return roles;
         }
 
-        public async Task<RoleModel> GetDefaultRole()
+        public RoleModel GetDefaultRole()
         {
-            return await _roleRepository.GetDefaultRole();
+            return new RoleModel() { 
+                IsDefault = true, 
+                RoleName = Roles.DefaultRole.ToString()
+            };
         }
     }
 }

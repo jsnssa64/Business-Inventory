@@ -1,8 +1,6 @@
 ﻿using Domain.Inventory;
-using Domain.User;
 using InventoryApi.Repository.Data;
 using InventoryApi.Repository.Data.Product;
-using InventoryApi.Repository.Data.User;
 
 namespace InventoryApi.Service.InventoryService
 {

@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Connections;
-using Microsoft.Data.SqlClient;
-using System.Data;
+﻿using Microsoft.Data.SqlClient;
 using System.Data.Common;
 using System.Data.Entity.Infrastructure;
-using System.Net;
 
 namespace InventoryApi.Factory
 {

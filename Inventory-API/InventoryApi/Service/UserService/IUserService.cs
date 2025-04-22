@@ -8,11 +8,11 @@ namespace InventoryApi.Service.UserService
 {
     public interface IUserService
     {
-        Task AssignUserToRole(UserIdentifierModel userIdentifierModel, RoleIdModel roleIdModel);
+        Task AssignUserToRole(UserIdentifierModel userIdentifierModel, RoleNameModel roleIdModel);
         Task ChangePassword(UserIdentifierModel userIdentifierModel, PasswordModel passwordModel);
         Task ForgottenPasswordByEmail(UserEmailModel userEmailModel);
         Task ForgottenPasswordByUsername(UserIdentifierModel userIdentifierModel);
-        Task<(User, UserDetails)> GetUserDetails(UserIdentifierModel userName);
+        Task<UserDetails> GetUserDetails(UserIdentifierModel userName);
         Task LoginUser(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, PasswordModel passwordModel);
         void LogoutUser(HttpResponse httpResponse);
         Task<IEnumerable<Claim>> GenerateLogin(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, Action<User>? validate = null);

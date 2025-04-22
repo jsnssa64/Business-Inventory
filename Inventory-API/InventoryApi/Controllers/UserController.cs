@@ -1,3 +1,5 @@
+using Domain.User;
+using InventoryApi.Authentication;
 using InventoryApi.Controllers.CustomController;
 using InventoryApi.Model.DTO.User;
 using InventoryApi.Repository.Data.Product;
@@ -11,8 +13,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace InventoryApi.Controllers
 {
     [ApiController]
-    [Authorize]
     [Route("[controller]")]
+    [MinimumRole(Roles.RoleLevel.User)]
     public class UserController : BaseController
     {
         private readonly ILogger<InventoryController> _logger;
@@ -25,7 +27,9 @@ namespace InventoryApi.Controllers
             _userService = userService;
             _jwtUtility = jwtUtility;
         }
+
         [HttpPost("AssignUserRole")]
+        [MinimumRole(Roles.RoleLevel.Admin)]
         public async Task<IActionResult> AssignUserRole(UsersRoleDTO usersRoleDTO, CancellationToken cancellationToken)
         {
             await _userService.AssignUserToRole(
@@ -33,14 +37,15 @@ namespace InventoryApi.Controllers
                 {
                     Username = usersRoleDTO.UserName,
                 },
-                new RoleIdModel()
+                new RoleNameModel()
                 {
-                    PublicRoleId = usersRoleDTO.RoleId
+                    RoleName = usersRoleDTO.roleName.ToString()
                 });
             return Ok();
         }
 
         [HttpPost("ChangePassword")]
+        [AllowAnonymous]
         public async Task<IActionResult> ChangePassword(UserNewPassword userNewPassword, CancellationToken cancellationToken)
         {
             var passwordModel = new PasswordModel()
@@ -68,6 +73,7 @@ namespace InventoryApi.Controllers
         }
 
         [HttpGet("Disable")]
+        [MinimumRole(Roles.RoleLevel.Admin)]
         public IActionResult DisableUser(string username, CancellationToken cancellationToken)
         {
             var userIdentifier = new UserIdentifierModel()
@@ -83,6 +89,7 @@ namespace InventoryApi.Controllers
         }
 
         [HttpGet("Enable")]
+        [MinimumRole(Roles.RoleLevel.Admin)]
         public IActionResult EnableUser(string username, CancellationToken cancellationToken)
         {
             _userService.SetUserStatus(
@@ -118,6 +125,7 @@ namespace InventoryApi.Controllers
         }
 
         [HttpGet("GetUserDetailsByUser")]
+        [MinimumRole(Roles.RoleLevel.Admin)]
         public async Task<IActionResult> GetUserDetails(string username, CancellationToken cancellationToken)
         {
             var allUserData = await _userService.GetUserDetails(new UserIdentifierModel() { Username = username });
@@ -149,7 +157,6 @@ namespace InventoryApi.Controllers
         }
 
         [HttpGet("Logout")]
-        [AllowAnonymous]
         public IActionResult LogoutUser(CancellationToken cancellationToken)
         {
             _userService.LogoutUser(Response);
@@ -176,9 +183,15 @@ namespace InventoryApi.Controllers
         }
 
         [HttpPost("RegisterUserWithRole")]
+        [MinimumRole(Roles.RoleLevel.Admin)]
         public async Task<IActionResult> RegisterUserWithRole(UserWithRoleRegisterDTO userWithRoleRegisterDTO, CancellationToken cancellationToken)
         {
-            await _userService.RegisterUser(Response, 
+            if (Roles.IsValidRoleLevel(userWithRoleRegisterDTO.RoleName))
+            {
+                return BadRequest("Invalid role name provided.");
+            }
+
+            await _userService.RegisterUser(Response,
                 new UserIdentifierModel()
                 {
                     Username = userWithRoleRegisterDTO.Username
@@ -189,7 +202,7 @@ namespace InventoryApi.Controllers
                     LastName = userWithRoleRegisterDTO.LastName,
                     Email = userWithRoleRegisterDTO.Email,
                     Password = userWithRoleRegisterDTO.Password,
-                    PublicRoleId = userWithRoleRegisterDTO.RoleId
+                    RoleName = userWithRoleRegisterDTO.RoleName
                 });
             return Ok();
         }
@@ -207,7 +220,7 @@ namespace InventoryApi.Controllers
         }
 
         [HttpPost("Update")]
-        [AllowAnonymous]
+        [MinimumRole(Roles.RoleLevel.User)]
         public async Task<IActionResult> UpdateUser(UpdateUserDetailsDTO updateUserDetailsDTO, CancellationToken cancellationToken)
         {
             await _userService.UpdateUser(
@@ -229,12 +242,6 @@ namespace InventoryApi.Controllers
                     PostCode = updateUserDetailsDTO.PostCode
                 });
             return Ok();
-        }
-
-
-        
-
-
-        
+        }        
     }
 }

@@ -63,7 +63,6 @@ namespace InventoryApi.Middleware
             }
             catch (Exception ex)
             {
-                // TODO: Logout Exception
                 _userService.LogoutUser(context.Response);
                 throw new Exception($"Failed to validate JWT: {ex.Message}");
             }

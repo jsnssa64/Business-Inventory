@@ -2,7 +2,6 @@
 using EventStore.Client;
 using InventoryApi.Repository.Data.Inventory;
 using InventoryApi.Repository.Data.Product;
-using InventoryApi.Repository.Data.User;
 
 namespace InventoryApi.Repository.Inventory
 {

@@ -18,6 +18,7 @@ namespace InventoryApi.Repository.RoleRepo
             _dbConnectionFactory = dbConnectionFactory;
         }
 
+        [Obsolete]
         public async Task<RoleModel> CreateRole(CreateRoleModel createRole)
         {
             try
@@ -27,7 +28,7 @@ namespace InventoryApi.Repository.RoleRepo
                 var parameters = new DynamicParameters();
                 parameters.Add(nameof(CreateRoleModel.RoleName), createRole.RoleName);
                 parameters.Add(nameof(CreateRoleModel.IsDefault), createRole.IsDefault);
-                parameters.Add(nameof(RoleIdModel.PublicRoleId), dbType: DbType.Int32, direction: ParameterDirection.Output);
+                parameters.Add(nameof(RoleNameModel.RoleName), dbType: DbType.Int32, direction: ParameterDirection.Output);
 
                 var result = await conn.ExecuteScalarAsync<int>("dbo.CreateRole", parameters, commandType: CommandType.StoredProcedure);
 
@@ -36,7 +37,6 @@ namespace InventoryApi.Repository.RoleRepo
 
                 return new RoleModel
                 {
-                    PublicRoleId = parameters.Get<Guid>(nameof(RoleIdModel.PublicRoleId)),
                     RoleName = createRole.RoleName,
                     IsDefault = createRole.IsDefault
                 };
@@ -47,17 +47,18 @@ namespace InventoryApi.Repository.RoleRepo
             }
         }
 
-        public async Task<bool> IsValidRole(RoleIdModel roleIdModel)
+        [Obsolete]
+        public async Task<bool> IsValidRole(RoleNameModel roleNameModel)
         {
             try
             {
                 using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
 
                 var parameters = new DynamicParameters();
-                parameters.Add(nameof(RoleIdModel.PublicRoleId), roleIdModel.PublicRoleId);
+                parameters.Add(nameof(RoleNameModel.RoleName), roleNameModel.RoleName);
                 parameters.Add("ReturnValue", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
                 
-                await conn.ExecuteAsync("dbo.IsValidRole", parameters, commandType: CommandType.StoredProcedure);
+                await conn.ExecuteScalarAsync("dbo.IsValidRole", parameters, commandType: CommandType.StoredProcedure);
 
                 var roleExists = parameters.Get<int>("ReturnValue");
 
@@ -69,6 +70,7 @@ namespace InventoryApi.Repository.RoleRepo
             }
         }
 
+        [Obsolete]
         public async Task<IEnumerable<RoleModel>> GetRoles()
         {
             try
@@ -83,8 +85,7 @@ namespace InventoryApi.Repository.RoleRepo
                 return result.Select((role) => new RoleModel()
                 {
                     RoleName = role.RoleName,
-                    IsDefault = role.IsDefault,
-                    PublicRoleId = role.PublicRoleId
+                    IsDefault = role.IsDefault
                 });
             }
             catch (Exception ex)
@@ -93,6 +94,7 @@ namespace InventoryApi.Repository.RoleRepo
             }
         }
 
+        [Obsolete]
         public async Task<RoleModel> GetDefaultRole()
         {
             try
@@ -109,8 +111,7 @@ namespace InventoryApi.Repository.RoleRepo
                 return new RoleModel()
                 {
                     RoleName = result.RoleName,
-                    IsDefault = result.IsDefault,
-                    PublicRoleId = result.PublicRoleId
+                    IsDefault = result.IsDefault
                 };
             }
             catch (Exception ex)

@@ -4,8 +4,9 @@ namespace InventoryApi.Service.RoleService
 {
     public interface IRoleService
     {
+        [Obsolete]
         Task<RoleModel> CreateRole(CreateRoleModel createRoleModel);
-        Task<RoleModel> GetDefaultRole();
-        Task<IEnumerable<RoleModel>> GetRoles();
+        RoleModel GetDefaultRole();
+        IEnumerable<RoleModel> GetRoles();
     }
 }

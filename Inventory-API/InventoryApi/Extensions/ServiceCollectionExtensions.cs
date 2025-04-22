@@ -1,11 +1,9 @@
 ﻿using EventStore.Client;
 using InventoryApi.Factory;
 using System.Data.Entity.Infrastructure;
-using Microsoft.Extensions.DependencyInjection;
-using System.Configuration;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using InventoryApi.Authentication;
 using Microsoft.AspNetCore.Authentication;
+using InventoryApi.Constants;
 
 namespace InventoryApi.Extensions
 {
@@ -58,15 +56,14 @@ namespace InventoryApi.Extensions
 
         public static IServiceCollection AddLoginAuthentication(this IServiceCollection services)
         {
-            //return services;
             services
-                .AddAuthentication("CookieJwtScheme")
-                .AddScheme<AuthenticationSchemeOptions, CookieJwtHandler>("CookieJwtScheme", options => { });
+                .AddAuthentication(Cookie.JwtCookieScheme)
+                .AddScheme<AuthenticationSchemeOptions, CookieJwtHandler>(Cookie.JwtCookieScheme, options => { });
 
             services.Configure<AuthenticationOptions>(options =>
             {
-                options.DefaultAuthenticateScheme = "CookieJwtScheme";
-                options.DefaultChallengeScheme = "CookieJwtScheme";
+                options.DefaultAuthenticateScheme = Cookie.JwtCookieScheme;
+                options.DefaultChallengeScheme = Cookie.JwtCookieScheme;
             });
 
             return services;
