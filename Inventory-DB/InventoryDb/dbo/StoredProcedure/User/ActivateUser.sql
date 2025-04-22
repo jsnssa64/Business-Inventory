@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE dbo.ActivateUser
-    @Username VARCHAR(100)
+    @Username VARCHAR(50)
 AS
 	SET NOCOUNT ON;
     

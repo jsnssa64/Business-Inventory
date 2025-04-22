@@ -1,14 +1,15 @@
+using InventoryApi.Authentication;
 using InventoryApi.Model.DTO.RoleDTO;
 using InventoryApi.Repository.Data.Role;
 using InventoryApi.Service.RoleService;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static Domain.User.Roles;
 
 namespace InventoryApi.Controllers
 {
     [ApiController]
-    [Authorize]
     [Route("[controller]")]
+    [MinimumRole(RoleLevel.User)]
     public class RoleController : ControllerBase
     {
         private readonly ILogger<InventoryController> _logger;

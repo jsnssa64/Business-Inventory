@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE [dbo].[UpdateUserDetails]
-    @Username VARCHAR(100),
+    @Username VARCHAR(50),
     @Email VARCHAR(50) = NULL,
 	@FirstName VARCHAR(50) = NULL,
 	@LastName VARCHAR(50) = NULL,

@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE dbo.GetActiveUserIdByEmail
-    @Email VARCHAR(100),
+    @Email VARCHAR(50),
     @UserId INT OUTPUT
 AS
 BEGIN

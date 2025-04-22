@@ -28,7 +28,8 @@
                     Rolename = usrdets?.RoleName
                 };
 
-                this.userAddress = new UserAddress().Map(usrdets);
+                this.userAddress = new UserAddress();
+                this.userAddress.Map(usrdets);
 
                 this.ContactNumber = usrdets?.ContactNumber;
                 this.DOB = usrdets?.DOB;

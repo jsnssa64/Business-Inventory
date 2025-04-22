@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE dbo.GetActiveUserIdByUsername
-    @Username VARCHAR(100),
+    @Username VARCHAR(50),
     @UserId INT OUTPUT
 AS
 BEGIN

@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE dbo.GetProductPriceById
-    @Username VARCHAR(100),
+    @Username VARCHAR(50),
     @PublicProductId UNIQUEIDENTIFIER
 AS
 BEGIN

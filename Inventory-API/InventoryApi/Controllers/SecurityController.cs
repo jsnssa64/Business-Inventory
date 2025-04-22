@@ -13,7 +13,6 @@ namespace InventoryApi.Controllers
         public ISecurityService SecurityService { get; } = securityService;
 
         [HttpPost("CreatePassword")]
-        [AllowAnonymous]
         public IActionResult CreatePassword(UserNewPassword userNewPassword, CancellationToken cancellationToken)
         {
             var passwordHash = SecurityService.EncryptPassword(userNewPassword.NewPassword);

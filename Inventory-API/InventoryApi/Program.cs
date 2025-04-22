@@ -8,6 +8,7 @@ using InventoryApi.Service.SecurityService;
 using InventoryApi.Service.SecurityService.Models;
 using InventoryApi.Service.UserService;
 using InventoryApi.Service.UserService.Utility;
+using Microsoft.AspNetCore.Mvc.Authorization;
 
 internal class Program
 {
@@ -34,6 +35,8 @@ internal class Program
         builder.Services.AddSingleton<IInventoryRepository, InventoryRepository>();
         builder.Services.AddSingleton<IRoleService, RoleService>();
         builder.Services.AddSingleton<IRoleRepository, RoleRepository>();
+        builder.Services.AddSingleton<IProductRepository, ProductRepository>();
+        builder.Services.AddSingleton<IProductService, ProductService>();
 
         builder.Services.Configure<Security>(builder.Configuration.GetSection("Security"));
 

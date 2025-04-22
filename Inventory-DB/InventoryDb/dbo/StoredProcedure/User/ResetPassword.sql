@@ -1,6 +1,6 @@
 ﻿CREATE PROCEDURE [dbo].[ResetPassword]
-    @Username VARCHAR(100),
-    @Password VARBINARY(60) = NULL
+    @Username VARCHAR(50),
+    @NewPassword CHAR(60) = NULL
 AS
 	SET NOCOUNT ON;
     SET XACT_ABORT ON;
@@ -21,7 +21,7 @@ AS
 
             --  Add Enabled Password
             INSERT INTO dbo.[Password](UserId, PasswordHash, [Disabled])
-            VALUES (@UserId, @Password, 0);
+            VALUES (@UserId, @NewPassword, 0);
 
         COMMIT TRANSACTION;
         RETURN 0;  -- success

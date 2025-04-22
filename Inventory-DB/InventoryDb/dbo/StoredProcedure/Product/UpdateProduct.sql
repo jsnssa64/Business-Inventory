@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE [dbo].[UpdateProduct]
-    @Username VARCHAR(100),
+    @Username VARCHAR(50),
     @PublicProductId UNIQUEIDENTIFIER,
 	@Name VARCHAR(100) = NULL,
 	@Description VARCHAR(100) = NULL,

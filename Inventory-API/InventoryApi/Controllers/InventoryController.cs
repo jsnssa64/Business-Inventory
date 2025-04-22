@@ -14,8 +14,8 @@ using static Domain.User.Roles;
 namespace InventoryApi.Controllers
 {
     [ApiController]
-    [MinimumRole(RoleLevel.User)]
     [Route("[controller]")]
+    [MinimumRole(RoleLevel.User)]
     public class InventoryController : BaseController
     {
         private readonly IInventoryService _inventoryService;

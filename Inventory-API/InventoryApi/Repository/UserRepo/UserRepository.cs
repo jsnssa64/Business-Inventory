@@ -125,12 +125,12 @@ namespace InventoryApi.Repository
 
                 var parameters = new DynamicParameters();
                 parameters.Add(nameof(UserIdentifierModel.Username), userIdentifier.Username);
-                parameters.Add(nameof(PasswordModel.Password), passwordModel.Password);
+                parameters.Add(nameof(PasswordModel.NewPassword), passwordModel.NewPassword);
 
                 var result = await conn.ExecuteScalarAsync<int>("dbo.ResetPassword", parameters, commandType: CommandType.StoredProcedure);
 
                 if (result != 0)
-                    throw new DbUpdateException($"{nameof(PasswordModel.Password)} Unchanged");
+                    throw new DbUpdateException($"{nameof(PasswordModel.NewPassword)} Unchanged");
             }
             catch (Exception ex)
             {
@@ -174,7 +174,8 @@ namespace InventoryApi.Repository
                 if (result is null)
                     throw new DbUpdateException($"User not found for username: {userIdentifierModel.Username}");
 
-                var user = new User().Map(result);
+                var user = new User();
+                user.Map(result);
 
                 return user;
             }
@@ -236,7 +237,8 @@ namespace InventoryApi.Repository
                 if (result == null)
                     throw new DbUpdateException($"User details not found for username: {userIdentifierModel.Username}");
 
-                var userDetails = new UserDetails().Map(result);
+                var userDetails = new UserDetails();
+                userDetails.Map(result);
 
                 return userDetails;
             }

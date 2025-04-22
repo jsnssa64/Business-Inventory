@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE [dbo].[UpdateProductPrice]
-    @Username VARCHAR(100),
+    @Username VARCHAR(50),
     @PublicProductId UNIQUEIDENTIFIER,
 	@Price DECIMAL(19, 4) = NULL,
     @CurrencyCode CHAR(3) = NULL

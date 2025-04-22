@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE [dbo].[UpdateItemInInventory]
-    @Username VARCHAR(100),
+    @Username VARCHAR(50),
 	@PublicProductId UNIQUEIDENTIFIER,
     @Quantity INT = 0
 AS

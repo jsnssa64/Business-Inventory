@@ -1,4 +1,5 @@
-﻿using Domain.User;
+﻿using System.Security.Claims;
+using Domain.User;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InventoryApi.Controllers.CustomController
@@ -8,7 +9,7 @@ namespace InventoryApi.Controllers.CustomController
     {
         protected string GetUsername()
         {
-            var userName = User.FindFirst("username")?.Value;
+            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
 
             if (string.IsNullOrEmpty(userName))
                 throw new Exception("Username is missing");

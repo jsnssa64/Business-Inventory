@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE dbo.IsValidUsername
-    @Username VARCHAR(100)
+    @Username VARCHAR(50)
 AS
 BEGIN
     SET NOCOUNT ON;

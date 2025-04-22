@@ -1,8 +1,12 @@
-﻿using Domain.Inventory;
+﻿using System.Data.Entity.Infrastructure;
+using System.Data;
+using Domain.Inventory;
+using InventoryApi.Factory;
 using InventoryApi.Repository.Data;
 using InventoryApi.Repository.Data.Inventory;
 using InventoryApi.Repository.Data.Product;
 using InventoryApi.Repository.Inventory;
+using Microsoft.IdentityModel.Tokens;
 
 namespace InventoryApi.Service.InventoryService
 {
@@ -11,12 +15,17 @@ namespace InventoryApi.Service.InventoryService
         private ILogger<ProductService> _logger;
         private IProductRepository _productRepository;
         private IInventoryRepository _inventoryRepository;
+        private IDbConnectionFactory _dbConnectionFactory;
 
-        public ProductService(IProductRepository productRepository, IInventoryRepository inventoryRepository, ILogger<ProductService> logger)
+        public ProductService(IProductRepository productRepository, 
+            IInventoryRepository inventoryRepository, 
+            ILogger<ProductService> logger,
+            IDbConnectionFactory dbConnectionFactory)
         {
             _logger = logger;
             _productRepository = productRepository;
             _inventoryRepository = inventoryRepository;
+            _dbConnectionFactory = dbConnectionFactory;
         }
 
         public async Task<ProductIdModel> AddProductAsync(UserIdentifierModel userIdentifierModel, ProductDetailsModel productDetailsModel, PriceModel? priceModel)
@@ -26,35 +35,63 @@ namespace InventoryApi.Service.InventoryService
                 throw new Exception("User cannot be null or empty");
             }
 
-            //if(product.EnabledPrice)
-            //{
-            //    if (product.Price == 0)
-            //    {
-            //        throw new Exception("Price cannot be 0");
-            //    }
-
-            //    if (product.Quantity == 0)
-            //    {
-            //        throw new Exception("Quantity cannot be 0");
-            //    }
-            //}
-
-            var resultId = await _productRepository.AddProduct(userIdentifierModel, productDetailsModel, priceModel);
-
-            var inventoryItemModel = new InventoryItemModel()
+            if (productDetailsModel.EnabledPrice)
             {
-                Quantity = productDetailsModel.InventoryQuantity < 0 ? 0 : productDetailsModel.InventoryQuantity
-            };
+                if (priceModel is null)
+                    throw new Exception("Product is price enabled, missing price model");
 
+                if (priceModel.Price == 0)
+                {
+                    throw new Exception("Price cannot be 0");
+                }
 
-            var productIdentifierModel = new ProductIdentifierModel() { 
-                PublicProductId = resultId.PublicProductId,
-                Username = userIdentifierModel.Username,
-            };
+                if (priceModel.CurrencyCode.IsNullOrEmpty())
+                {
+                    throw new Exception("Quantity cannot be 0");
+                }
+            }
 
-            await _inventoryRepository.UpdateItemToInventoryByProductId(productIdentifierModel, inventoryItemModel);
+            using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
+            conn.Open();
+            var transaction = conn.BeginTransaction();
 
-            return resultId;
+            try
+            {
+                var productResult = await _productRepository.AddProduct(conn, userIdentifierModel, productDetailsModel, transaction);
+
+                if (productDetailsModel.EnabledPrice && priceModel is not null)
+                {
+                    var productIdentifier = new ProductIdentifierModel()
+                    {
+                        PublicProductId = productResult.PublicProductId,
+                        Username = userIdentifierModel.Username
+                    };
+
+                    await _productRepository.AddPriceToProduct(conn, productIdentifier, priceModel, transaction);
+                }
+
+                var inventoryItemModel = new InventoryItemModel()
+                {
+                    Quantity = productDetailsModel.InventoryQuantity < 0 ? 0 : productDetailsModel.InventoryQuantity
+                };
+
+                var productIdentifierModel = new ProductIdentifierModel()
+                {
+                    PublicProductId = productResult.PublicProductId,
+                    Username = userIdentifierModel.Username,
+                };
+
+                await _inventoryRepository.UpdateItemToInventoryByProductIdTransact(conn, productIdentifierModel, inventoryItemModel, transaction);
+
+                return productResult;
+            }
+            catch (Exception ex)
+            {
+                if (transaction?.Connection != null)
+                    transaction.Rollback();
+
+                throw new Exception("Failed to add product", ex);
+            }
         }
 
         public async Task<Product> GetProductByIdAsync(ProductIdentifierModel productIdentifierModel, CancellationToken cancellationToken)

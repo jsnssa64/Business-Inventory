@@ -1,6 +1,6 @@
 ﻿CREATE PROCEDURE dbo.GetProductId
     @PublicProductId UNIQUEIDENTIFIER,
-    @Username VARCHAR(100),
+    @Username VARCHAR(50),
     @ProductId INT OUTPUT
 AS
 BEGIN

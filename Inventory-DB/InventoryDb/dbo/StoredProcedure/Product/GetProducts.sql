@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE dbo.GetProducts
-    @Username VARCHAR(150)
+    @Username VARCHAR(50)
 AS
 BEGIN
     SET NOCOUNT ON;

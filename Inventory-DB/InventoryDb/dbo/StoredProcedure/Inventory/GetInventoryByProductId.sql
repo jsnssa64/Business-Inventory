@@ -1,6 +1,6 @@
 ﻿CREATE PROCEDURE dbo.GetInventoryByProductId
     @PublicProductId UNIQUEIDENTIFIER,
-    @Username VARCHAR(100)
+    @Username VARCHAR(50)
 AS
 BEGIN
     SET NOCOUNT ON;

@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE dbo.IsValidUserEmail
-    @Email VARCHAR(100)
+    @Email VARCHAR(50)
 AS
 BEGIN
     SET NOCOUNT ON;

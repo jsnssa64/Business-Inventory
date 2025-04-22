@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE [dbo].[AssignUserToRole]
-	@Username VARCHAR(100),
+	@Username VARCHAR(50),
     @RoleName VARCHAR(50)
 AS
 	SET NOCOUNT ON;

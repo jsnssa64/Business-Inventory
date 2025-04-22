@@ -15,23 +15,12 @@ BEGIN
 			END
 
 			DECLARE 
-				@NewPublicRoleId UNIQUEIDENTIFIER,
+				@NewRoleName VARCHAR(50) = 'Admin',
 				@NewUserId INT,
 				@NewPublicProductId UNIQUEIDENTIFIER,
 				@NewAdminUsername VARCHAR(50) = 'Admin',
 				@NewAdminRoleName VARCHAR(50) = 'Admin',
 				@NewUserRoleName VARCHAR(50) = 'User';
-
-			EXEC dbo.CreateRole
-				@RoleName = @NewAdminUsername,
-				@IsDefault = 0,
-				@PublicRoleId = @NewPublicRoleId OUTPUT;
-			PRINT('Create Admin Role: ' + ISNULL(CAST(@NewPublicRoleId AS VARCHAR(100)), '0')  + ' - FileName:SeedData - $(EnvironmentName)')
-
-			EXEC dbo.CreateRole
-				@RoleName = @NewUserRoleName,
-				@IsDefault = 1
-			PRINT('Create User Role: ' + ISNULL(CAST(@NewUserRoleName AS VARCHAR(100)), '0')  + ' - FileName:SeedData - $(EnvironmentName)')
 
 			EXEC dbo.CreateUser
 				@Username = @NewAdminUsername,
@@ -42,16 +31,16 @@ BEGIN
 				@UserId = @NewUserId OUTPUT;
 			PRINT('Create User: ' + CAST(ISNULL(@NewUserId, 0) AS VARCHAR(100)) + ' - FileName:SeedData - $(EnvironmentName)')
 			
-			EXEC dbo.AssignUserToRole @NewAdminUsername, @NewPublicRoleId;
-			PRINT('Assign User to Role: Username: ' + CAST(ISNULL(@NewAdminUsername, 0) AS VARCHAR(100)) + '- RoleId: ' + ISNULL(CAST(@NewPublicRoleId AS VARCHAR(100)), '0') + ' - FileName:SeedData - $(EnvironmentName)')
+			EXEC dbo.AssignUserToRole @NewAdminUsername, @NewRoleName;
+			PRINT('Assign User to Role: Username: ' + CAST(ISNULL(@NewAdminUsername, 0) AS VARCHAR(100)) + '- RoleId: ' + ISNULL(CAST(@NewRoleName AS VARCHAR(100)), '0') + ' - FileName:SeedData - $(EnvironmentName)')
 			
 			EXEC dbo.ActivateUser 
 				@Username = @NewAdminUsername;
 			PRINT('Activate User: ' + CAST(ISNULL(@NewAdminUsername, 0) AS VARCHAR(100)) + ' - FileName:SeedData - $(EnvironmentName)')
 			
 			DECLARE 
-				@Username VARCHAR(100),
-				@Email VARCHAR(100),
+				@Username VARCHAR(50),
+				@Email VARCHAR(50),
 				@Confirmed BIT,
 				@Disabled BIT,
 				@Id INT;

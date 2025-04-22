@@ -2,7 +2,8 @@
 {
     public class ResetPasswordDTO
     {
-        public required string newPassword { get; set; }
+        public required string OldPassword { get; set; }
+        public required string NewPassword { get; set; }
         public required string token { get; set; }
     }
 }

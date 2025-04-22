@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE [dbo].[AddProduct]
-    @Username VARCHAR(100),
+    @Username VARCHAR(50),
 	@ProductName VARCHAR(100),
 	@Description VARCHAR(100),
 	@Quantity INT,

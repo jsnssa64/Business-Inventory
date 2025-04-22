@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using System.Text.Encodings.Web;
-using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Mvc.Filters;
+﻿using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static Domain.User.Roles;
@@ -9,7 +6,7 @@ using System.Security.Claims;
 
 namespace InventoryApi.Authentication
 {
-    public class MinimumRoleAttribute : AuthorizeAttribute, IAuthorizationFilter
+    public class MinimumRoleAttribute : Attribute, IAsyncActionFilter
     {
         private readonly RoleLevel _minimumRole;
 
@@ -18,16 +15,35 @@ namespace InventoryApi.Authentication
             _minimumRole = minimumRole;
         }
 
-        public void OnAuthorization(AuthorizationFilterContext context)
+        public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            var roleClaim = context.HttpContext.User.FindFirst(ClaimTypes.Role);
+            var endpoint = context.HttpContext.GetEndpoint();
+            var allowAnonymous = endpoint?.Metadata.GetMetadata<IAllowAnonymous>() != null;
 
-            if (roleClaim == null ||
-                !int.TryParse(roleClaim.Value, out var roleLevel) ||
-                roleLevel < (int)_minimumRole)
+            if (allowAnonymous)
+            {
+                await next(); // Skip auth check
+                return;
+            }
+
+            var user = context.HttpContext.User;
+
+            if (!user.Identity?.IsAuthenticated ?? false)
+            {
+                context.Result = new UnauthorizedResult();
+                return;
+            }
+
+            var roleClaim = user.FindFirst(ClaimTypes.Role);
+
+            if (roleClaim == null || !Enum.TryParse<RoleLevel>(roleClaim.Value, out var level) || (int)level < (int)_minimumRole)
             {
                 context.Result = new ForbidResult();
+                return;
             }
+
+            await next();
         }
+
     }
 }

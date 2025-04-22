@@ -51,11 +51,11 @@ namespace InventoryApi.Service.UserService.Utility
             switch (userClaim)
             {
                 case UserClaim.Username:
-                    return claims.FirstOrDefault(c => c.Type == nameof(ClaimTypes.Name))?.Value ?? throw new Exception("Unable to generate Username claim");
+                    return claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value ?? throw new Exception("Unable to generate Username claim");
                 case UserClaim.Email:
-                    return claims.FirstOrDefault(c => c.Type == nameof(ClaimTypes.Email))?.Value ?? throw new Exception("Unable to generate Email claim");
+                    return claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value ?? throw new Exception("Unable to generate Email claim");
                 case UserClaim.Role:
-                    return claims.FirstOrDefault(c => c.Type == nameof(ClaimTypes.Role))?.Value ?? throw new Exception("Unable to generate Role claim");
+                    return claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? throw new Exception("Unable to generate Role claim");
                 default:
                     throw new NotImplementedException();
             }

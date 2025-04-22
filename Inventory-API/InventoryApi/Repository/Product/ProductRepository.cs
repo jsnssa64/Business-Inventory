@@ -20,10 +20,8 @@ namespace InventoryApi.Repository.Inventory
             _dbConnectionFactory = dbConnectionFactory;
         }
 
-        public async Task<ProductIdModel> AddProduct(UserIdentifierModel userIdentifierModel, ProductDetailsModel productDetailsModel, PriceModel? priceModel)
+        public async Task<ProductIdModel> AddProduct(IDbConnection dbConnection, UserIdentifierModel userIdentifierModel, ProductDetailsModel productDetailsModel, IDbTransaction? dbTransaction)
         {
-            using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
-
             DynamicParameters parameters = new DynamicParameters();
             parameters.Add(nameof(UserIdentifierModel.Username), userIdentifierModel.Username);
             parameters.Add(nameof(ProductDetailsModel.ProductName), productDetailsModel.ProductName);
@@ -31,7 +29,7 @@ namespace InventoryApi.Repository.Inventory
             parameters.Add(nameof(ProductDetailsModel.Quantity), productDetailsModel.Quantity);
             parameters.Add(nameof(ProductIdModel.PublicProductId), dbType: DbType.Guid, direction: ParameterDirection.Output);
 
-            var result = await conn.ExecuteScalarAsync<int>("dbo.AddProduct", parameters, commandType: CommandType.StoredProcedure);
+            var result = await dbConnection.ExecuteScalarAsync<int>("dbo.AddProduct", parameters, commandType: CommandType.StoredProcedure, transaction: dbTransaction);
 
             if (result != 0)
                 throw new Exception("Unable to add product");
@@ -42,36 +40,20 @@ namespace InventoryApi.Repository.Inventory
                 PublicProductId = parameters.Get<Guid>(nameof(ProductIdModel.PublicProductId))
             };
 
-            if (priceModel is not null) {
-
-                DynamicParameters priceParam = new DynamicParameters();
-                priceParam.Add(nameof(ProductIdentifierModel.Username), productIdentifierModel.Username);
-                priceParam.Add(nameof(ProductIdentifierModel.PublicProductId), productIdentifierModel.PublicProductId);
-                priceParam.Add(nameof(PriceModel.Price), priceModel.Price);
-                priceParam.Add(nameof(PriceModel.CurrencyCode), priceModel.CurrencyCode);
-
-                var priceResult = await conn.ExecuteScalarAsync<int>("dbo.AddProductPrice", parameters, commandType: CommandType.StoredProcedure);
-
-                if (priceResult != 0)
-                    throw new Exception("Unable to Add price to product");
-            }
-
             return new ProductIdModel() { 
                 PublicProductId = productIdentifierModel.PublicProductId
             };
         }
 
-        public async Task AddPriceToProduct(ProductIdentifierModel productIdentifierModel, PriceModel price)
+        public async Task AddPriceToProduct(IDbConnection dbConnection, ProductIdentifierModel productIdentifierModel, PriceModel price, IDbTransaction? dbTransaction)
         {
-            using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
-
             DynamicParameters parameters = new DynamicParameters();
             parameters.Add(nameof(ProductIdentifierModel.Username), productIdentifierModel.Username);
             parameters.Add(nameof(ProductIdentifierModel.PublicProductId), productIdentifierModel.PublicProductId);
             parameters.Add(nameof(PriceModel.Price), price.Price);
             parameters.Add(nameof(PriceModel.CurrencyCode), price.CurrencyCode);
 
-            var result = await conn.ExecuteScalarAsync<int>("dbo.AddProductPrice", parameters, commandType: CommandType.StoredProcedure);
+            var result = await dbConnection.ExecuteScalarAsync<int>("dbo.AddProductPrice", parameters, commandType: CommandType.StoredProcedure, transaction: dbTransaction);
 
             if (result != 0)
                 throw new Exception("Unable to add product price");
@@ -101,7 +83,8 @@ namespace InventoryApi.Repository.Inventory
                     throw new DbUpdateException("Failed to get price");
             }
 
-            var product = new Product().Map(resultProduct, resultPrice);
+            var product = new Product();
+            product.Map(resultProduct, resultPrice);
 
             return product;
         }

@@ -13,7 +13,7 @@ namespace InventoryApi.Service.UserService
         Task ForgottenPasswordByEmail(UserEmailModel userEmailModel);
         Task ForgottenPasswordByUsername(UserIdentifierModel userIdentifierModel);
         Task<UserDetails> GetUserDetails(UserIdentifierModel userName);
-        Task LoginUser(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, PasswordModel passwordModel);
+        Task LoginUser(HttpResponse httpResponse, UserLoginModel userLoginModel);
         void LogoutUser(HttpResponse httpResponse);
         Task<IEnumerable<Claim>> GenerateLogin(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, Action<User>? validate = null);
         Task RegisterDefaultUser(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, UserRegistrationModel userRegistrationModel);

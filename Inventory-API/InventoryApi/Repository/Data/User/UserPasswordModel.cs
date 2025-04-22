@@ -2,6 +2,7 @@
 {
     public class PasswordModel
     {
-        public required string Password { get; set; }
+        public required string OldPassword { get; set; }
+        public required string NewPassword { get; set; }
     }
 }

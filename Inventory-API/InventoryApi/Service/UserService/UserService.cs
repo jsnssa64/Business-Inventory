@@ -7,7 +7,6 @@ using InventoryApi.Repository;
 using InventoryApi.Repository.Data.Product;
 using InventoryApi.Repository.Data.Role;
 using InventoryApi.Repository.Data.User;
-using InventoryApi.Repository.RoleRepo;
 using InventoryApi.Service.SecurityService;
 using InventoryApi.Service.SecurityService.Models;
 using InventoryApi.Service.UserService.Utility;
@@ -61,6 +60,11 @@ namespace InventoryApi.Service.UserService
 
         private async Task<UserIdModel> CreateUser(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, UserRegistrationModel userRegistrationModel)
         {
+            if(!Roles.IsValidRoleLevel(userRegistrationModel.RoleName))
+            {
+                throw new Exception("Invalid Role");
+            }
+
             using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
             conn.Open();
             var transaction = conn.BeginTransaction();
@@ -83,12 +87,13 @@ namespace InventoryApi.Service.UserService
 
                 transaction.Commit();
                 
-                var passwordModel = new PasswordModel()
+                var userLoginModel = new UserLoginModel()
                 {
+                    Username = userIdentifierModel.Username,
                     Password = userRegistrationModel.Password
                 };
 
-                await LoginUser(httpResponse, userIdentifierModel, passwordModel);
+                await LoginUser(httpResponse, userLoginModel);
 
                 return userIdModel;
             }
@@ -161,11 +166,34 @@ namespace InventoryApi.Service.UserService
             await _userRepository.ResetPassword(userIdentifier, passwordModel);
         }
 
-        public async Task LoginUser(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, PasswordModel passwordModel)
+        public async Task ChangePassword(UserIdentifierModel userIdentifierModel, PasswordModel passwordModel)
         {
+            try
+            {
+                var user = await _userRepository.GetUser(userIdentifierModel);
+
+                if (!_securityService.VerifyPassword(passwordModel.OldPassword, user.PasswordHash))
+                {
+                    throw new Exception("Invalid password");
+                }
+
+                await _userRepository.ResetPassword(userIdentifierModel, passwordModel);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to Reset User password: {ex.Message}");
+            }
+        }
+
+        public async Task LoginUser(HttpResponse httpResponse, UserLoginModel userLoginModel)
+        {
+            var userIdentifierModel = new UserIdentifierModel() { 
+                Username = userLoginModel.Username 
+            };
+
             await this.GenerateLogin(httpResponse, userIdentifierModel, (usersRole) =>
             {
-                if (!_securityService.VerifyPassword(passwordModel.Password, usersRole.PasswordHash ?? throw new Exception("Unable to verify password")))
+                if (!_securityService.VerifyPassword(userLoginModel.Password, usersRole.PasswordHash ?? throw new Exception("Unable to verify password")))
                 {
                     throw new Exception("Invalid password");
                 }
@@ -233,18 +261,6 @@ namespace InventoryApi.Service.UserService
             var user = await _userRepository.GetUser(userIdentifierModel);
 
             //  Trigger Email - Password - user.Email
-        }
-
-        public async Task ChangePassword(UserIdentifierModel userIdentifierModel, PasswordModel passwordModel)
-        {
-            try
-            {
-                await _userRepository.ResetPassword(userIdentifierModel, passwordModel);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to Reset User password: {ex.Message}");
-            }
         }
 
         public void LogoutUser(HttpResponse httpResponse)

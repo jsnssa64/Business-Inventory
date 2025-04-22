@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE dbo.GetInventoryItems
-    @Username VARCHAR(100)
+    @Username VARCHAR(50)
 AS
 BEGIN
     SET NOCOUNT ON;
