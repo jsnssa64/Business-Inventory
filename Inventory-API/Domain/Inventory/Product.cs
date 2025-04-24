@@ -1,11 +1,26 @@
 ﻿namespace Domain.Inventory
 {
-    public class Product
+    public class ProductBase
     {
-        public string Id { get; set; } = string.Empty;
+        public Guid PublicProductId { get; set; } = Guid.Empty;
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public int Quantity { get; set; }
+
+
+        public void Map(dynamic? product)
+        {
+            if (product == null)
+            {
+                throw new ArgumentNullException(nameof(product));
+            }
+            PublicProductId = product.PublicProductId;
+            Name = product.Name;
+            Description = product.Description;
+        }
+    }
+
+    public class Product: ProductBase
+    {
         public bool EnabledPrice { get; set; }
         public Price? Price { get; set; } = null;
 
@@ -15,10 +30,9 @@
             {
                 throw new ArgumentNullException(nameof(product));
             }
-            Id = product.Id;
+            PublicProductId = product.PublicProductId;
             Name = product.Name;
             Description = product.Description;
-            Quantity = product.Quantity;
             EnabledPrice = product.EnabledPrice;
 
             Price = null;
@@ -27,8 +41,8 @@
             {
                 Price = new Price()
                 {
-                    Amount = product.Price,
-                    Currency = product.CurrencyCode
+                    Amount = price.Price,
+                    Currency = price.CurrencyCode
                 };
             }       
         }

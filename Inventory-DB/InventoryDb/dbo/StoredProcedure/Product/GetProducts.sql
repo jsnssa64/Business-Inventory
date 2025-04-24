@@ -13,7 +13,7 @@ BEGIN
         p.[Description]
     FROM dbo.Product p
     JOIN dbo.[User] u 
-    ON u.Id = p.Id
+    ON u.Id = p.UserId
     WHERE u.Id = @UserId
         AND p.[Disabled] = 0
     OPTION (RECOMPILE);

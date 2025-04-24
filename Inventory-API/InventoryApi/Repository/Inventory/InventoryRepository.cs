@@ -58,7 +58,7 @@ namespace InventoryApi.Repository.Inventory
 
             var result = await dbConnection.ExecuteScalarAsync<int>("dbo.UpdateItemInInventory", parameters, commandType: CommandType.StoredProcedure, transaction: dbTransaction);
 
-            if (result == 0)
+            if (result != 0)
             {
                 throw new DbUpdateException($"Failed to Insert item");
             }

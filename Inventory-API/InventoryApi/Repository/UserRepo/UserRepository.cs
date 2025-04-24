@@ -160,6 +160,27 @@ namespace InventoryApi.Repository
             }
         }
 
+        public async Task<IEnumerable<User>> GetAllUsers()
+        {
+            try
+            {
+                using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
+
+                var parameters = new DynamicParameters();
+
+                var result = await conn.QueryAsync<User>("dbo.GetAllUsers", parameters, commandType: CommandType.StoredProcedure);
+
+                if (result is null)
+                    throw new DbUpdateException($"Users not found");
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new DbUpdateException($"Failed to retrieve user details: {ex.Message}");
+            }
+        }
+
         public async Task<User> GetUser(UserIdentifierModel userIdentifierModel)
         {
             try
@@ -173,6 +194,31 @@ namespace InventoryApi.Repository
 
                 if (result is null)
                     throw new DbUpdateException($"User not found for username: {userIdentifierModel.Username}");
+
+                var user = new User();
+                user.Map(result);
+
+                return user;
+            }
+            catch (Exception ex)
+            {
+                throw new DbUpdateException($"Failed to retrieve user details: {ex.Message}");
+            }
+        }
+
+        public async Task<User> GetUserByEmail(UserEmailModel userEmailModel)
+        {
+            try
+            {
+                using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
+
+                var parameters = new DynamicParameters();
+                parameters.Add(nameof(UserEmailModel.Email), userEmailModel.Email);
+
+                var result = await conn.QueryFirstAsync<dynamic>("dbo.GetUserByEmail", parameters, commandType: CommandType.StoredProcedure);
+
+                if (result is null)
+                    throw new DbUpdateException($"User not found for username: {userEmailModel.Email}");
 
                 var user = new User();
                 user.Map(result);

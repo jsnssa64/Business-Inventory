@@ -22,5 +22,7 @@ namespace InventoryApi.Service.UserService
         Task SetUserStatus(UserIdentifierModel userIdentifierModel, StatusModel statusModel);
         Task UpdateUser(UserIdentifierModel userIdentifierModel, UserDetailsModel userDetailsModel);
         Task UserConfirmation(string token);
+        Task<User> GetUser(UserIdentifierModel userName);
+        Task<IEnumerable<User>> GetUsers();
     }
 }

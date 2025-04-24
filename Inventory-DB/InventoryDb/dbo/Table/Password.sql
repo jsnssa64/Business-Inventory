@@ -11,5 +11,5 @@
 
 GO
 
-CREATE UNIQUE NONCLUSTERED INDEX IX_User_Password ON [Password](UserId)
-INCLUDE ([PasswordHash]);
+CREATE UNIQUE NONCLUSTERED INDEX IX_User_Password ON [Password](UserId, [PasswordHash]);
+GO

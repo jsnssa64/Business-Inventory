@@ -150,6 +150,7 @@
     <Build Include="dbo\StoredProcedure\User\GetDisabledUserIdByUsername.sql" />
     <Build Include="dbo\StoredProcedure\User\GetEnabledUserIdByUsername.sql" />
     <Build Include="dbo\StoredProcedure\Product\GetProductPriceById.sql" />
+    <Build Include="dbo\StoredProcedure\User\GetUserByEmail.sql" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\StoredProcedure\Inventory\GetInventoryItems.sql" />

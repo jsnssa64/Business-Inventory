@@ -1,16 +1,23 @@
 ﻿using System.Security.Claims;
 using InventoryApi.Constants;
+using InventoryApi.Repository;
+using InventoryApi.Repository.Data.Product;
 using InventoryApi.Service.SecurityService.Models;
+using InventoryApi.Service.UserService.Utility;
 
 namespace InventoryApi.Service.SecurityService
 {
     public class SecurityService: ISecurityService
     {
         private IJWTUtility _JWTUtility;
+        private IUserRepository _userRepository;
+        private IUserUtility _userUtility;
 
-        public SecurityService(IJWTUtility JWTUtility) 
+        public SecurityService(IJWTUtility JWTUtility, IUserUtility userUtility, IUserRepository userRepository) 
         {
             _JWTUtility = JWTUtility;
+            _userRepository = userRepository;
+            _userUtility = userUtility;
         }
 
         public void SetCookieForLogin(HttpResponse httpResponse, string accessToken, string refreshToken, DateTimeOffset cookieExpiry)
@@ -50,5 +57,13 @@ namespace InventoryApi.Service.SecurityService
             BCrypt.Net.BCrypt.HashPassword(password, (int)securityLevel, BCrypt.Net.SaltRevision.Revision2B);
 
         public bool VerifyPassword(string password, string hashPassword) => BCrypt.Net.BCrypt.Verify(password, hashPassword);
+
+        public async Task<string> GenerateUserJWT(UserIdentifierModel userIdentifierModel, KeyType keyType)
+        {
+            var user = await _userRepository.GetUser(userIdentifierModel);
+
+            var claims = _userUtility.MapUserToClaims(user);
+            return _JWTUtility.GenerateJWT(claims, keyType);
+        }
     }
 }

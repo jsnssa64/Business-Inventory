@@ -79,7 +79,7 @@ namespace InventoryApi.Repository.Inventory
                 resultPrice = await conn.QuerySingleAsync<dynamic>("dbo.GetProductPriceById", parameters, commandType: CommandType.StoredProcedure);
 
 
-                if (resultProduct is null)
+                if (resultPrice is null)
                     throw new DbUpdateException("Failed to get price");
             }
 
@@ -117,14 +117,14 @@ namespace InventoryApi.Repository.Inventory
                 throw new Exception("Unable to remove product price");
         }
 
-        public async Task<IEnumerable<Product>> GetProducts(UserIdentifierModel username)
+        public async Task<IEnumerable<ProductBase>> GetProducts(UserIdentifierModel userIdentifierModel)
         {
             using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
 
             DynamicParameters parameters = new DynamicParameters();
-            parameters.Add(nameof(UserIdentifierModel.Username), username);
+            parameters.Add(nameof(UserIdentifierModel.Username), userIdentifierModel.Username);
 
-            var result = await conn.QueryAsync<Product>("dbo.GetProducts", parameters, commandType: CommandType.StoredProcedure);
+            var result = await conn.QueryAsync<ProductBase>("dbo.GetProducts", parameters, commandType: CommandType.StoredProcedure);
 
             if (result.IsNullOrEmpty())
             {

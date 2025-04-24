@@ -114,7 +114,7 @@ namespace InventoryApi.Service.UserService
             }
             catch (Exception ex)
             {
-                throw new Exception($"Failed to register new User: {ex.Message}");
+                throw new Exception($"Failed to activate User: {ex.Message}");
             }
         }
 
@@ -177,6 +177,8 @@ namespace InventoryApi.Service.UserService
                     throw new Exception("Invalid password");
                 }
 
+                passwordModel.NewPassword = _securityService.EncryptPassword(passwordModel.NewPassword);
+
                 await _userRepository.ResetPassword(userIdentifierModel, passwordModel);
             }
             catch (Exception ex)
@@ -233,34 +235,53 @@ namespace InventoryApi.Service.UserService
 
         public async Task<User> GetUser(UserIdentifierModel userName)
         {
-            var user = await _userRepository.GetUser(userName);
+            return await _userRepository.GetUser(userName);
+        }
 
-            if (Roles.IsValidRoleLevel(user.Role?.Rolename))
-                throw new Exception("Not Valid Role");
-
-            return user;
+        public async Task<IEnumerable<User>> GetUsers()
+        {
+            return await _userRepository.GetAllUsers();
         }
 
         public async Task ForgottenPasswordByEmail(UserEmailModel userEmailModel)
         {
-            if (!await _userRepository.IsValidUserByEmail(userEmailModel)) 
+            try
             {
-                throw new Exception("Invalid Email");
-            }
+                var user = await _userRepository.GetUserByEmail(userEmailModel);
 
-            //  Trigger Email - Password - user.Email
+                var userIdentifierModel = new UserIdentifierModel()
+                {
+                    Username = user.Username
+                };
+
+                var token = await _securityService.GenerateUserJWT(userIdentifierModel, KeyType.resetPassword);
+
+                //  Trigger Email - Password - user.Email
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("Failed to send email");
+            } 
         }
 
         public async Task ForgottenPasswordByUsername(UserIdentifierModel userIdentifierModel)
         {
-            if (!await _userRepository.IsValidUserByUsername(userIdentifierModel))
+            try
             {
-                throw new Exception("Invalid Username");
+                if (!await _userRepository.IsValidUserByUsername(userIdentifierModel))
+                {
+                    throw new Exception("Invalid Username");
+                }
+
+                var token = await _securityService.GenerateUserJWT(userIdentifierModel, KeyType.resetPassword);
+
+                //  Trigger Email - Password - user.Email
+
             }
-
-            var user = await _userRepository.GetUser(userIdentifierModel);
-
-            //  Trigger Email - Password - user.Email
+            catch(Exception ex)
+            {
+                throw new Exception("Failed to send email");
+            }
         }
 
         public void LogoutUser(HttpResponse httpResponse)

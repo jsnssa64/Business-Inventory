@@ -83,6 +83,8 @@ namespace InventoryApi.Service.InventoryService
 
                 await _inventoryRepository.UpdateItemToInventoryByProductIdTransact(conn, productIdentifierModel, inventoryItemModel, transaction);
 
+                transaction.Commit();
+
                 return productResult;
             }
             catch (Exception ex)
@@ -101,7 +103,7 @@ namespace InventoryApi.Service.InventoryService
             return result;
         }
 
-        public async Task<IEnumerable<Product>> GetProducts(UserIdentifierModel userIdentifierModel, CancellationToken cancellationToken)
+        public async Task<IEnumerable<ProductBase>> GetProducts(UserIdentifierModel userIdentifierModel, CancellationToken cancellationToken)
         {
             return await _productRepository.GetProducts(userIdentifierModel);
         }

@@ -60,15 +60,15 @@ AS
 
             UPDATE dbo.UserDetails
             SET 
-	            @FirstName = ISNULL(@FirstName, @CurrentFirstName),
-	            @LastName = ISNULL(@LastName, @CurrentLastName),
-	            @ContactNumber = ISNULL(@ContactNumber, @CurrentContactNumber),
-	            @Gender = ISNULL(@Gender, @CurrentGender),
-	            @DOB = ISNULL(@DOB, @CurrentDOB),
-	            @FirstLineAddress = ISNULL(@FirstLineAddress, @CurrentFirstLineAddress),
-	            @SecondLineAddress = ISNULL(@SecondLineAddress, @CurrentSecondLineAddress),
-	            @Country = ISNULL(@Country, @CurrentCountry),
-	            @PostCode = ISNULL(@PostCode, @CurrentPostCode)
+	            FirstName = ISNULL(@FirstName, @CurrentFirstName),
+	            LastName = ISNULL(@LastName, @CurrentLastName),
+	            ContactNumber = ISNULL(@ContactNumber, @CurrentContactNumber),
+	            Gender = ISNULL(@Gender, @CurrentGender),
+	            DOB = ISNULL(@DOB, @CurrentDOB),
+	            FirstLineAddress = ISNULL(@FirstLineAddress, @CurrentFirstLineAddress),
+	            SecondLineAddress = ISNULL(@SecondLineAddress, @CurrentSecondLineAddress),
+	            Country = ISNULL(@Country, @CurrentCountry),
+	            PostCode = ISNULL(@PostCode, @CurrentPostCode)
             WHERE UserId = @UserId 
                 AND UserId = @UserId;
         COMMIT TRANSACTION;

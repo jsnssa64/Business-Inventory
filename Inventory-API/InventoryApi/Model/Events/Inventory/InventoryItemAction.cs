@@ -4,6 +4,6 @@
     {
         public static string StreamName = "InventoryItem";
         public int InventoryItemId { get; set; }
-        public string? ProductId { get; set; }
+        public Guid? ProductId { get; set; }
     }
 }

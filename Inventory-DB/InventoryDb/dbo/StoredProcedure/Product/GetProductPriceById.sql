@@ -13,7 +13,7 @@ BEGIN
            pp.CurrencyCode
     FROM dbo.Product p
     JOIN dbo.[User] u 
-        ON u.Id = p.Id
+        ON u.Id = p.UserId
     JOIN dbo.ProductPrice pp
         ON p.Id = pp.ProductId
      WHERE p.PublicId = @PublicProductId

@@ -1,11 +1,11 @@
-﻿CREATE PROCEDURE dbo.GetUser
-    @Username VARCHAR(50)
+﻿CREATE PROCEDURE dbo.GetUserByEmail
+    @Email VARCHAR(50)
 AS
 BEGIN
     SET NOCOUNT ON;
     DECLARE @UserId INT;
 
-    EXEC dbo.GetActiveUserIdByUsername @Username, @UserId OUTPUT;
+    EXEC dbo.GetActiveUserIdByEmail @Email, @UserId OUTPUT;
 
     SELECT
            u.Username,
@@ -17,6 +17,5 @@ BEGIN
         ON u.Id =  ur.UserId
     JOIN dbo.[Password] p
         ON u.Id = p.UserId
-    WHERE u.Id = @UserId
-        AND p.[Disabled] = 0
+    WHERE u.Id = @UserId;
 END

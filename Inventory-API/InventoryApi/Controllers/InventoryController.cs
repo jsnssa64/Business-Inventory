@@ -1,5 +1,4 @@
 using Domain.Inventory;
-using Domain.User;
 using InventoryApi.Authentication;
 using InventoryApi.Controllers.CustomController;
 using InventoryApi.Model.DTO.Inventory;
@@ -7,7 +6,6 @@ using InventoryApi.Model.Events.Inventory;
 using InventoryApi.Repository.Data.Inventory;
 using InventoryApi.Repository.Data.Product;
 using InventoryApi.Service.InventoryService;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static Domain.User.Roles;
 
@@ -101,9 +99,7 @@ namespace InventoryApi.Controllers
         {
             var restockedEvent = new InventoryItemRestocked
             {
-                ProductId = product.Id,
-                InventoryItemId = inventoryItem.Id,
-                Quantity = product.Quantity
+                ProductId = product.PublicProductId
             };
 
             try
@@ -125,9 +121,7 @@ namespace InventoryApi.Controllers
         {
             var removeEvent = new InventoryItemRemoved
             {
-                ProductId = product.Id,
-                InventoryItemId = inventoryItem.Id,
-                Quantity = product.Quantity
+                ProductId = product.PublicProductId
             };
 
             try

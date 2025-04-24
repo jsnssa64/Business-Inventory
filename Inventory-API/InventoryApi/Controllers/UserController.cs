@@ -119,7 +119,9 @@ namespace InventoryApi.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ForgottenPasswordByUsername(UsernameDTO usernameDTO, CancellationToken cancellationToken)
         {
-            var userIdentifierModel = new UserIdentifierModel() { Username = usernameDTO.UserName };
+            var userIdentifierModel = new UserIdentifierModel() { 
+                Username = usernameDTO.UserName 
+            };
 
             await _userService.ForgottenPasswordByUsername(userIdentifierModel);
             return Ok();
@@ -128,6 +130,22 @@ namespace InventoryApi.Controllers
         [HttpGet("GetUserDetailsByUser")]
         [MinimumRole(RoleLevel.Admin)]
         public async Task<IActionResult> GetUserDetails(string username, CancellationToken cancellationToken)
+        {
+            var allUserData = await _userService.GetUserDetails(new UserIdentifierModel() { Username = username });
+            return Ok(allUserData);
+        }
+
+        [HttpGet("GetUsers")]
+        [MinimumRole(RoleLevel.Admin)]
+        public async Task<IActionResult> GetUsers(CancellationToken cancellationToken)
+        {
+            var allUserData = await _userService.GetUsers();
+            return Ok(allUserData);
+        }
+
+        [HttpGet("GetUser")]
+        [MinimumRole(RoleLevel.Admin)]
+        public async Task<IActionResult> GetUser(string username, CancellationToken cancellationToken)
         {
             var allUserData = await _userService.GetUserDetails(new UserIdentifierModel() { Username = username });
             return Ok(allUserData);
