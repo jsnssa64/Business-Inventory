@@ -101,15 +101,15 @@ namespace InventoryApi.Controllers
         }
 
 
-        [HttpPost("RemoveProduct")]
-        public async Task<IActionResult> RemoveProduct(ProductIdDTO productDTO, CancellationToken cancellationToken)
+        [HttpGet("RemoveProduct")]
+        public async Task<IActionResult> RemoveProduct(Guid productId, CancellationToken cancellationToken)
         {
             try
             {
                 var productIdentifierModel = new ProductIdentifierModel
                 {
                     Username = GetUsername(),
-                    PublicProductId = productDTO.ProductId
+                    PublicProductId = productId
                 };
 
                 await _productService.RemoveProduct(productIdentifierModel, cancellationToken);

@@ -15,7 +15,7 @@ namespace InventoryApi.Service.UserService
         Task<UserDetails> GetUserDetails(UserIdentifierModel userName);
         Task LoginUser(HttpResponse httpResponse, UserLoginModel userLoginModel);
         void LogoutUser(HttpResponse httpResponse);
-        Task<IEnumerable<Claim>> GenerateLogin(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, Action<User>? validate = null);
+        Task<IEnumerable<Claim>> GenerateLogin(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, Action<UserWithPassword>? validate = null);
         Task RegisterDefaultUser(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, UserRegistrationModel userRegistrationModel);
         Task RegisterUser(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, UserRegistrationModel userRegistrationModel);
         Task ResetPassword(string token, PasswordModel passwordModel);

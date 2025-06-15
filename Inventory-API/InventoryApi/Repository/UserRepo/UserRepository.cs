@@ -181,7 +181,7 @@ namespace InventoryApi.Repository
             }
         }
 
-        public async Task<User> GetUser(UserIdentifierModel userIdentifierModel)
+        public async Task<UserWithPassword> GetUser(UserIdentifierModel userIdentifierModel)
         {
             try
             {
@@ -195,7 +195,7 @@ namespace InventoryApi.Repository
                 if (result is null)
                     throw new DbUpdateException($"User not found for username: {userIdentifierModel.Username}");
 
-                var user = new User();
+                var user = new UserWithPassword();
                 user.Map(result);
 
                 return user;

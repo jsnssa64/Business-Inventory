@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using System.Security.Cryptography;
 using InventoryApi.Constants;
 using InventoryApi.Repository;
 using InventoryApi.Repository.Data.Product;
@@ -57,6 +58,27 @@ namespace InventoryApi.Service.SecurityService
             BCrypt.Net.BCrypt.HashPassword(password, (int)securityLevel, BCrypt.Net.SaltRevision.Revision2B);
 
         public bool VerifyPassword(string password, string hashPassword) => BCrypt.Net.BCrypt.Verify(password, hashPassword);
+
+        public string GenerateSecureSecret(int byteLength = 32)
+        {
+            var bytes = new byte[byteLength];
+            RandomNumberGenerator.Fill(bytes);
+            return Convert.ToHexString(bytes).ToLower(); // hex string
+        }
+
+        public string GetHashFromPayload(string payload, string secret)
+        {
+            var secretBytes = System.Text.Encoding.UTF8.GetBytes(secret);
+
+            using (var hashGenerator = new HMACSHA256(secretBytes))
+            {
+                var payloadBytes = System.Text.Encoding.UTF8.GetBytes(payload);
+                var hashBytes = hashGenerator.ComputeHash(payloadBytes);
+
+                // Return as lowercase hex string  
+                return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+            }
+        }
 
         public async Task<string> GenerateUserJWT(UserIdentifierModel userIdentifierModel, KeyType keyType)
         {

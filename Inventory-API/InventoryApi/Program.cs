@@ -1,14 +1,9 @@
 using InventoryApi.Extensions;
-using InventoryApi.Repository;
-using InventoryApi.Repository.Inventory;
-using InventoryApi.Repository.RoleRepo;
-using InventoryApi.Service.InventoryService;
-using InventoryApi.Service.RoleService;
+using InventoryApi.Repository.Webhook;
 using InventoryApi.Service.SecurityService;
-using InventoryApi.Service.SecurityService.Models;
 using InventoryApi.Service.UserService;
-using InventoryApi.Service.UserService.Utility;
-using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.Extensions.Caching.Memory;
+using ZiggyCreatures.Caching.Fusion;
 
 internal class Program
 {
@@ -16,31 +11,29 @@ internal class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add services to the container.
-
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        builder.Services.AddDapper(builder.Configuration);
-        builder.Services.AddEventStore(builder.Configuration);
+        builder.Services.AddMemoryServices(builder.Configuration);
+        builder.Services.AddSecurityServices(builder.Configuration);
 
-        builder.Services.AddSingleton<ISecurityService, SecurityService>();
         builder.Services.AddSingleton<IJWTUtility, JWTUtility>();
-        builder.Services.AddSingleton<IUserUtility, UserUtility>();
-        builder.Services.AddSingleton<IUserService, UserService>();
-        builder.Services.AddSingleton<IUserRepository, UserRepository>();
-        builder.Services.AddSingleton<IInventoryService, InventoryService>();
-        builder.Services.AddSingleton<IInventoryRepository, InventoryRepository>();
-        builder.Services.AddSingleton<IRoleService, RoleService>();
-        builder.Services.AddSingleton<IRoleRepository, RoleRepository>();
-        builder.Services.AddSingleton<IProductRepository, ProductRepository>();
-        builder.Services.AddSingleton<IProductService, ProductService>();
 
-        builder.Services.Configure<Security>(builder.Configuration.GetSection("Security"));
+        builder.Services.AddApiServices(builder.Configuration);
+
+        builder.Services.AddSingleton<IWebhookService, WebhookService>();
+        builder.Services.AddSingleton<IWebhookRepository, WebhookRepository>();
 
         builder.Services.AddLoginAuthentication();
+
+        builder.Services.AddFusionCache()
+            .WithDefaultEntryOptions(new FusionCacheEntryOptions
+            {
+                Duration = TimeSpan.FromMinutes(2),
+                Priority = CacheItemPriority.Low
+            });
 
         var app = builder.Build();
 

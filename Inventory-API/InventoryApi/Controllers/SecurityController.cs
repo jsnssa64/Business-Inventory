@@ -1,7 +1,6 @@
 ﻿using InventoryApi.Controllers.CustomController;
 using InventoryApi.Model.DTO.User;
 using InventoryApi.Service.SecurityService;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InventoryApi.Controllers
@@ -13,6 +12,7 @@ namespace InventoryApi.Controllers
         public ISecurityService SecurityService { get; } = securityService;
 
         [HttpPost("CreatePassword")]
+        //  DevOnly - TODO
         public IActionResult CreatePassword(UserNewPassword userNewPassword, CancellationToken cancellationToken)
         {
             var passwordHash = SecurityService.EncryptPassword(userNewPassword.NewPassword);

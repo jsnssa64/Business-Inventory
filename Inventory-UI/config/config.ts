@@ -1,0 +1,1 @@
+export const SIGNALR_URL = import.meta.env.VITE_SIGNALR_URL;

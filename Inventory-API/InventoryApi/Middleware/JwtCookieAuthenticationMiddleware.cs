@@ -27,7 +27,7 @@ namespace InventoryApi.Middleware
             if (!validAccessToken &&
                 !validRefreshToken)
             {
-                //  Let through
+                //  Let attributes deal with the request
                 await _next(context);
                 return;
             }
@@ -44,7 +44,7 @@ namespace InventoryApi.Middleware
                     return;
                 }
 
-                /*  Validate Refresh Token */
+                /*  Backup: Validate Refresh Token */
                 if (_JWTUtility.IsTokenValid(refreshToken, KeyType.refresh))
                 {
                     var refreshClaimIdentity = await _JWTUtility.GetTokenClaims(refreshToken, KeyType.refresh);

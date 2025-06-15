@@ -40,7 +40,7 @@ namespace InventoryApi.Controllers
                 },
                 new RoleNameModel()
                 {
-                    RoleName = usersRoleDTO.roleName.ToString()
+                    RoleName = usersRoleDTO.RoleName.ToString()
                 });
             return Ok();
         }
@@ -115,12 +115,12 @@ namespace InventoryApi.Controllers
             return Ok();
         }
 
-        [HttpPost("ForgottenPasswordByUsername")]
+        [HttpGet("ForgottenPasswordByUsername")]
         [AllowAnonymous]
-        public async Task<IActionResult> ForgottenPasswordByUsername(UsernameDTO usernameDTO, CancellationToken cancellationToken)
+        public async Task<IActionResult> ForgottenPasswordByUsername(string userName, CancellationToken cancellationToken)
         {
             var userIdentifierModel = new UserIdentifierModel() { 
-                Username = usernameDTO.UserName 
+                Username = userName 
             };
 
             await _userService.ForgottenPasswordByUsername(userIdentifierModel);
@@ -144,10 +144,9 @@ namespace InventoryApi.Controllers
         }
 
         [HttpGet("GetUser")]
-        [MinimumRole(RoleLevel.Admin)]
-        public async Task<IActionResult> GetUser(string username, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetUser(CancellationToken cancellationToken)
         {
-            var allUserData = await _userService.GetUserDetails(new UserIdentifierModel() { Username = username });
+            var allUserData = await _userService.GetUser(new UserIdentifierModel() { Username = GetUsername() });
             return Ok(allUserData);
         }
 

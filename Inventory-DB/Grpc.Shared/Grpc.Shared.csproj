@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	<Version>1.0.0.1</Version>
+    <FileVersion>1.0.0.1</FileVersion>
+    <AssemblyVersion>1.0.0.1</AssemblyVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Protos\authentication.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Protos\authentication.proto">
+      <GrpcServices>Server</GrpcServices>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="bin\Release\GRPCLibrary.1.0.0.nupkg" />
+  </ItemGroup>
+
+</Project>

@@ -3,6 +3,7 @@
     public enum DatabaseConnections
     {
         InventoryDb,
-        EventStoreDb
+        EventStoreDb,
+        RabbitMQ
     }
 }

@@ -12,5 +12,4 @@ BEGIN
         RETURN 1
     ELSE 
         RETURN 0
-
 END

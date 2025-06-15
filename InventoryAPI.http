@@ -1,0 +1,124 @@
+### Get all items
+GET http://localhost:44332/Role/GetRoles
+Content-Type: application/json
+
+
+GET http://localhost:44332/Role/GetDefaultRole
+Content-Type: application/json
+
+POST http://localhost:44332/Security/CreatePassword
+Content-Type: application/json
+{
+    "password": "your_password",
+    "salt": "your_salt"
+}
+
+POST http://localhost:44332/User/AssignUserRole
+Content-Type: application/json
+
+{
+    "name": "Updated Item",
+    "quantity": 20,
+    "price": 12.99
+}
+
+
+POST http://localhost:44332/User/ChangePassword
+Content-Type: application/json
+
+{
+    "name": "Updated Item",
+    "quantity": 20,
+    "price": 12.99
+}
+
+
+GET http://localhost:44332/User/Confirmation
+Content-Type: application/json
+
+GET http://localhost:44332/User/Disable
+Content-Type: application/json
+
+GET http://localhost:44332/User/Enable
+Content-Type: application/json
+
+POST http://localhost:44332/User/ForgottenPasswordByEmail
+Content-Type: application/json
+
+{
+    "name": "Updated Item",
+    "quantity": 20,
+    "price": 12.99
+}
+
+POST http://localhost:44332/User/ForgottenPasswordByUsername
+Content-Type: application/json
+
+{
+    "name": "Updated Item",
+    "quantity": 20,
+    "price": 12.99
+}
+
+GET http://localhost:44332/User/GetUserDetailsByUser
+Content-Type: application/json
+
+GET http://localhost:44332/User/GetUsers
+Content-Type: application/json
+
+GET http://localhost:44332/User/GetUser
+Content-Type: application/json
+
+GET http://localhost:44332/User/GetUserDetails
+Content-Type: application/json
+
+POST http://localhost:44332/User/Login
+Content-Type: application/json
+
+{
+    "name": "Updated Item",
+    "quantity": 20,
+    "price": 12.99
+}
+
+
+GET http://localhost:44332/User/Logout
+Content-Type: application/json
+
+POST http://localhost:44332/User/Register
+Content-Type: application/json
+
+{
+    "name": "Updated Item",
+    "quantity": 20,
+    "price": 12.99
+}
+
+
+POST http://localhost:44332/User/RegisterUserWithRole
+Content-Type: application/json
+
+{
+    "name": "Updated Item",
+    "quantity": 20,
+    "price": 12.99
+}
+
+POST http://localhost:44332/User/ResetPassword
+Content-Type: application/json
+
+{
+    "name": "Updated Item",
+    "quantity": 20,
+    "price": 12.99
+}
+
+
+POST http://localhost:44332/User/Update
+Content-Type: application/json
+
+{
+    "name": "Updated Item",
+    "quantity": 20,
+    "price": 12.99
+}

@@ -6,6 +6,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InventoryApi", "InventoryAp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "..\Domain\Domain.csproj", "{235E7FFD-0ACD-4BC8-9E1C-7BD2C4D019A1}"
 EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "InventoryDb", "..\..\Inventory-DB\InventoryDb\InventoryDb.sqlproj", "{DBA51DE4-70DD-4B22-ACA8-5B1A4350E57C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationService", "..\..\NotificationService\NotificationService.csproj", "{A919E542-8A97-4D64-BE17-40858364CB57}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +24,16 @@ Global
 		{235E7FFD-0ACD-4BC8-9E1C-7BD2C4D019A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{235E7FFD-0ACD-4BC8-9E1C-7BD2C4D019A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{235E7FFD-0ACD-4BC8-9E1C-7BD2C4D019A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DBA51DE4-70DD-4B22-ACA8-5B1A4350E57C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DBA51DE4-70DD-4B22-ACA8-5B1A4350E57C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DBA51DE4-70DD-4B22-ACA8-5B1A4350E57C}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{DBA51DE4-70DD-4B22-ACA8-5B1A4350E57C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DBA51DE4-70DD-4B22-ACA8-5B1A4350E57C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DBA51DE4-70DD-4B22-ACA8-5B1A4350E57C}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{A919E542-8A97-4D64-BE17-40858364CB57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A919E542-8A97-4D64-BE17-40858364CB57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A919E542-8A97-4D64-BE17-40858364CB57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A919E542-8A97-4D64-BE17-40858364CB57}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

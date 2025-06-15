@@ -11,7 +11,7 @@ namespace InventoryApi.Repository
         Task ActivateUser(IDbConnection dbConnection, UserIdentifierModel userIdentifier, IDbTransaction? dbTransaction = null);
         Task AssignRoleToUser(IDbConnection dbConnection, UserIdentifierModel userIdentifier, RoleNameModel roleIdModel, IDbTransaction? dbTransaction = null);
         Task SetUserStatus(UserIdentifierModel userIdentifier, StatusModel statusModel);
-        Task<User> GetUser(UserIdentifierModel userIdentifierModel);
+        Task<UserWithPassword> GetUser(UserIdentifierModel userIdentifierModel);
         Task<User> GetUserByEmail(UserEmailModel userEmailModel);
         Task<UserDetails> GetUserDetails(UserIdentifierModel userIdentifierModel);
         Task UpdateUserDetails(UserIdentifierModel userIdentifier, UserDetailsModel useDetailsModel);

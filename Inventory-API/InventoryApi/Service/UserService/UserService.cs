@@ -10,11 +10,13 @@ using InventoryApi.Repository.Data.User;
 using InventoryApi.Service.SecurityService;
 using InventoryApi.Service.SecurityService.Models;
 using InventoryApi.Service.UserService.Utility;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace InventoryApi.Service.UserService
 {
     public class UserService : IUserService
     {
+        private IFusionCache _fusionCache;
         private IUserRepository _userRepository;
         private ISecurityService _securityService;
         private IUserUtility _userUtility;
@@ -25,7 +27,9 @@ namespace InventoryApi.Service.UserService
             ISecurityService securityService, 
             IUserUtility userUtility, 
             IJWTUtility jwtUtility,
-            IDbConnectionFactory dbConnectionFactory) {
+            IDbConnectionFactory dbConnectionFactory,
+            IFusionCache fusionCache) {
+            _fusionCache = fusionCache;
             _userRepository = userRepository;
             _securityService = securityService;
             _userUtility = userUtility;
@@ -202,7 +206,7 @@ namespace InventoryApi.Service.UserService
             });
         }
 
-        public async Task<IEnumerable<Claim>> GenerateLogin(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, Action<User>? validate = null)
+        public async Task<IEnumerable<Claim>> GenerateLogin(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, Action<UserWithPassword>? validate = null)
         {
             var user = await _userRepository.GetUser(userIdentifierModel);
 
@@ -222,7 +226,13 @@ namespace InventoryApi.Service.UserService
 
         public async Task<UserDetails> GetUserDetails(UserIdentifierModel userName)
         {
-            var userDetails = await _userRepository.GetUserDetails(userName);
+            var userDetails = await _fusionCache
+                                    .GetOrSetAsync<UserDetails>($"UserDetail-{userName.Username}", 
+                                        async (ctx, ct) =>
+                                        {
+                                            return await _userRepository.GetUserDetails(userName);
+                                        },
+                                        options: new FusionCacheEntryOptions().SetDuration(new TimeSpan(100000)));
 
             if (userDetails is null)
                 throw new Exception("Not valid userdetails");
@@ -235,7 +245,15 @@ namespace InventoryApi.Service.UserService
 
         public async Task<User> GetUser(UserIdentifierModel userName)
         {
-            return await _userRepository.GetUser(userName);
+            var user = await _fusionCache
+                                    .GetOrSetAsync<User>($"User-{userName.Username}",
+                                        async (ctx, ct) =>
+                                        {
+                                            return await _userRepository.GetUser(userName);
+                                        },
+                                        options: new FusionCacheEntryOptions().SetDuration(new TimeSpan(1000)));
+
+            return user;
         }
 
         public async Task<IEnumerable<User>> GetUsers()
@@ -255,6 +273,7 @@ namespace InventoryApi.Service.UserService
                 };
 
                 var token = await _securityService.GenerateUserJWT(userIdentifierModel, KeyType.resetPassword);
+
 
                 //  Trigger Email - Password - user.Email
             }

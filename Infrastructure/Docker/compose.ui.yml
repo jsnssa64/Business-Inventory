@@ -1,0 +1,14 @@
+services:
+  react-app:
+    build:
+      context: ${UI_PROJECT_PATH}
+      dockerfile: Dockerfile
+    container_name: react-app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV}
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+    restart: unless-stopped

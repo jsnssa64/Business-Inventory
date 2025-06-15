@@ -7,6 +7,8 @@ using InventoryApi.Repository.Data.Inventory;
 using InventoryApi.Repository.Data.Product;
 using InventoryApi.Repository.Inventory;
 using Microsoft.IdentityModel.Tokens;
+using MassTransit;
+using MassTransit.Transports;
 
 namespace InventoryApi.Service.InventoryService
 {
@@ -16,16 +18,19 @@ namespace InventoryApi.Service.InventoryService
         private IProductRepository _productRepository;
         private IInventoryRepository _inventoryRepository;
         private IDbConnectionFactory _dbConnectionFactory;
+        private IPublishEndpoint _publishEndpoint;
 
         public ProductService(IProductRepository productRepository, 
             IInventoryRepository inventoryRepository, 
             ILogger<ProductService> logger,
-            IDbConnectionFactory dbConnectionFactory)
+            IDbConnectionFactory dbConnectionFactory,
+            IPublishEndpoint publishEndpoint)
         {
             _logger = logger;
             _productRepository = productRepository;
             _inventoryRepository = inventoryRepository;
             _dbConnectionFactory = dbConnectionFactory;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task<ProductIdModel> AddProductAsync(UserIdentifierModel userIdentifierModel, ProductDetailsModel productDetailsModel, PriceModel? priceModel)
@@ -84,6 +89,12 @@ namespace InventoryApi.Service.InventoryService
                 await _inventoryRepository.UpdateItemToInventoryByProductIdTransact(conn, productIdentifierModel, inventoryItemModel, transaction);
 
                 transaction.Commit();
+
+                _publishEndpoint.Publish(new InventoryItemRestocked
+                {
+                    ProductId = productResult.PublicProductId,
+                    Quantity = inventoryItemModel.Quantity
+                });
 
                 return productResult;
             }

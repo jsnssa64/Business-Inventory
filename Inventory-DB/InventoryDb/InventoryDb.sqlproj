@@ -73,6 +73,7 @@
     <Folder Include="dbo\StoredProcedure\Inventory" />
     <Folder Include="dbo\StoredProcedure\Role" />
     <Folder Include="dbo\StoredProcedure\Product" />
+    <Folder Include="dbo\StoredProcedure\Webhook" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\Pre-Deployment\Script.PreDeployment.sql" />
@@ -152,6 +153,9 @@
     <Build Include="dbo\StoredProcedure\Product\GetProductPriceById.sql" />
     <Build Include="dbo\StoredProcedure\User\GetUserByEmail.sql" />
     <Build Include="dbo\StoredProcedure\User\GetAllUsers.sql" />
+    <Build Include="dbo\StoredProcedure\Webhook\SubscribeUserToWebhook.sql" />
+    <Build Include="dbo\Table\ServiceSubscription.sql" />
+    <Build Include="dbo\StoredProcedure\Webhook\GetWebhooksByAction.sql" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\StoredProcedure\Inventory\GetInventoryItems.sql" />

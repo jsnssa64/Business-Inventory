@@ -1,15 +1,22 @@
-import React from "react";
-import InventoryTable from "./components/inventoryTable/inventoryTable";
-import Navigation from "./components/navigation/navigation";
+import React, { useState } from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import ProfileWrapper from "./rootComponents/profile/ProfileWrapper";
+import Inventory from "./components/Inventory/Inventory";
+
+const queryClient = new QueryClient()
 
 export default function App() {
-  return (
-    <>
-      <div className="container mx-auto px-4">
-        <Navigation />
-        <h1>Hello, world!</h1>
-        <InventoryTable />
-      </div>
-    </>
-  );
+  return <QueryClientProvider client={queryClient}>
+            <ReactQueryDevtools initialIsOpen={false} />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/Inventory" element={<ProfileWrapper/>}>
+                  <Route path=":userId" element={<Inventory/>} />
+                  <Route path="User" element={<Inventory/>} />
+                </Route>
+              </Routes>
+            </BrowserRouter>
+          </QueryClientProvider>
 }

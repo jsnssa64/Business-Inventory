@@ -12,5 +12,7 @@ namespace InventoryApi.Service.SecurityService
         void SetCookieForLogin(HttpResponse httpResponse, string accessToken, string refreshToken, DateTimeOffset cookieExpiry);
         void SetCookieForLogout(HttpResponse httpResponse);
         bool VerifyPassword(string password, string hashPassword);
+        string GetHashFromPayload(string payload, string secret);
+        string GenerateSecureSecret(int byteLength = 32);
     }
 }

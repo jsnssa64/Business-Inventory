@@ -7,3 +7,8 @@
 .container {
     @apply max-w-screen-xl;
 }
+
+.btn-primary {
+    @apply bg-blue-500 text-white hover:bg-blue-600;
+}
+
