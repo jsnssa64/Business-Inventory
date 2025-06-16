@@ -4,10 +4,14 @@ services:
     container_name: rabbitmq-${CONTAINER_NAME}
     restart: always
     ports:
-      - "5672:5672"   # RabbitMQ default port
+      - 5672   # RabbitMQ default port
       - "15672:15672" # RabbitMQ management UI
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
     networks:
-      - default
+      - internal-network
+
+networks:
+  internal-network:
+    external: true

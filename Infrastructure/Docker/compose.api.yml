@@ -27,7 +27,10 @@ services:
       - Security__Issuer=${SECURITY_ISSUER}
     networks:
       - app-network
+      - internal-network
 
 networks:
   app-network:
+    external: true
+  internal-network:
     external: true

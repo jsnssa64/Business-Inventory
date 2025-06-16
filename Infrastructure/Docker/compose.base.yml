@@ -1,5 +1,11 @@
 version: "3.8"
 
 services: {}
-networks: {}
+networks:
+  internal-network:
+    name: internal-shared-network
+    driver: bridge
+  app-network:
+    name: app-shared-network
+    driver: bridge
 volumes: {}

@@ -27,7 +27,6 @@ services:
 volumes:
   db_data:/var/opt/mssql
 
-
 networks:
   app-network:
-    name: app-network
+    external: true

@@ -12,3 +12,10 @@ services:
       - ./src:/app/src
       - ./public:/app/public
     restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    external: true
+    
