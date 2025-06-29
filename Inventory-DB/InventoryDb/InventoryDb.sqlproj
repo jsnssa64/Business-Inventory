@@ -74,6 +74,7 @@
     <Folder Include="dbo\StoredProcedure\Role" />
     <Folder Include="dbo\StoredProcedure\Product" />
     <Folder Include="dbo\StoredProcedure\Webhook" />
+    <Folder Include="dbo\StoredProcedure\Product\Query" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\Pre-Deployment\Script.PreDeployment.sql" />
@@ -131,10 +132,6 @@
     <Build Include="dbo\StoredProcedure\User\IsUserInactive.sql" />
     <Build Include="dbo\StoredProcedure\Product\AddProduct.sql" />
     <Build Include="dbo\StoredProcedure\Product\AddProductPrice.sql" />
-    <Build Include="dbo\StoredProcedure\Product\GetProductById.sql" />
-    <Build Include="dbo\StoredProcedure\Product\GetProductByInternalId.sql" />
-    <Build Include="dbo\StoredProcedure\Product\GetProductId.sql" />
-    <Build Include="dbo\StoredProcedure\Product\GetProducts.sql" />
     <Build Include="dbo\StoredProcedure\Inventory\GetInventoryByProductId.sql" />
     <None Include="dbo\StoredProcedure\Role\GetRoleId.sql" />
     <None Include="dbo\StoredProcedure\Role\IsValidRole.sql" />
@@ -150,12 +147,16 @@
     <Build Include="dbo\StoredProcedure\User\GetActiveUserIdByEmail.sql" />
     <Build Include="dbo\StoredProcedure\User\GetDisabledUserIdByUsername.sql" />
     <Build Include="dbo\StoredProcedure\User\GetEnabledUserIdByUsername.sql" />
-    <Build Include="dbo\StoredProcedure\Product\GetProductPriceById.sql" />
     <Build Include="dbo\StoredProcedure\User\GetUserByEmail.sql" />
     <Build Include="dbo\StoredProcedure\User\GetAllUsers.sql" />
     <Build Include="dbo\StoredProcedure\Webhook\SubscribeUserToWebhook.sql" />
     <Build Include="dbo\Table\ServiceSubscription.sql" />
     <Build Include="dbo\StoredProcedure\Webhook\GetWebhooksByAction.sql" />
+    <Build Include="dbo\StoredProcedure\Product\Query\GetProductById.sql" />
+    <Build Include="dbo\StoredProcedure\Product\Query\GetPPIDByInternalId.sql" />
+    <Build Include="dbo\StoredProcedure\Product\Query\GetProductId.sql" />
+    <Build Include="dbo\StoredProcedure\Product\Query\GetProductPriceById.sql" />
+    <Build Include="dbo\StoredProcedure\Product\Query\GetProducts.sql" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\StoredProcedure\Inventory\GetInventoryItems.sql" />

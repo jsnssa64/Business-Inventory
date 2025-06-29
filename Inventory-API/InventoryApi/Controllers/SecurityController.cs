@@ -1,5 +1,5 @@
 ﻿using InventoryApi.Controllers.CustomController;
-using InventoryApi.Model.DTO.User;
+using InventoryApi.DTOs.User;
 using InventoryApi.Service.SecurityService;
 using Microsoft.AspNetCore.Mvc;
 

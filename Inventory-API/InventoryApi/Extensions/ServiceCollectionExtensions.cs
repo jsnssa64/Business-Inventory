@@ -14,7 +14,10 @@ using InventoryApi.Service.UserService;
 using InventoryApi.Service.SecurityService.Models;
 using InventoryApi.Service.SecurityService;
 using MassTransit;
-using static MassTransit.Logging.OperationName;
+using Microsoft.Extensions.Caching.Memory;
+using ZiggyCreatures.Caching.Fusion;
+using InventoryApi.Repository.Webhook;
+using KurrentDB.Client;
 
 namespace InventoryApi.Extensions
 {
@@ -22,11 +25,20 @@ namespace InventoryApi.Extensions
     {
         public static IServiceCollection AddSecurityServices(this IServiceCollection services, IConfigurationManager configuration)
         {
+
+            services.AddSingleton<IJWTUtility, JWTUtility>();
             services.Configure<Security>(configuration.GetSection("Security"));
             services.AddSingleton<ISecurityService, SecurityService>();
             return services;
         }
-        
+
+        public static IServiceCollection AddWebhook(this IServiceCollection services)
+        {
+            services.AddSingleton<IWebhookService, WebhookService>();
+            services.AddSingleton<IWebhookRepository, WebhookRepository>();
+            return services;
+        }
+
         public static IServiceCollection AddApiServices(this IServiceCollection services, IConfigurationManager configuration)
         {
             services.AddSingleton<IUserUtility, UserUtility>();
@@ -39,13 +51,13 @@ namespace InventoryApi.Extensions
             services.AddSingleton<IRoleService, RoleService>();
             services.AddSingleton<IRoleRepository, RoleRepository>();
 
-            services.AddSingleton<IProductRepository, ProductRepository>();
             services.AddSingleton<IProductService, ProductService>();
+            services.AddSingleton<IProductRepository, ProductRepository>();
 
             return services;
         }
 
-        public static IServiceCollection AddMemoryServices(this IServiceCollection services, IConfigurationManager configuration)
+        public static IServiceCollection AddEventServices(this IServiceCollection services, IConfigurationManager configuration)
         {
             var connectionString = configuration.GetConnectionString(DatabaseConnections.RabbitMQ.ToString());
             if (connectionString == null)
@@ -63,12 +75,30 @@ namespace InventoryApi.Extensions
             });
 
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
-            services.AddDapper(configuration);
             services.AddEventStore(configuration);
+
             return services;
         }
 
-        public static IServiceCollection AddDapper(this IServiceCollection services, IConfigurationManager configuration)
+        public static IServiceCollection AddMemoryServices(this IServiceCollection services, IConfigurationManager configuration)
+        {
+            services.AddFusionCache()
+                .WithDefaultEntryOptions(new FusionCacheEntryOptions
+                {
+                    Duration = TimeSpan.FromMinutes(2),
+                    Priority = CacheItemPriority.Low
+                });
+
+            return services;
+        }
+
+        public static IServiceCollection AddDatabaseServices(this IServiceCollection services, IConfigurationManager configuration)
+        {
+            services.AddDapper(configuration);
+            return services;
+        }
+
+        private static IServiceCollection AddDapper(this IServiceCollection services, IConfigurationManager configuration)
         {
             var connectionString = configuration.GetConnectionString(DatabaseConnections.InventoryDb.ToString());
             if (connectionString == null)
@@ -92,23 +122,17 @@ namespace InventoryApi.Extensions
             return services;
         }
 
-        public static IServiceCollection AddEventStore(this IServiceCollection services, IConfigurationManager configuration)
+        private static IServiceCollection AddEventStore(this IServiceCollection services, IConfigurationManager configuration)
         {
-            var connectionString = configuration.GetConnectionString(DatabaseConnections.EventStoreDb.ToString());
+            var connectionString = configuration.GetConnectionString(DatabaseConnections.KurrentDb.ToString());
             if (connectionString == null)
             {
                 throw new InvalidOperationException("Database:Address configuration is missing or invalid.");
             }
 
-            var eventStoreUri = new Uri(connectionString);
+            var settings = KurrentDBClientSettings.Create(connectionString);
 
-            services.AddSingleton(new EventStoreClient(new EventStoreClientSettings
-            {
-                ConnectivitySettings = new EventStoreClientConnectivitySettings
-                {
-                    Address = eventStoreUri
-                }
-            }));
+            services.AddSingleton(new KurrentDBClient(settings));
 
             return services;
         }

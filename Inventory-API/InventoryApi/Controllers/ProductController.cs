@@ -1,6 +1,6 @@
 using InventoryApi.Authentication;
 using InventoryApi.Controllers.CustomController;
-using InventoryApi.Model.DTO.Product;
+using InventoryApi.DTOs.Product;
 using InventoryApi.Repository.Data;
 using InventoryApi.Repository.Data.Product;
 using InventoryApi.Service.InventoryService;

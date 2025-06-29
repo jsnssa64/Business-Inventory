@@ -1,7 +1,8 @@
-using Domain.Inventory;
+using Domain.Entities.Inventory;
+using Domain.Entities.Product;
 using InventoryApi.Authentication;
 using InventoryApi.Controllers.CustomController;
-using InventoryApi.Model.DTO.Inventory;
+using InventoryApi.DTOs.Inventory;
 using InventoryApi.Model.Events.Inventory;
 using InventoryApi.Repository.Data.Inventory;
 using InventoryApi.Repository.Data.Product;
@@ -97,7 +98,7 @@ namespace InventoryApi.Controllers
         [Obsolete]
         private async Task<IActionResult> AddToStream(Product product, InventoryItem inventoryItem)
         {
-            var restockedEvent = new InventoryItemRestocked
+            var restockedEvent = new InventoryAdded(default, null, default)
             {
                 ProductId = product.PublicProductId
             };
@@ -119,7 +120,7 @@ namespace InventoryApi.Controllers
         [Obsolete]
         private async Task<IActionResult> RemoveFromStream(Product product, InventoryItem inventoryItem)
         {
-            var removeEvent = new InventoryItemRemoved
+            var removeEvent = new InventoryRemoved(default, null, default)
             {
                 ProductId = product.PublicProductId
             };

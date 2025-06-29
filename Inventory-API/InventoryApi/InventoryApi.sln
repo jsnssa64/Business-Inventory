@@ -10,6 +10,8 @@ Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "InventoryDb", "..\..\Invent
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationService", "..\..\NotificationService\NotificationService.csproj", "{A919E542-8A97-4D64-BE17-40858364CB57}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services", "..\Services\Services.csproj", "{F61992EC-68C3-4862-BD97-89063C2DAC5D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,6 +36,10 @@ Global
 		{A919E542-8A97-4D64-BE17-40858364CB57}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A919E542-8A97-4D64-BE17-40858364CB57}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A919E542-8A97-4D64-BE17-40858364CB57}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F61992EC-68C3-4862-BD97-89063C2DAC5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F61992EC-68C3-4862-BD97-89063C2DAC5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F61992EC-68C3-4862-BD97-89063C2DAC5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F61992EC-68C3-4862-BD97-89063C2DAC5D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

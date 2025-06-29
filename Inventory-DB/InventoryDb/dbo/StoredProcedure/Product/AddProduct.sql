@@ -25,7 +25,7 @@ AS
         PRINT 'ProductId' + CAST(ISNULL(@NewProductId, 0) AS VARCHAR(100))
         PRINT 'Username' + CAST(ISNULL(@Username, 0) AS VARCHAR(100))
 
-        EXEC dbo.GetProductByInternalId @NewProductId, @Username, @PublicProductId OUTPUT;
+        EXEC dbo.GetPPIDByInternalId @NewProductId, @Username, @PublicProductId OUTPUT;
         
         PRINT 'ProductId' + ISNULL(CAST(@PublicProductId AS VARCHAR(100)), '0')
 

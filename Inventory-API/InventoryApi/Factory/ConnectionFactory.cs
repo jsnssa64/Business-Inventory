@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using InventoryApi.Constants;
+using Microsoft.Data.SqlClient;
 using System.Data.Common;
 using System.Data.Entity.Infrastructure;
 

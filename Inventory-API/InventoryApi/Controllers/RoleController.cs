@@ -1,5 +1,5 @@
 using InventoryApi.Authentication;
-using InventoryApi.Model.DTO.RoleDTO;
+using InventoryApi.DTOs.RoleDTO;
 using InventoryApi.Repository.Data.Role;
 using InventoryApi.Service.RoleService;
 using Microsoft.AspNetCore.Mvc;

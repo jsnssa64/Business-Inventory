@@ -1,7 +1,7 @@
 using Domain.User;
 using InventoryApi.Authentication;
 using InventoryApi.Controllers.CustomController;
-using InventoryApi.Model.DTO.User;
+using InventoryApi.DTOs.User;
 using InventoryApi.Repository.Data.Product;
 using InventoryApi.Repository.Data.Role;
 using InventoryApi.Repository.Data.User;
@@ -62,12 +62,16 @@ namespace InventoryApi.Controllers
             return Ok();
         }
 
+        /*
+            When User registered an email should be sent
+            with a link to confirm the email address.
+            The link should contain a token that is valid for a certain period.
+            When the user clicks the link, the token is validated and this method is called.
+         */
         [HttpGet("Confirmation")]
         [AllowAnonymous]
         public async Task<IActionResult> Confirmation(string token, CancellationToken cancellationToken)
         {
-            if (!_jwtUtility.IsTokenValid(token, KeyType.confirmation))
-                throw new Exception("Confirmation no longer valid");
 
             await _userService.UserConfirmation(token);
             return Ok();
@@ -106,6 +110,7 @@ namespace InventoryApi.Controllers
             return Ok();
         }
 
+        //  Send EMail to reset password
         [HttpPost("ForgottenPasswordByEmail")]
         [AllowAnonymous]
         public async Task<IActionResult> ForgottenPasswordByEmail(UserEmailDTO userEmailDTO, CancellationToken cancellationToken)
@@ -115,6 +120,7 @@ namespace InventoryApi.Controllers
             return Ok();
         }
 
+        //  Send EMail to reset password
         [HttpGet("ForgottenPasswordByUsername")]
         [AllowAnonymous]
         public async Task<IActionResult> ForgottenPasswordByUsername(string userName, CancellationToken cancellationToken)

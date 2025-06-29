@@ -1,6 +1,6 @@
 ﻿CREATE TABLE [dbo].[Product]
 (
-	[Id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	[Id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY,		--	Internal ID
 	PublicId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(), -- External/public-facing ID
 	[Name] NVARCHAR(100) NOT NULL,
 	[Description] NVARCHAR(100) NOT NULL,
@@ -15,7 +15,7 @@
 
 GO 
 
-CREATE NONCLUSTERED INDEX IX_User_Products ON Product(UserId, [Id])
+CREATE NONCLUSTERED INDEX IX_User_Products ON Product(UserId, [Id], ProductVersion)
 INCLUDE(PublicId, [Name], [Description], Quantity)
 
 GO
