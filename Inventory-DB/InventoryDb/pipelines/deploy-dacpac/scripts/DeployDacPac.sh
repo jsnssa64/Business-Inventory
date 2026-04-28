@@ -7,22 +7,25 @@ show_usage() {
 Usage: $(basename "$0") [options]
 
 Required options:
-  -dacpacpath, -dpp <path>                     Path to the DACPAC file
+  -dacpacpath, -dpp <path>                      Path to the DACPAC file
   -dbname, -db <name>                           Target database name
   -dbhost, -h <host>                            Target SQL Server host
   -username, -u <username>                      Database user with permissions to deploy the DACPAC
   -password, -p <password>                      Password for the database user
+  -env, -e, -environment <name>                 ASPNETCORE_ENVIRONMENT value
 Optional:
-  -envov, -eo, -environment-override <name> ASPNETCORE_ENVIRONMENT value
-  -help, --help                             Show this help message
+  -help, --help                                 Show this help message
 EOF
 }
 
-echo "Running DryRunDacPac.sh..."
+DACPAC_PATH=""
+DB_NAME=""
+DB_HOST=""
+DB_USER=""
+DB_PASSWORD=""
+ENVIRONMENT_NAME=""
 
-DB_USER="${MSSQL_SYSADMIN_USER:-}"
-DB_PASSWORD="${MSSQL_SYSADMIN_PASSWORD:-}"
-ENVIRONMENT_NAME="${ASPNETCORE_ENVIRONMENT:-Development}"
+echo "Running DeployDacPac.sh..."
 
 # Parse named options and support aliases
 while [[ $# -gt 0 ]]; do
@@ -47,7 +50,7 @@ while [[ $# -gt 0 ]]; do
             DB_PASSWORD="$2"
             shift 2
             ;;
-        -envov|-eo|-environment-override)
+        -env|-e|-environment)
             ENVIRONMENT_NAME="$2"
             shift 2
             ;;
@@ -63,7 +66,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Validate required options
+#   Validate required options
 missing=0
 if [[ -z "$DB_USER" ]]; then
     echo "Error: No database user is undefined and is required. Use -username or -u or define environement variable MSSQL_SYSADMIN_USER."
@@ -74,7 +77,7 @@ if [[ -z "$DB_PASSWORD" ]]; then
     missing=1
 fi
 if [[ -z "$DACPAC_PATH" ]]; then
-    echo "Error: DACPAC path is undefined and is required. Use -dacpacpath or -dpp."
+    echo "Error: DACPAC path is undefined and is required. Use -filepath or -fp."
     missing=1
 fi
 if [[ -z "$DB_NAME" ]]; then
@@ -85,6 +88,10 @@ if [[ -z "$DB_HOST" ]]; then
     echo "Error: Database host is undefined and is required. Use -dbhost or -h."
     missing=1
 fi
+if [[ -z "$ENVIRONMENT_NAME" ]]; then
+    echo "Error: Environment is undefined and is required. Use -environment, -env or -e."
+    missing=1
+fi
 
 if [[ $missing -ne 0 ]]; then
     echo
@@ -92,65 +99,20 @@ if [[ $missing -ne 0 ]]; then
     exit 1
 fi
 
-# Deploy the DACPAC dry run and capture the deploy report
-echo "Deploying DEPLOYREPORT dry-run dacpac..."
-REPORT_FILE="$(mktemp "/tmp/dryrun-report-XXXXXX.xml")"
-
-# if ! /opt/sqlpackage/sqlpackage \
-if ! sqlpackage \
-    /Action:DeployReport \
+# Deploy the DACPAC
+echo "Deploying dacpac..."
+#/opt/sqlpackage/sqlpackage \
+if ! sqlpackage.exe \
+    /Action:Publish \
     /SourceFile:"$DACPAC_PATH" \
     /TargetServerName:"$DB_HOST" \
     /TargetDatabaseName:"$DB_NAME" \
     /TargetUser:"$DB_USER" \
     /TargetPassword:"$DB_PASSWORD" \
     /TargetTrustServerCertificate:True \
-    /v:EnvironmentName="$ENVIRONMENT_NAME" \
-    /OutputPath:"$REPORT_FILE"; then
-    echo "ERROR: Dry-run report generation failed."
+    /v:EnvironmentName="$ENVIRONMENT_NAME"; then
+    echo "ERROR: DACPAC deployment failed."
     exit 1
 fi
 
-echo "Dry-run report written to: $REPORT_FILE"
-echo "---- Begin deploy report ----"
-xmllint --format "$REPORT_FILE"
-echo "---- End deploy report ----"
-
-
-# Deploy the DACPAC dry run and capture the deploy report
-echo "Deploying SCRIPT dry-run dacpac..."
-SCRIPT_FILE="$(mktemp "/tmp/dryrun-script-XXXXXX.sql")"
-
-if ! sqlpackage \
-    /Action:Script \
-    /SourceFile:"$DACPAC_PATH" \
-    /TargetServerName:"$DB_HOST" \
-    /TargetDatabaseName:"$DB_NAME" \
-    /TargetUser:"$DB_USER" \
-    /TargetPassword:"$DB_PASSWORD" \
-    /TargetTrustServerCertificate:True \
-    /v:EnvironmentName="$ENVIRONMENT_NAME" \
-    /OutputPath:"$SCRIPT_FILE"; then
-    echo "ERROR: Dry-run script generation failed."
-    exit 1
-fi
-
-echo "Dry-run SCRIPT written to: $SCRIPT_FILE"
-echo "---- Begin deploy Script ----"
-cat "$SCRIPT_FILE"
-echo "---- End deploy Script ----"
-
-
-while true; do
-    read -rp "Review complete. Continue with actual deployment? [y/N] " answer
-    case "$answer" in
-        [Yy]*) break ;;
-        [Nn]*|"")
-            echo "Aborting deployment after dry run."
-            exit 1
-            ;;
-        *)
-            echo "Please answer y or n."
-            ;;
-    esac
-done
+echo "Successfully deployed DACPAC to $DB_HOST for database $DB_NAME in $ENVIRONMENT_NAME environment."

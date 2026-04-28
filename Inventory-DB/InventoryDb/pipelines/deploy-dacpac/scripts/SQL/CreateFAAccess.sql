@@ -1,4 +1,4 @@
-# Permissions for sysadmin access
+-- Permissions for sysadmin access
 
 IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE name = '$(USER_LOGIN)')
 BEGIN

@@ -1,4 +1,4 @@
-# Create Server Login Access
+-- Create Server Login Access
 
 IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE name = '$(USER_LOGIN)')
 BEGIN

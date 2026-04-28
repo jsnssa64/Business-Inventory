@@ -1,4 +1,4 @@
-# Permissions for Application Access
+-- Permissions for Application Access
 
 IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE name = '$(USER_LOGIN)')
 BEGIN

@@ -1,4 +1,4 @@
-# Permissions for Login Management Only Access
+-- Permissions for Login Management Only Access
 
 IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE name = '$(USER_LOGIN)')
 BEGIN

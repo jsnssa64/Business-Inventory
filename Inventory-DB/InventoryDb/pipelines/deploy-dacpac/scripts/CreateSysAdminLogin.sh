@@ -7,28 +7,39 @@ echo "Running CreateServerLogin.sh..."
 show_usage() {
     cat <<EOF
 Usage: $(basename "$0") [options]
+Environment Variables:
+    MSSQL_SA_USER                           System Administration login Details (Required)
+    MSSQL_SA_PASSWORD                       System Administration login Details (Required)
+
 Required options:
-    -dbhost, -host, -dh <name>          Target SQL Server instance name
-    -set-sysadmin-name, -ssn <name>          Name of the sysadmin login to create
+    -dbhost, -host, -dh <name>                      Target SQL Server instance name
+    -sysadmin-name, -sysname, -sn <name>            Create System Administrator with this username
+    -sysadmin-password, -syspassword, -sp <name>    Create System Administrator with this password
 Optional:
-    -help, --help                       Show this help message
+    -help, --help                           Show this help message
 EOF
 }
 
 # Variables
-CSL_SYSADMIN_NAME="defaultAdmin"
+SYSADMIN_NAME=""
+SYSADMIN_PASSWORD=""
 MASTER_DB_NAME="master"
+DB_HOST=""
 # Might not be needed
-SQL_FILEPATH="./"
 SQL_FILENAME="CreateServerLogin.sql"
 
 # Parse named options and support aliases
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        -set-sysadmin-name|-ssn)
-            CSL_SYSADMIN_NAME="$2"
+        -sysadmin-name|-sysname|-sn)
+            SYSADMIN_NAME="$2"
             shift 2
-            echo "Sysadmin login name override set to '$CSL_SYSADMIN_NAME'."
+            echo "Sysadmin login name override set to '$SYSADMIN_NAME'."
+            ;;
+        -sysadmin-password|-syspassword|-sp)
+            SYSADMIN_PASSWORD="$2"
+            shift 2
+            echo "Sysadmin login password override set to '$SYSADMIN_PASSWORD'."
             ;;
         -dbhost|-host|-dh)
             DB_HOST="$2"
@@ -47,19 +58,31 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [[ -z "$DB_HOST"]] then;
+if [[ -z "$SYSADMIN_NAME" ]]; then
+    echo "Error: System Administrator username creation is missing. Use -sysadmin-name, -sysname  or -sn"
+    show_usage
+    exit 1
+fi
+if [[ -z "$SYSADMIN_PASSWORD" ]]; then
+    echo "Error: System Administrator password creation is missing. Use -sysadmin-password, -syspassword  or -sp"
+    show_usage
+    exit 1
+fi
+if [[ -z "$DB_HOST" ]]; then
     echo "Error: Database host is required. Use -dbhost, -host, or -dh."
     show_usage
     exit 1
 fi
 
+export CSL_SYSADMIN_PASSWORD=$SYSADMIN_PASSWORD
+
 #   Check required environment variables
 echo "Checking required environment variables for SQL login creation..."
 CURRENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 envs=(  "MSSQL_SA_USER"
-        "MSSQL_SA_PASSWORD" 
+        "MSSQL_SA_PASSWORD"
         "CSL_SYSADMIN_PASSWORD")
-$CURRENT_DIR/CheckEnvVars.sh "${envs[@]}"
+$CURRENT_DIR/bash/CheckEnvVars.sh "${envs[@]}"
 
 # Validate SQL Server connectivity before attempting login creation
 echo "Warning: This script requires SQL Server to be running and accessible. Ensure that the SQL Server container is up and running before executing this script."
@@ -70,12 +93,11 @@ fi
 
 # Run login creation script
 echo "Creating Administrator server-level login..."
-# /opt/mssql-tools18/bin/sqlcmd \
 sqlcmd \
--C \                                            # AUTO TRUST SERVER CERTIFICATE
-    -S "$DB_HOST" \
-    -U "$MSSQL_SA_USER" \                       # Default sysadmin login created by SQL Server image
-    -P "$MSSQL_SA_PASSWORD" \                   # Password for the default sysadmin login
-    -d "$MASTER_DB_NAME" \
-    -i "$SQL_FILEPATH/$SQL_FILENAME" \          # Script To Be Run
-    -v CSL_SYSADMIN_NAME="$CSL_SYSADMIN_NAME"
+-C \
+-S "$DB_HOST" \
+-U "$MSSQL_SA_USER" \
+-P "$MSSQL_SA_PASSWORD" \
+-d "$MASTER_DB_NAME" \
+-i "$CURRENT_DIR/SQL/$SQL_FILENAME" \
+-v CSL_SYSADMIN_NAME="$SYSADMIN_NAME"

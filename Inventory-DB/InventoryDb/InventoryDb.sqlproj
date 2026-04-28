@@ -66,7 +66,6 @@
     <Folder Include="dbo\StoredProcedure" />
     <Folder Include="dbo\Table" />
     <Folder Include="Security" />
-    <Folder Include="Security\Login" />
     <Folder Include="Scripts\Function" />
     <Folder Include="Scripts\StoredProcedure" />
     <Folder Include="dbo\StoredProcedure\User" />
@@ -96,7 +95,6 @@
     </SqlCmdVariable>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Security\Login\DefaultUser.sql" />
     <None Include="Scripts\Pre-Deployment\_DeployOnce.sql" />
     <None Include="InventoryDb.publish.xml" />
   </ItemGroup>
