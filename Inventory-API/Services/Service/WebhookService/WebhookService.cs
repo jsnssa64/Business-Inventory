@@ -1,11 +1,12 @@
 ﻿using System.Data;
-using InventoryApi.Service.SecurityService;
 using System.Text.Json;
 using System.Text;
-using InventoryApi.Repository.Webhook;
 using Services.DataModel.Webhook;
+using Microsoft.Extensions.Logging;
+using Services.Repository.Webhook;
+using Services.Service.SecurityService;
 
-namespace InventoryApi.Service.UserService
+namespace Services.Service.UserService
 {
     public class WebhookService : IWebhookService
     {
@@ -22,7 +23,6 @@ namespace InventoryApi.Service.UserService
 
         public async Task WebHookTest(string userName, SubscriptionType subscriptionType)
         {
-
             var webhooks = await _webhookRepository.GetWebhookByAction(subscriptionType);
 
             await PostToWebhook(webhooks.Select(webhook => new WebhookPost()

@@ -1,8 +1,14 @@
 ﻿using Domain.Entities.User;
+using MediatR;
 
-namespace InventoryApi.Service.UserService
+namespace Domain.Service.UserService
 {
-    public record UserCreated(int Version, UserIdentity UserIdentity) : UserEvent(Version, UserIdentity);
+    public class UserCreatedNotification: INotification
+    {
+        public int Version { get; set; } = 0;
+        public required UserIdentity userIdentity { get; set; }
+    }
+
 }
 
 

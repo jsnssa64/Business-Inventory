@@ -1,8 +1,8 @@
-﻿using Domain.User;
-using InventoryApi.Repository.RoleRepo;
-using Services.DataModel.Role;
+﻿using Services.DataModel.Role;
+using Services.Repository.RoleRepo;
+using Shared.Constants;
 
-namespace InventoryApi.Service.RoleService
+namespace Services.Service.RoleService
 {
     public class RoleService : IRoleService
     {

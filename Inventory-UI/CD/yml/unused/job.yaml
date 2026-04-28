@@ -1,0 +1,31 @@
+/**
+ * Represents a job entity that encapsulates a unit of work to be executed.
+ * 
+ * A job defines the configuration, scheduling, and execution parameters for
+ * automated tasks within the system. It handles the lifecycle management of
+ * work items, including creation, scheduling, execution, and completion tracking.
+ * 
+ * Key responsibilities:
+ * - Store job metadata and configuration details
+ * - Manage job state and status transitions
+ * - Track execution history and results
+ * - Handle job scheduling and retry logic
+ * - Coordinate job execution with external systems
+ * 
+ * @class Job
+ */
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: example-job
+  namespace: default
+spec:
+  template:
+    spec:
+      containers:
+      - name: job-container
+        image: busybox:latest
+        command: ["sh", "-c"]
+        args: ["echo 'Job completed successfully'"]
+      restartPolicy: Never
+  backoffLimit: 3

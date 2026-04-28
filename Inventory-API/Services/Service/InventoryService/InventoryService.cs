@@ -1,13 +1,11 @@
 ﻿using Domain.Entities.Inventory;
-using Domain.User;
-using InventoryApi.Repository.Data.User;
 using InventoryApi.Repository.Inventory;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Logging;
 using Services.DataModel.Inventory;
 using Services.DataModel.Product;
 using Services.DataModel.User;
 
-namespace InventoryApi.Service.InventoryService
+namespace Services.Service.InventoryService
 {
     public class InventoryService : IInventoryService
     {

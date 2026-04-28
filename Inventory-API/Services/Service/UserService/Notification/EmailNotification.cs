@@ -1,18 +1,19 @@
-﻿using InventoryApi.Service.NotificationService;
+﻿using Domain.Service.UserService;
 using MassTransit;
+using Services.Service.NotificationService;
 
-namespace InventoryApi.Service.UserService.Notification
+namespace Services  .Service.UserService.Notification
 {
-    public class EmailNotification : EventNotificationService<UserCreated>
+    public class EmailNotificationHandler : EventNotificationHandler<UserCreatedNotification>
     {
-        public EmailNotification(IPublishEndpoint publishEndpoint) : base(publishEndpoint)
+        public EmailNotificationHandler(IPublishEndpoint publishEndpoint) : base(publishEndpoint)
         {
         }
 
-        public override Task Handle(UserCreated notification, CancellationToken cancellationToken)
+        public override Task Handle(UserCreatedNotification notification, CancellationToken cancellationToken)
         {
             // Handle the user created notification  
-            Console.WriteLine($"User Created: {notification.Id} at {notification.Username}");
+            Console.WriteLine($"User Created: {notification.userIdentity.Id} at {notification.userIdentity.Username}");
             return Publish(notification, cancellationToken);
         }
     }

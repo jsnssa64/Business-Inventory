@@ -1,9 +1,9 @@
 using InventoryApi.Authentication;
 using InventoryApi.DTOs.RoleDTO;
-using InventoryApi.Repository.Data.Role;
-using InventoryApi.Service.RoleService;
 using Microsoft.AspNetCore.Mvc;
-using static Domain.User.Roles;
+using Services.DataModel.Role;
+using Services.Service.RoleService;
+using static Shared.Constants.Roles;
 
 namespace InventoryApi.Controllers
 {

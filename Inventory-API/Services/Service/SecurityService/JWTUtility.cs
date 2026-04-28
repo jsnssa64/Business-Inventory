@@ -1,10 +1,11 @@
-﻿using InventoryApi.Service.SecurityService.Models;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using Services.Service.SecurityService.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 
-namespace InventoryApi.Service.SecurityService
+namespace Services.Service.SecurityService
 {
     public enum KeyType
     {

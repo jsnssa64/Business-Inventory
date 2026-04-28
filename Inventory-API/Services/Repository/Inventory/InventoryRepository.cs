@@ -1,12 +1,12 @@
 ﻿using System.Data;
 using System.Data.Entity.Infrastructure;
-using System.Text.Json;
 using Dapper;
 using Domain.Entities.Inventory;
 using KurrentDB.Client;
 using Services.DataModel.Inventory;
 using Services.DataModel.Product;
 using Services.DataModel.User;
+using Shared.Constants;
 
 namespace InventoryApi.Repository.Inventory
 {
@@ -17,6 +17,7 @@ namespace InventoryApi.Repository.Inventory
 
         public InventoryRepository(
             IDbConnectionFactory dbConnectionFactory
+            , KurrentDBClient storeClient
             )
         {
             _dbConnectionFactory = dbConnectionFactory;
@@ -91,6 +92,16 @@ namespace InventoryApi.Repository.Inventory
             var result = await conn.QueryAsync<InventoryItem>("dbo.GetInventoryItems", parameters, commandType: CommandType.StoredProcedure);
 
             return result;
+        }
+
+        public Task<IWriteResult> AppendEventStream(object eventObject, string type, long intialPos)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<ResolvedEvent>> ReadEventStream(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }

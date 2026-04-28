@@ -3,7 +3,7 @@ using Domain.Entities.User;
 using InventoryApi.Repository.UserRepo.Enum;
 using Services.DataModel.Role;
 using Services.DataModel.User;
-namespace InventoryApi.Repository
+namespace Services.Repository.UserRepo
 {
     public interface IUserRepository
     {

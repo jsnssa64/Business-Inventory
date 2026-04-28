@@ -2,10 +2,10 @@
 using System.Data.Entity.Infrastructure;
 using Dapper;
 using Domain.Entities.Product;
-using InventoryApi.Factory;
 using Microsoft.IdentityModel.Tokens;
 using Services.DataModel.Product;
 using Services.DataModel.User;
+using Shared.Constants;
 
 namespace InventoryApi.Repository.Inventory
 {
@@ -84,7 +84,7 @@ namespace InventoryApi.Repository.Inventory
             }
 
             var product = new Product();
-            product.Map(resultProduct, resultPrice);
+            //product.Map(resultProduct, resultPrice);
 
             return product;
         }
@@ -117,14 +117,14 @@ namespace InventoryApi.Repository.Inventory
                 throw new Exception("Unable to remove product price");
         }
 
-        public async Task<IEnumerable<ProductBase>> GetProducts(UserIdentifierModel userIdentifierModel)
+        public async Task<IEnumerable<Product>> GetProducts(UserIdentifierModel userIdentifierModel)
         {
             using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
 
             DynamicParameters parameters = new DynamicParameters();
             parameters.Add(nameof(UserIdentifierModel.Username), userIdentifierModel.Username);
 
-            var result = await conn.QueryAsync<ProductBase>("dbo.GetProducts", parameters, commandType: CommandType.StoredProcedure);
+            var result = await conn.QueryAsync<Product>("dbo.GetProducts", parameters, commandType: CommandType.StoredProcedure);
 
             if (result.IsNullOrEmpty())
             {

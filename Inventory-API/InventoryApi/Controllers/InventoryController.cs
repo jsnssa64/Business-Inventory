@@ -4,11 +4,12 @@ using InventoryApi.Authentication;
 using InventoryApi.Controllers.CustomController;
 using InventoryApi.DTOs.Inventory;
 using InventoryApi.Model.Events.Inventory;
-using InventoryApi.Repository.Data.Inventory;
-using InventoryApi.Repository.Data.Product;
-using InventoryApi.Service.InventoryService;
 using Microsoft.AspNetCore.Mvc;
-using static Domain.User.Roles;
+using Services.DataModel.Inventory;
+using Services.DataModel.Product;
+using Services.DataModel.User;
+using Services.Service.InventoryService;
+using static Shared.Constants.Roles;
 
 namespace InventoryApi.Controllers
 {
@@ -98,9 +99,20 @@ namespace InventoryApi.Controllers
         [Obsolete]
         private async Task<IActionResult> AddToStream(Product product, InventoryItem inventoryItem)
         {
-            var restockedEvent = new InventoryAdded(default, null, default)
+            var restockedEvent = new InventoryAdded
             {
-                ProductId = product.PublicProductId
+                InventoryEvent =  new InventoryEvent(default, new InventoryItemIdentity()
+                {
+                    // Temp
+                    InventoryId = new Guid(),
+                    productIdentity = new ProductIdentity()
+                    {
+                        publicProductId = product.PublicProductId.publicProductId
+                    }
+                 }),
+                Quantity = inventoryItem.Quantity,
+                Version = 1
+                
             };
 
             try
@@ -120,9 +132,20 @@ namespace InventoryApi.Controllers
         [Obsolete]
         private async Task<IActionResult> RemoveFromStream(Product product, InventoryItem inventoryItem)
         {
-            var removeEvent = new InventoryRemoved(default, null, default)
+            var removeEvent = new InventoryRemoved
             {
-                ProductId = product.PublicProductId
+                Quantity = inventoryItem.Quantity,
+                InventoryEvent = new InventoryEvent(
+                    1, 
+                    new InventoryItemIdentity()
+                    {
+                        InventoryId = new Guid(),
+                        productIdentity = new ProductIdentity()
+                        {
+                            publicProductId = product.PublicProductId.publicProductId
+                        }
+                    }),
+                Version = 1
             };
 
             try

@@ -1,18 +1,26 @@
 ﻿using System.Data;
 using System.Data.Entity.Infrastructure;
+using Dapper;
+using KurrentDB.Client;
 using Services.DataModel.Webhook;
+using Shared.Constants;
 
-namespace InventoryApi.Repository.Webhook
+namespace Services.Repository.Webhook
 {
     public class WebhookRepository : IWebhookRepository
     {
         private IDbConnectionFactory _dbConnectionFactory;
-        private EventStoreClient _storeClient;
+        private KurrentDBClient _storeClient;
+
+        private const string SubscribeUserToWebhookSP = "dbo.SubscribeUserToWebhook";
+        private const string GetWebhooksByActionSP = "dbo.GetWebhooksByAction";
 
         public WebhookRepository(
-                IDbConnectionFactory dbConnectionFactory
+                IDbConnectionFactory dbConnectionFactory,
+                KurrentDBClient kurrentDBClient
             )
         {
+            _storeClient = kurrentDBClient;
             _dbConnectionFactory = dbConnectionFactory;
         }
 
@@ -26,7 +34,7 @@ namespace InventoryApi.Repository.Webhook
             parameters.Add(nameof(Subscription.secret), subscriptionModel.secret);
             parameters.Add(nameof(Subscription.subscriptionType), subscriptionModel.subscriptionType);
 
-            var result = await conn.ExecuteAsync("dbo.SubscribeUserToWebhook", parameters, commandType: CommandType.StoredProcedure);
+            var result = await conn.ExecuteAsync(SubscribeUserToWebhookSP, parameters, commandType: CommandType.StoredProcedure);
 
             if(result != 1)
             {
@@ -41,7 +49,7 @@ namespace InventoryApi.Repository.Webhook
             DynamicParameters parameters = new DynamicParameters();
             parameters.Add(nameof(SubscriptionType), subscriptionType);
 
-            var result = await conn.QueryAsync<WebhookDetails>("dbo.GetWebhooksByAction", parameters, commandType: CommandType.StoredProcedure);
+            var result = await conn.QueryAsync<WebhookDetails>(GetWebhooksByActionSP, parameters, commandType: CommandType.StoredProcedure);
 
             //if(result is null)
             //    throw new DbUpdateException($"No webhook found for user: {getWebhookByAction.userName} with action: {getWebhookByAction.subscriptionType}");

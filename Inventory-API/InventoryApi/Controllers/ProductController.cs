@@ -1,18 +1,16 @@
 using InventoryApi.Authentication;
 using InventoryApi.Controllers.CustomController;
 using InventoryApi.DTOs.Product;
-using InventoryApi.Repository.Data;
-using InventoryApi.Repository.Data.Product;
-using InventoryApi.Service.InventoryService;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static Domain.User.Roles;
+using Services.DataModel.Product;
+using Services.DataModel.User;
+using Services.Service.InventoryService;
 
 namespace InventoryApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [MinimumRole(RoleLevel.User)]
+    [MinimumRole(Shared.Constants.Roles.RoleLevel.User)]
     public class ProductController : BaseController
     {
         private readonly IProductService _productService;

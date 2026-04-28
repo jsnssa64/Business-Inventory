@@ -1,10 +1,10 @@
 using InventoryApi.Authentication;
 using InventoryApi.Controllers.CustomController;
-using InventoryApi.Repository.Webhook;
-using InventoryApi.Service.SecurityService;
 using Microsoft.AspNetCore.Mvc;
 using Services.DataModel.Webhook;
-using static Domain.User.Roles;
+using Services.Repository.Webhook;
+using Services.Service.SecurityService;
+using static Shared.Constants.Roles;
 
 namespace InventoryApi.Controllers
 {

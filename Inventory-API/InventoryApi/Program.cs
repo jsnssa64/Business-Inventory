@@ -1,9 +1,4 @@
 using InventoryApi.Extensions;
-using InventoryApi.Repository.Webhook;
-using InventoryApi.Service.SecurityService;
-using InventoryApi.Service.UserService;
-using Microsoft.Extensions.Caching.Memory;
-using ZiggyCreatures.Caching.Fusion;
 
 internal class Program
 {

@@ -1,6 +1,6 @@
 ﻿using Services.DataModel.Role;
 
-namespace InventoryApi.Repository.RoleRepo
+namespace Services.Repository.RoleRepo
 {
     public interface IRoleRepository
     {

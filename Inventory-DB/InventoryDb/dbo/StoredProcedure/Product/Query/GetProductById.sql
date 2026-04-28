@@ -13,7 +13,7 @@ BEGIN
            p.[Name],
            p.[Description],
            p.Quantity,
-           p.ProductVersion,
+           p.[Version],
            p.EnabledPrice
       FROM dbo.Product p
       JOIN dbo.[User] u 

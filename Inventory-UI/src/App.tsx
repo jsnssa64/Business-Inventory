@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import './style/index.css';
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import ProfileWrapper from "./rootComponents/profile/ProfileWrapper";
+import ProfileWrapper from "./components/profile/ProfileWrapper";
 import Inventory from "./components/Inventory/Inventory";
 
 const queryClient = new QueryClient()

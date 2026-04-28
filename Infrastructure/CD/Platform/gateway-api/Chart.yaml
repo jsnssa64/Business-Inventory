@@ -1,0 +1,9 @@
+apiVersion: v2
+name: global-gateway
+description: Installs nginx gateway
+type: application
+component: gateway
+version: 0.1.0
+appVersion: "1.0.0"
+annotations:
+  owner: platform

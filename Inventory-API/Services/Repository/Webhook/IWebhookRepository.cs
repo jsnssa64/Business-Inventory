@@ -1,6 +1,6 @@
 ﻿using Services.DataModel.Webhook;
 
-namespace InventoryApi.Repository.Webhook
+namespace Services.Repository.Webhook
 {
 
     public interface IWebhookRepository

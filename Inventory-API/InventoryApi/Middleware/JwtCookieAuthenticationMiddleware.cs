@@ -1,8 +1,8 @@
-﻿using InventoryApi.Constants;
-using InventoryApi.Repository.Data.Product;
-using InventoryApi.Service.SecurityService;
-using InventoryApi.Service.UserService;
-using InventoryApi.Service.UserService.Utility;
+﻿using Services.DataModel.User;
+using Services.Service.SecurityService;
+using Services.Service.UserService;
+using Shared.Constants;
+using Shared.Utilities.User;
 using System.Security.Claims;
 
 namespace InventoryApi.Middleware
@@ -20,8 +20,8 @@ namespace InventoryApi.Middleware
             string? refreshToken = null;
             context.User = new ClaimsPrincipal(new ClaimsIdentity());
 
-            var validAccessToken = context.Request.Cookies.TryGetValue(Cookie.AccessCookie, out accessToken);
-            var validRefreshToken = context.Request.Cookies.TryGetValue(Cookie.RefreshCookie, out refreshToken);
+            var validAccessToken = context.Request.Cookies.TryGetValue(JWTCookie.AccessCookie, out accessToken);
+            var validRefreshToken = context.Request.Cookies.TryGetValue(JWTCookie.RefreshCookie, out refreshToken);
 
             /*  No Tokens available */
             if (!validAccessToken &&

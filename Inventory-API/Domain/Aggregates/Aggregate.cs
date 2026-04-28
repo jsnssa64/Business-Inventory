@@ -8,14 +8,14 @@ namespace InventoryApi.Model.Action
     {
         public Aggregate()
         {
-
             Uncommited = new ConcurrentDictionary<Version, DomainEvent>();
         }
+
         public record Version(int version);
 
         public const int _maximumUncommited = 50;
 
-        public Object lockObject = new();
+        private readonly Object lockObject = new();
 
         public ConcurrentDictionary<Version, DomainEvent> Uncommited;
 
@@ -45,7 +45,7 @@ namespace InventoryApi.Model.Action
                 if (Uncommited.Count < _maximumUncommited)
                     return;
 
-                orderedUncommitedVersion = Uncommited.OrderBy(kv => kv.Key).ToList();
+                orderedUncommitedVersion = [.. Uncommited.OrderBy(kv => kv.Key)];
                 Uncommited.Clear();
             }
 

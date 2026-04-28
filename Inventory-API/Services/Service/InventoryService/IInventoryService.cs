@@ -1,11 +1,9 @@
 ﻿using Domain.Entities.Inventory;
-using Domain.User;
-using InventoryApi.Repository.Data.User;
 using Services.DataModel.Inventory;
 using Services.DataModel.Product;
 using Services.DataModel.User;
 
-namespace InventoryApi.Service.InventoryService
+namespace Services.Service.InventoryService
 {
     public interface IInventoryService
     {

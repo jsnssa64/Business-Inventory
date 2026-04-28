@@ -1,20 +1,21 @@
 ﻿using System.Data.Entity.Infrastructure;
 using System.Data;
 using System.Security.Claims;
-using InventoryApi.Repository;
-using InventoryApi.Service.SecurityService;
-using InventoryApi.Service.SecurityService.Models;
-using InventoryApi.Service.UserService.Utility;
 using ZiggyCreatures.Caching.Fusion;
 using MassTransit;
-using MassTransit.Transports;
 using MediatR;
-using InventoryApi.Constants;
 using Services.DataModel.Role;
 using Services.DataModel.User;
 using Domain.Entities.User;
+using Microsoft.AspNetCore.Http;
+using Shared.Utilities.User;
+using Services.Repository.UserRepo;
+using Shared.Constants;
+using Domain.Service.UserService;
+using Services.Service.SecurityService;
+using Services.Service.SecurityService.Models;
 
-namespace InventoryApi.Service.UserService
+namespace Services.Service.UserService
 {
     public class UserService : IUserService
     {
@@ -96,16 +97,18 @@ namespace InventoryApi.Service.UserService
 
                 await _userRepository.AssignRoleToUser(conn, userIdentifierModel, roleNameModel, transaction);
                 
-                //  Temp - 
+                //  Temp - Auto Activate User
                 await _userRepository.ActivateUser(conn, userIdentifierModel, transaction);
 
                 transaction.Commit();
 
-                await _mediator.Publish(new UserCreated()
-                {
-                    Id = userIdModel.UserId,
-                    Username = userIdentifierModel.Username
-                });
+                await _mediator.Publish(
+                    new UserCreatedNotification()
+                    {
+                        Version = 1,
+                        userIdentity = new UserIdentity(userRegistrationModel.UserId.ToString(), "", userRegistrationModel.Email),
+                    }
+                );
 
                 var userLoginModel = new UserLoginModel()
                 {
@@ -257,7 +260,7 @@ namespace InventoryApi.Service.UserService
             if (userDetails is null)
                 throw new Exception("Not valid userdetails");
 
-            if (Roles.IsValidRoleLevel(userDetails.Role?.Rolename))
+            if (Shared.Constants.Roles.IsValidRoleLevel(userDetails.Role?.Rolename))
                 throw new Exception("Not Valid Role");
 
             return userDetails;
@@ -304,7 +307,7 @@ namespace InventoryApi.Service.UserService
             }
             catch(Exception ex)
             {
-                throw new Exception("Failed to send email");
+                throw new Exception("Failed to send email", ex);
             } 
         }
 
@@ -331,7 +334,7 @@ namespace InventoryApi.Service.UserService
             }
             catch(Exception ex)
             {
-                throw new Exception("Failed to send email");
+                throw new Exception("Failed to send email", ex);
             }
         }
 

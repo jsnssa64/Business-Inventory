@@ -1,9 +1,10 @@
 ﻿using System.Security.Claims;
 using Domain.Entities.User;
+using Microsoft.AspNetCore.Http;
 using Services.DataModel.Role;
 using Services.DataModel.User;
 
-namespace InventoryApi.Service.UserService
+namespace Services.Service.UserService
 {
     public interface IUserService
     {

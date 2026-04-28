@@ -1,14 +1,14 @@
 {
     "compilerOptions": {
-        "target": "ES6", // Compile to ES5 JavaScript
+        "target": "ES6", // Compile to ES6 JavaScript
         "module": "ES6", // Use the latest module system
         "strict": true, // Enable strict type-checking
         "sourceMap": true, // Generate source map files
         "outDir": "./dist", // Output directory
         "rootDir": "./src", // Input directory
-        "jsx": "react", // Enable JSX with React
+        "jsx": "react-jsx", // Javascript XML is transformed into _jsx in React version 17 and above rather than React.createElement
         "esModuleInterop": true,
-        "moduleResolution": "node", // Use Node.js module resolution strategy
+        "moduleResolution": "bundler", // Use Node.js module resolution strategy
     },
     "include": ["src"], // Include all files in the 'src' directory
     "exclude": ["node_modules"] // Exclude the 'node_modules' directory

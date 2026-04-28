@@ -1,0 +1,166 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Name>InventoryDb</Name>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>4.1</ProjectVersion>
+    <ProjectGuid>{dba51de4-70dd-4b22-aca8-5b1a4350e57c}</ProjectGuid>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql160DatabaseSchemaProvider</DSP>
+    <OutputType>Database</OutputType>
+    <RootPath />
+    <RootNamespace>InventoryDb</RootNamespace>
+    <AssemblyName>InventoryDb</AssemblyName>
+    <ModelCollation>1033, CI</ModelCollation>
+    <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
+    <DeployToDatabase>True</DeployToDatabase>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetLanguage>CS</TargetLanguage>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <SqlServerVerification>False</SqlServerVerification>
+    <IncludeCompositeObjects>True</IncludeCompositeObjects>
+    <TargetDatabaseSet>True</TargetDatabaseSet>
+    <PermissionSet>SAFE</PermissionSet>
+    <DacVersion>2.0.0.2</DacVersion>
+    <GenerateCreateScript>False</GenerateCreateScript>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
+    <SSDTExists Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets')">True</SSDTExists>
+    <VisualStudioVersion Condition="'$(SSDTExists)' == ''">11.0</VisualStudioVersion>
+  </PropertyGroup>
+  <Import Condition="'$(SQLDBExtensionsRefPath)' != ''" Project="$(SQLDBExtensionsRefPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <ItemGroup>
+    <Folder Include="Properties" />
+    <Folder Include="Scripts" />
+    <Folder Include="Scripts\Pre-Deployment" />
+    <Folder Include="Scripts\Post-Deployment" />
+    <Folder Include="dbo" />
+    <Folder Include="dbo\Function" />
+    <Folder Include="dbo\View" />
+    <Folder Include="dbo\StoredProcedure" />
+    <Folder Include="dbo\Table" />
+    <Folder Include="Security" />
+    <Folder Include="Security\Login" />
+    <Folder Include="Scripts\Function" />
+    <Folder Include="Scripts\StoredProcedure" />
+    <Folder Include="dbo\StoredProcedure\User" />
+    <Folder Include="dbo\StoredProcedure\Inventory" />
+    <Folder Include="dbo\StoredProcedure\Role" />
+    <Folder Include="dbo\StoredProcedure\Product" />
+    <Folder Include="dbo\StoredProcedure\Webhook" />
+    <Folder Include="dbo\StoredProcedure\Product\Query" />
+  </ItemGroup>
+  <ItemGroup>
+    <PreDeploy Include="Scripts\Pre-Deployment\Script.PreDeployment.sql" />
+    <Build Include="dbo\Table\Inventory.sql" />
+    <Build Include="dbo\Table\Product.sql" />
+    <None Include="Scripts\Post-Deployment\SeedData.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <PostDeploy Include="Scripts\Post-Deployment\Script.PostDeployment.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <SqlCmdVariable Include="AdminPassword">
+      <DefaultValue>password</DefaultValue>
+      <Value>$(SqlCmdVar__2)</Value>
+    </SqlCmdVariable>
+    <SqlCmdVariable Include="EnvironmentName">
+      <DefaultValue>Development</DefaultValue>
+      <Value>$(SqlCmdVar__1)</Value>
+    </SqlCmdVariable>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Security\Login\DefaultUser.sql" />
+    <None Include="Scripts\Pre-Deployment\_DeployOnce.sql" />
+    <None Include="InventoryDb.publish.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Scripts\Function\CheckTableExist.sql" />
+    <Build Include="Scripts\StoredProcedure\TrackFile.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <ArtifactReference Include="$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\160\SqlSchemas\master.dacpac">
+      <HintPath>$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\160\SqlSchemas\master.dacpac</HintPath>
+      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
+      <DatabaseVariableLiteralValue>master</DatabaseVariableLiteralValue>
+    </ArtifactReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="dbo\Table\User.sql" />
+    <Build Include="dbo\Table\UsersRole.sql" />
+    <Build Include="dbo\Table\UserDetails.sql" />
+    <Build Include="dbo\Table\Password.sql" />
+    <Build Include="dbo\Table\ProductPrice.sql" />
+    <Build Include="Scripts\StoredProcedure\TrackFileExists.sql" />
+    <Build Include="dbo\StoredProcedure\User\ActivateUser.sql" />
+    <Build Include="dbo\StoredProcedure\User\AssignUserToRole.sql" />
+    <Build Include="dbo\StoredProcedure\User\ResetPassword.sql" />
+    <Build Include="dbo\StoredProcedure\User\CreateUser.sql" />
+    <Build Include="dbo\StoredProcedure\User\DisableUser.sql" />
+    <Build Include="dbo\StoredProcedure\User\EnableUser.sql" />
+    <Build Include="dbo\StoredProcedure\User\GetActiveUserIdUsername.sql" />
+    <None Include="dbo\StoredProcedure\Role\GetRoles.sql" />
+    <None Include="dbo\StoredProcedure\Role\GetDefaultRole.sql" />
+    <None Include="dbo\StoredProcedure\Role\CreateRole.sql" />
+    <Build Include="dbo\StoredProcedure\User\GetUser.sql" />
+    <Build Include="dbo\StoredProcedure\User\GetUserDetails.sql" />
+    <Build Include="dbo\StoredProcedure\User\IsUserInactive.sql" />
+    <Build Include="dbo\StoredProcedure\Product\AddProduct.sql" />
+    <Build Include="dbo\StoredProcedure\Product\AddProductPrice.sql" />
+    <Build Include="dbo\StoredProcedure\Inventory\GetInventoryByProductId.sql" />
+    <None Include="dbo\StoredProcedure\Role\GetRoleId.sql" />
+    <None Include="dbo\StoredProcedure\Role\IsValidRole.sql" />
+    <Build Include="dbo\StoredProcedure\User\GetUnconfirmedUserId.sql" />
+    <Build Include="dbo\StoredProcedure\Product\RemoveProductById.sql" />
+    <Build Include="dbo\StoredProcedure\Product\RemoveProductPrice.sql" />
+    <Build Include="dbo\StoredProcedure\Product\UpdateProduct.sql" />
+    <Build Include="dbo\StoredProcedure\Product\UpdateProductPrice.sql" />
+    <Build Include="dbo\StoredProcedure\User\UpdateUserDetails.sql" />
+    <Build Include="dbo\StoredProcedure\User\GetValidUserId.sql" />
+    <Build Include="dbo\StoredProcedure\User\IsValidUsername.sql" />
+    <Build Include="dbo\StoredProcedure\User\IsValidUserEmail.sql" />
+    <Build Include="dbo\StoredProcedure\User\GetActiveUserIdByEmail.sql" />
+    <Build Include="dbo\StoredProcedure\User\GetDisabledUserIdByUsername.sql" />
+    <Build Include="dbo\StoredProcedure\User\GetEnabledUserIdByUsername.sql" />
+    <Build Include="dbo\StoredProcedure\User\GetUserByEmail.sql" />
+    <Build Include="dbo\StoredProcedure\User\GetAllUsers.sql" />
+    <Build Include="dbo\StoredProcedure\Webhook\SubscribeUserToWebhook.sql" />
+    <Build Include="dbo\Table\ServiceSubscription.sql" />
+    <Build Include="dbo\StoredProcedure\Webhook\GetWebhooksByAction.sql" />
+    <Build Include="dbo\StoredProcedure\Product\Query\GetProductById.sql" />
+    <Build Include="dbo\StoredProcedure\Product\Query\GetPPIDByInternalId.sql" />
+    <Build Include="dbo\StoredProcedure\Product\Query\GetProductId.sql" />
+    <Build Include="dbo\StoredProcedure\Product\Query\GetProductPriceById.sql" />
+    <Build Include="dbo\StoredProcedure\Product\Query\GetProducts.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="dbo\StoredProcedure\Inventory\GetInventoryItems.sql" />
+    <Build Include="dbo\StoredProcedure\Inventory\UpdateItemInInventory.sql" />
+  </ItemGroup>
+</Project>

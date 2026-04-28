@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "inventory-api.fullname" . }}
+  labels:
+    helm.sh/chart: {{ include "inventory-api.fullChartName" . }}
+    app.kubernetes.io/name: {{ include "inventory-api.appName" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "inventory-api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "inventory-api.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: api
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.targetPort }}
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: {{ .Values.env.ASPNETCORE_ENVIRONMENT | quote }}
+            - name: ConnectionStrings__InventoryDb
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.dbCredentialsSecret }}
+                  key: inventorydb-connection
+            - name: ConnectionStrings__EventStoreDb
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.dbCredentialsSecret }}
+                  key: eventstoredb-connection
+            - name: ConnectionStrings__RabbitMQ
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.rabbitmqCredentialsSecret }}
+                  key: rabbitmq-connection
+            - name: Security__AccessToken__Key
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.securityKeysSecret }}
+                  key: access-token-key
+            - name: Security__AccessToken__Expiry
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.securityKeysSecret }}
+                  key: access-token-expiry
+            - name: Security__RefreshToken__Key
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.securityKeysSecret }}
+                  key: refresh-token-key
+            - name: Security__RefreshToken__Expiry
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.securityKeysSecret }}
+                  key: refresh-token-expiry
+            - name: Security__ConfirmationToken__Key
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.securityKeysSecret }}
+                  key: confirmation-token-key
+            - name: Security__ConfirmationToken__Expiry
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.securityKeysSecret }}
+                  key: confirmation-token-expiry
+            - name: Security__Audience
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.securityKeysSecret }}
+                  key: audience
+            - name: Security__Issuer
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.securityKeysSecret }}
+                  key: issuer
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+      nodeSelector: {{- toYaml .Values.nodeSelector | nindent 6 }}
+      tolerations: {{- toYaml .Values.tolerations | nindent 6 }}
+      affinity: {{- toYaml .Values.affinity | nindent 6 }}

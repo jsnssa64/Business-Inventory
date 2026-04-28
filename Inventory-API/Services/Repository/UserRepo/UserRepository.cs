@@ -2,11 +2,11 @@
 using System.Data.Entity.Infrastructure;
 using Dapper;
 using Domain.Entities.User;
-using InventoryApi.Constants;
 using Services.DataModel.Role;
 using Services.DataModel.User;
+using Shared.Constants;
 
-namespace InventoryApi.Repository
+namespace Services.Repository.UserRepo
 {
     public class UserRepository : IUserRepository
     {

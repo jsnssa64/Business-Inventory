@@ -2,10 +2,10 @@
 using System.Data.Entity.Infrastructure;
 using System.Data;
 using Microsoft.IdentityModel.Tokens;
-using InventoryApi.Constants;
 using Services.DataModel.Role;
+using Shared.Constants;
 
-namespace InventoryApi.Repository.RoleRepo
+namespace Services.Repository.RoleRepo
 {
     public class RoleRepository: IRoleRepository
     {

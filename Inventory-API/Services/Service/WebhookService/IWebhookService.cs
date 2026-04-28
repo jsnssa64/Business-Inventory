@@ -1,7 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Services.DataModel.Webhook;
+﻿using Services.DataModel.Webhook;
 
-namespace InventoryApi.Service.UserService
+namespace Services.Service.UserService
 {
     public interface IWebhookService
     {

@@ -1,12 +1,13 @@
 ﻿using System.Security.Claims;
 using System.Security.Cryptography;
-using InventoryApi.Constants;
-using InventoryApi.Repository;
-using InventoryApi.Service.SecurityService.Models;
-using InventoryApi.Service.UserService.Utility;
+using Shared.Constants;
+using Microsoft.AspNetCore.Http;
 using Services.DataModel.User;
+using Services.Repository.UserRepo;
+using Shared.Utilities.User;
+using Services.Service.SecurityService.Models;
 
-namespace InventoryApi.Service.SecurityService
+namespace Services.Service.SecurityService
 {
     public class SecurityService: ISecurityService
     {
@@ -23,7 +24,7 @@ namespace InventoryApi.Service.SecurityService
 
         public void SetCookieForLogin(HttpResponse httpResponse, string accessToken, string refreshToken, DateTimeOffset cookieExpiry)
         {
-            httpResponse.Cookies.Append(Cookie.AccessCookie, accessToken, new CookieOptions
+            httpResponse.Cookies.Append(JWTCookie.AccessCookie, accessToken, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = false,
@@ -31,7 +32,7 @@ namespace InventoryApi.Service.SecurityService
                 Expires = cookieExpiry
             });
 
-            httpResponse.Cookies.Append(Cookie.RefreshCookie, refreshToken, new CookieOptions
+            httpResponse.Cookies.Append(JWTCookie.RefreshCookie, refreshToken, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = false,
@@ -42,8 +43,8 @@ namespace InventoryApi.Service.SecurityService
 
         public void SetCookieForLogout(HttpResponse httpResponse)
         {
-            httpResponse.Cookies.Delete(Cookie.AccessCookie);
-            httpResponse.Cookies.Delete(Cookie.RefreshCookie);
+            httpResponse.Cookies.Delete(JWTCookie.AccessCookie);
+            httpResponse.Cookies.Delete(JWTCookie.RefreshCookie);
         }
 
         public (string AccessToken, string RefreshToken) GenerateLoginJWT(IEnumerable<Claim> accessClaims, IEnumerable<Claim> refreshClaims)
@@ -55,7 +56,7 @@ namespace InventoryApi.Service.SecurityService
         }
 
         public string EncryptPassword(string password, SecurityLevel securityLevel = SecurityLevel.Default) =>
-            BCrypt.Net.BCrypt.HashPassword(password, (int)securityLevel, BCrypt.Net.SaltRevision.Revision2B);
+            BCrypt.Net.BCrypt.HashPassword(password, (int)securityLevel);
 
         public bool VerifyPassword(string password, string hashPassword) => BCrypt.Net.BCrypt.Verify(password, hashPassword);
 

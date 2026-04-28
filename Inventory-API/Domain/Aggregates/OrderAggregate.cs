@@ -4,7 +4,6 @@ using Domain.Events.Orders.Enum;
 
 namespace InventoryApi.Model.Action
 {
-
     public class OrderAggregate : Aggregate
     {
         public Order currentOrder { get; set; }

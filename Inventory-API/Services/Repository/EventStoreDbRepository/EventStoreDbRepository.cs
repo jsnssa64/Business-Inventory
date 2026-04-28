@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Services.Repository.EventStoreDbRepository
 {
-    public class EventStoreDbRepository: IEventStoreDbRepository
+    public class EventStoreDbRepository : IEventStoreDbRepository
     {
         private KurrentDBClient _storeClient;
 
@@ -51,4 +51,5 @@ namespace Services.Repository.EventStoreDbRepository
         {
             return $"{type}-{streamName}";
         }
+    }
 }
