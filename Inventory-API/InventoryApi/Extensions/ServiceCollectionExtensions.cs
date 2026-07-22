@@ -1,20 +1,24 @@
-﻿using EventStore.Client;
-using InventoryApi.Factory;
+﻿using InventoryApi.Factory;
 using System.Data.Entity.Infrastructure;
 using InventoryApi.Authentication;
 using Microsoft.AspNetCore.Authentication;
-using InventoryApi.Constants;
 using InventoryApi.Repository.Inventory;
-using InventoryApi.Repository.RoleRepo;
-using InventoryApi.Repository;
-using InventoryApi.Service.InventoryService;
-using InventoryApi.Service.RoleService;
-using InventoryApi.Service.UserService.Utility;
-using InventoryApi.Service.UserService;
-using InventoryApi.Service.SecurityService.Models;
-using InventoryApi.Service.SecurityService;
 using MassTransit;
-using static MassTransit.Logging.OperationName;
+using Microsoft.Extensions.Caching.Memory;
+using ZiggyCreatures.Caching.Fusion;
+using KurrentDB.Client;
+using Grpc.Core;
+using UserCredentials = KurrentDB.Client.UserCredentials;
+using Shared.Utilities.User;
+using Services.Service.SecurityService;
+using Services.Service.SecurityService.Models;
+using Services.Service.UserService;
+using Services.Repository.Webhook;
+using Services.Repository.UserRepo;
+using Services.Service.InventoryService;
+using Services.Service.RoleService;
+using Services.Repository.RoleRepo;
+using Shared.Constants;
 
 namespace InventoryApi.Extensions
 {
@@ -22,55 +26,106 @@ namespace InventoryApi.Extensions
     {
         public static IServiceCollection AddSecurityServices(this IServiceCollection services, IConfigurationManager configuration)
         {
+            services.AddTransient<IJWTUtility, JWTUtility>();
             services.Configure<Security>(configuration.GetSection("Security"));
-            services.AddSingleton<ISecurityService, SecurityService>();
+            services.AddScoped<ISecurityService, SecurityService>();
             return services;
         }
-        
+
+        public static IServiceCollection AddWebhook(this IServiceCollection services)
+        {
+            services.AddScoped<IWebhookService, WebhookService>();
+            services.AddScoped<IWebhookRepository, WebhookRepository>();
+            return services;
+        }
+
         public static IServiceCollection AddApiServices(this IServiceCollection services, IConfigurationManager configuration)
         {
-            services.AddSingleton<IUserUtility, UserUtility>();
-            services.AddSingleton<IUserService, UserService>();
-            services.AddSingleton<IUserRepository, UserRepository>();
+            services.AddTransient<IUserUtility, UserUtility>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IUserRepository, UserRepository>();
 
-            services.AddSingleton<IInventoryService, InventoryService>();
-            services.AddSingleton<IInventoryRepository, InventoryRepository>();
+            services.AddScoped<IInventoryService, InventoryService>();
+            services.AddScoped<IInventoryRepository, InventoryRepository>();
 
-            services.AddSingleton<IRoleService, RoleService>();
-            services.AddSingleton<IRoleRepository, RoleRepository>();
+            services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IRoleRepository, RoleRepository>();
 
-            services.AddSingleton<IProductRepository, ProductRepository>();
-            services.AddSingleton<IProductService, ProductService>();
+            services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IProductRepository, ProductRepository>();
+            return services;
+        }
+
+        public static string GetDataConnection(this IConfigurationManager configuration, string name)
+        {
+            var connectionString = configuration.GetConnectionString(name);
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                throw new InvalidOperationException($"Connection string '{name}' is not configured.");
+            }
+            return connectionString;
+        }
+
+        public static IServiceCollection AddEventServices(this IServiceCollection services, IConfigurationManager configuration)
+        {
+            var rabbitmqConnectionString = configuration.GetDataConnection(DatabaseConnections.RabbitMQ.ToString());
+
+            services.AddMassTransit(config =>
+            {
+                config.UsingRabbitMq((context, cfg) =>
+                {
+                    cfg.Host(rabbitmqConnectionString);
+                    cfg.ConfigureEndpoints(context);
+                });
+            });
+
+            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+
+            services.AddKurrentDBClient((KurrentDBClientSettings settings) =>
+            {
+                settings.ConnectionName = configuration.GetDataConnection(DatabaseConnections.KurrentDb.ToString());
+                settings.ChannelCredentials = ChannelCredentials.Insecure;
+
+                //settings.ConnectivitySettings = new KurrentDBClientConnectivitySettings();
+                //settings.CreateHttpMessageHandler = () => new HttpClientHandler
+                //{
+                //    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true // For development purposes only, do not use in production
+                //};
+
+                settings.DefaultCredentials = new UserCredentials("Test", "Test");
+                settings.DefaultDeadline = TimeSpan.FromSeconds(30);
+                //settings.OperationOptions = new KurrentDBClientOperationOptions()
+                //{
+                //    BatchAppendSize = 100,
+                //    GetAuthenticationHeaderValue = (k, v) => { },
+                //    ThrowOnAppendFailure = true
+                //};
+            });
 
             return services;
         }
 
         public static IServiceCollection AddMemoryServices(this IServiceCollection services, IConfigurationManager configuration)
         {
-            var connectionString = configuration.GetConnectionString(DatabaseConnections.RabbitMQ.ToString());
-            if (connectionString == null)
-            {
-                throw new InvalidOperationException("ServiceBus:Address configuration is missing or invalid.");
-            }
-
-            services.AddMassTransit(config =>
-            {
-                config.UsingRabbitMq((context, cfg) =>
+            services.AddFusionCache()
+                .WithDefaultEntryOptions(new FusionCacheEntryOptions
                 {
-                    cfg.Host(connectionString);
-                    cfg.ConfigureEndpoints(context);
+                    Duration = TimeSpan.FromMinutes(2),
+                    Priority = CacheItemPriority.Low
                 });
-            });
 
-            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
-            services.AddDapper(configuration);
-            services.AddEventStore(configuration);
             return services;
         }
 
-        public static IServiceCollection AddDapper(this IServiceCollection services, IConfigurationManager configuration)
+        public static IServiceCollection AddDatabaseServices(this IServiceCollection services, IConfigurationManager configuration)
         {
-            var connectionString = configuration.GetConnectionString(DatabaseConnections.InventoryDb.ToString());
+            services.AddDapper(configuration);
+            return services;
+        }
+
+        private static IServiceCollection AddDapper(this IServiceCollection services, IConfigurationManager configuration)
+        {
+            var connectionString = configuration.GetDataConnection(DatabaseConnections.InventoryDb.ToString());
             if (connectionString == null)
             {
                 throw new InvalidOperationException("Database:Address configuration is missing or invalid.");
@@ -92,37 +147,16 @@ namespace InventoryApi.Extensions
             return services;
         }
 
-        public static IServiceCollection AddEventStore(this IServiceCollection services, IConfigurationManager configuration)
-        {
-            var connectionString = configuration.GetConnectionString(DatabaseConnections.EventStoreDb.ToString());
-            if (connectionString == null)
-            {
-                throw new InvalidOperationException("Database:Address configuration is missing or invalid.");
-            }
-
-            var eventStoreUri = new Uri(connectionString);
-
-            services.AddSingleton(new EventStoreClient(new EventStoreClientSettings
-            {
-                ConnectivitySettings = new EventStoreClientConnectivitySettings
-                {
-                    Address = eventStoreUri
-                }
-            }));
-
-            return services;
-        }
-
         public static IServiceCollection AddLoginAuthentication(this IServiceCollection services)
         {
             services
-                .AddAuthentication(Cookie.JwtCookieScheme)
-                .AddScheme<AuthenticationSchemeOptions, CookieJwtHandler>(Cookie.JwtCookieScheme, options => { });
+                .AddAuthentication(JWTCookie.JwtCookieScheme)
+                .AddScheme<AuthenticationSchemeOptions, CookieJwtHandler>(JWTCookie.JwtCookieScheme, options => { });
 
             services.Configure<AuthenticationOptions>(options =>
             {
-                options.DefaultAuthenticateScheme = Cookie.JwtCookieScheme;
-                options.DefaultChallengeScheme = Cookie.JwtCookieScheme;
+                options.DefaultAuthenticateScheme = JWTCookie.JwtCookieScheme;
+                options.DefaultChallengeScheme = JWTCookie.JwtCookieScheme;
             });
 
             return services;

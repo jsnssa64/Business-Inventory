@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-ui
+  labels:
+    app: inventory-ui
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: inventory-ui
+  template:
+    metadata:
+      labels:
+        app:      inventory-ui
+        app-type: frontend
+    spec:
+      containers:
+      - name:   inventory-ui
+        image:  inventory-ui:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu:    "250m"
+          limits:
+            memory: "128Mi"
+            cpu:    "500m"

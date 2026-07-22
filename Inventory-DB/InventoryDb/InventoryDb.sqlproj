@@ -53,8 +53,8 @@
     <SSDTExists Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets')">True</SSDTExists>
     <VisualStudioVersion Condition="'$(SSDTExists)' == ''">11.0</VisualStudioVersion>
   </PropertyGroup>
-  <Import Condition="'$(SQLDBExtensionsRefPath)' != ''" Project="$(SQLDBExtensionsRefPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
-  <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <Import Condition="'$(NetCoreBuild)' != 'true' AND '$(SQLDBExtensionsRefPath)' != ''" Project="$(SQLDBExtensionsRefPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <Import Condition="'$(NetCoreBuild)' != 'true' AND '$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
   <ItemGroup>
     <Folder Include="Properties" />
     <Folder Include="Scripts" />
@@ -66,7 +66,6 @@
     <Folder Include="dbo\StoredProcedure" />
     <Folder Include="dbo\Table" />
     <Folder Include="Security" />
-    <Folder Include="Security\Login" />
     <Folder Include="Scripts\Function" />
     <Folder Include="Scripts\StoredProcedure" />
     <Folder Include="dbo\StoredProcedure\User" />
@@ -74,6 +73,7 @@
     <Folder Include="dbo\StoredProcedure\Role" />
     <Folder Include="dbo\StoredProcedure\Product" />
     <Folder Include="dbo\StoredProcedure\Webhook" />
+    <Folder Include="dbo\StoredProcedure\Product\Query" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\Pre-Deployment\Script.PreDeployment.sql" />
@@ -95,19 +95,12 @@
     </SqlCmdVariable>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Security\Login\DefaultUser.sql" />
     <None Include="Scripts\Pre-Deployment\_DeployOnce.sql" />
+    <None Include="InventoryDb.publish.xml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Scripts\Function\CheckTableExist.sql" />
     <Build Include="Scripts\StoredProcedure\TrackFile.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <ArtifactReference Include="$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\160\SqlSchemas\master.dacpac">
-      <HintPath>$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\160\SqlSchemas\master.dacpac</HintPath>
-      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
-      <DatabaseVariableLiteralValue>master</DatabaseVariableLiteralValue>
-    </ArtifactReference>
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Table\User.sql" />
@@ -131,10 +124,6 @@
     <Build Include="dbo\StoredProcedure\User\IsUserInactive.sql" />
     <Build Include="dbo\StoredProcedure\Product\AddProduct.sql" />
     <Build Include="dbo\StoredProcedure\Product\AddProductPrice.sql" />
-    <Build Include="dbo\StoredProcedure\Product\GetProductById.sql" />
-    <Build Include="dbo\StoredProcedure\Product\GetProductByInternalId.sql" />
-    <Build Include="dbo\StoredProcedure\Product\GetProductId.sql" />
-    <Build Include="dbo\StoredProcedure\Product\GetProducts.sql" />
     <Build Include="dbo\StoredProcedure\Inventory\GetInventoryByProductId.sql" />
     <None Include="dbo\StoredProcedure\Role\GetRoleId.sql" />
     <None Include="dbo\StoredProcedure\Role\IsValidRole.sql" />
@@ -150,15 +139,39 @@
     <Build Include="dbo\StoredProcedure\User\GetActiveUserIdByEmail.sql" />
     <Build Include="dbo\StoredProcedure\User\GetDisabledUserIdByUsername.sql" />
     <Build Include="dbo\StoredProcedure\User\GetEnabledUserIdByUsername.sql" />
-    <Build Include="dbo\StoredProcedure\Product\GetProductPriceById.sql" />
     <Build Include="dbo\StoredProcedure\User\GetUserByEmail.sql" />
     <Build Include="dbo\StoredProcedure\User\GetAllUsers.sql" />
     <Build Include="dbo\StoredProcedure\Webhook\SubscribeUserToWebhook.sql" />
     <Build Include="dbo\Table\ServiceSubscription.sql" />
     <Build Include="dbo\StoredProcedure\Webhook\GetWebhooksByAction.sql" />
+    <Build Include="dbo\StoredProcedure\Product\Query\GetProductById.sql" />
+    <Build Include="dbo\StoredProcedure\Product\Query\GetPPIDByInternalId.sql" />
+    <Build Include="dbo\StoredProcedure\Product\Query\GetProductId.sql" />
+    <Build Include="dbo\StoredProcedure\Product\Query\GetProductPriceById.sql" />
+    <Build Include="dbo\StoredProcedure\Product\Query\GetProducts.sql" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\StoredProcedure\Inventory\GetInventoryItems.sql" />
     <Build Include="dbo\StoredProcedure\Inventory\UpdateItemInInventory.sql" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Condition="'$(NetCoreBuild)' == 'true'">
+      <Version>1.0.0</Version>
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ArtifactReference Include="$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\160\SqlSchemas\master.dacpac" Condition="'$(NetCoreBuild)' != 'true'">
+      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
+      <DatabaseVariableLiteralValue>master</DatabaseVariableLiteralValue>
+    </ArtifactReference>
+    <ArtifactReference Include="$(SystemDacpacsLocation)\SystemDacpacs\160\master.dacpac" Condition="'$(NetCoreBuild)' == 'true'">
+      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
+      <DatabaseVariableLiteralValue>master</DatabaseVariableLiteralValue>
+    </ArtifactReference>
+  </ItemGroup>
+  <Import Project="$(NETCoreTargetsPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" Condition="'$(NetCoreBuild)' == 'true'" />
+  <Target Name="BeforeBuild">
+    <Delete Files="$(BaseIntermediateOutputPath)\project.assets.json" />
+  </Target>
 </Project>

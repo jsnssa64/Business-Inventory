@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static Domain.User.Roles;
 using System.Security.Claims;
+using static Shared.Constants.Roles;
 
 namespace InventoryApi.Authentication
 {

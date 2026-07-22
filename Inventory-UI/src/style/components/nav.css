@@ -1,0 +1,7 @@
+@layer components {
+    .navbar {
+        @apply flex items-center justify-between p-4 bg-gray-800 text-white;
+        @apply hover:bg-gray-700 transition-colors duration-300;
+        @apply rounded-lg shadow-md;
+    }
+}

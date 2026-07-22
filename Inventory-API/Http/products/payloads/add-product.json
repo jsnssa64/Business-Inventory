@@ -1,0 +1,9 @@
+{
+  "name": "Widget A",
+  "description": "A high-quality widget",
+  "price": 9.99,
+  "currency": "GBP",
+  "itemQuantity": 1,
+  "inventoryQuantity": 50,
+  "enabledPrice": true
+}

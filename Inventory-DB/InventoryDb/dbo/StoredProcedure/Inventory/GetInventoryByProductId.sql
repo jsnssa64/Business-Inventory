@@ -14,9 +14,10 @@ BEGIN
            i.Quantity AS InventoryQuantity
     FROM dbo.Inventory i
     JOIN dbo.Product p 
-    ON i.ProductId = p.Id
+        ON i.ProductId = p.Id
     JOIN dbo.[User] u 
-    ON p.UserId = u.Id 
-    WHERE p.PublicId = @PublicProductId
+        ON p.UserId = u.Id 
+    WHERE 
+        p.PublicId = @PublicProductId
         AND u.Id = @UserId;
 END

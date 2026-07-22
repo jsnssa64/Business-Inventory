@@ -1,21 +1,19 @@
-using Domain.User;
 using InventoryApi.Authentication;
 using InventoryApi.Controllers.CustomController;
-using InventoryApi.Model.DTO.User;
-using InventoryApi.Repository.Data.Product;
-using InventoryApi.Repository.Data.Role;
-using InventoryApi.Repository.Data.User;
-using InventoryApi.Service.SecurityService;
-using InventoryApi.Service.UserService;
+using InventoryApi.DTOs.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static Domain.User.Roles;
+using Services.DataModel.Role;
+using Services.DataModel.User;
+using Services.Service.SecurityService;
+using Services.Service.UserService;
+using Shared.Constants;
 
 namespace InventoryApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [MinimumRole(RoleLevel.User)]
+    [MinimumRole(Shared.Constants.Roles.RoleLevel.User)]
     public class UserController : BaseController
     {
         private readonly ILogger<InventoryController> _logger;
@@ -30,7 +28,7 @@ namespace InventoryApi.Controllers
         }
 
         [HttpPost("AssignUserRole")]
-        [MinimumRole(RoleLevel.Admin)]
+        [MinimumRole(Shared.Constants.Roles.RoleLevel.Admin)]
         public async Task<IActionResult> AssignUserRole(UsersRoleDTO usersRoleDTO, CancellationToken cancellationToken)
         {
             await _userService.AssignUserToRole(
@@ -62,19 +60,23 @@ namespace InventoryApi.Controllers
             return Ok();
         }
 
+        /*
+            When User registered an email should be sent
+            with a link to confirm the email address.
+            The link should contain a token that is valid for a certain period.
+            When the user clicks the link, the token is validated and this method is called.
+         */
         [HttpGet("Confirmation")]
         [AllowAnonymous]
         public async Task<IActionResult> Confirmation(string token, CancellationToken cancellationToken)
         {
-            if (!_jwtUtility.IsTokenValid(token, KeyType.confirmation))
-                throw new Exception("Confirmation no longer valid");
 
             await _userService.UserConfirmation(token);
             return Ok();
         }
 
         [HttpGet("Disable")]
-        [MinimumRole(RoleLevel.Admin)]
+        [MinimumRole(Shared.Constants.Roles.RoleLevel.Admin)]
         public IActionResult DisableUser(string username, CancellationToken cancellationToken)
         {
             var userIdentifier = new UserIdentifierModel()
@@ -90,7 +92,7 @@ namespace InventoryApi.Controllers
         }
 
         [HttpGet("Enable")]
-        [MinimumRole(RoleLevel.Admin)]
+        [MinimumRole(Shared.Constants.Roles.RoleLevel.Admin)]
         public IActionResult EnableUser(string username, CancellationToken cancellationToken)
         {
             _userService.SetUserStatus(
@@ -106,6 +108,7 @@ namespace InventoryApi.Controllers
             return Ok();
         }
 
+        //  Send Email to reset password
         [HttpPost("ForgottenPasswordByEmail")]
         [AllowAnonymous]
         public async Task<IActionResult> ForgottenPasswordByEmail(UserEmailDTO userEmailDTO, CancellationToken cancellationToken)
@@ -115,6 +118,7 @@ namespace InventoryApi.Controllers
             return Ok();
         }
 
+        //  Send Email to reset password
         [HttpGet("ForgottenPasswordByUsername")]
         [AllowAnonymous]
         public async Task<IActionResult> ForgottenPasswordByUsername(string userName, CancellationToken cancellationToken)
@@ -128,7 +132,7 @@ namespace InventoryApi.Controllers
         }
 
         [HttpGet("GetUserDetailsByUser")]
-        [MinimumRole(RoleLevel.Admin)]
+        [MinimumRole(Shared.Constants.Roles.RoleLevel.Admin)]
         public async Task<IActionResult> GetUserDetails(string username, CancellationToken cancellationToken)
         {
             var allUserData = await _userService.GetUserDetails(new UserIdentifierModel() { Username = username });
@@ -136,7 +140,7 @@ namespace InventoryApi.Controllers
         }
 
         [HttpGet("GetUsers")]
-        [MinimumRole(RoleLevel.Admin)]
+        [MinimumRole(Shared.Constants.Roles.RoleLevel.Admin)]
         public async Task<IActionResult> GetUsers(CancellationToken cancellationToken)
         {
             var allUserData = await _userService.GetUsers();
@@ -178,6 +182,7 @@ namespace InventoryApi.Controllers
             return Ok();
         }
 
+        /*  Default Registration for User   */
         [HttpPost("Register")]
         [AllowAnonymous]
         public async Task<IActionResult> RegisterDefaultUser(UserRegisterDTO userRegisterDTO,  CancellationToken cancellationToken)
@@ -197,8 +202,9 @@ namespace InventoryApi.Controllers
             return Ok();
         }
 
+        /*  Allow administrator to register a user with a pre-defined role e.g. Guest, User, Admin */
         [HttpPost("RegisterUserWithRole")]
-        [MinimumRole(RoleLevel.Admin)]
+        [MinimumRole(Shared.Constants.Roles.RoleLevel.Admin)]
         public async Task<IActionResult> RegisterUserWithRole(UserWithRoleRegisterDTO userWithRoleRegisterDTO, CancellationToken cancellationToken)
         {
             if (Roles.IsValidRoleLevel(userWithRoleRegisterDTO.RoleName))
@@ -222,6 +228,7 @@ namespace InventoryApi.Controllers
             return Ok();
         }
 
+        /*  */
         [HttpPost("ResetPassword")]
         [AllowAnonymous]
         public async Task<IActionResult> ResetPassword(ResetPasswordDTO resetPasswordDTO, CancellationToken cancellationToken)
@@ -237,7 +244,7 @@ namespace InventoryApi.Controllers
         }
 
         [HttpPost("Update")]
-        [MinimumRole(RoleLevel.User)]
+        [MinimumRole(Shared.Constants.Roles.RoleLevel.User)]
         public async Task<IActionResult> UpdateUser(UpdateUserDetailsDTO updateUserDetailsDTO, CancellationToken cancellationToken)
         {
             await _userService.UpdateUser(

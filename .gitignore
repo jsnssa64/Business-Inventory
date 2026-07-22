@@ -3,6 +3,12 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# Ignore Notes
+Notes/
+
+# API test scripts - cookie jar (contains auth tokens)
+scripts/.cookies.json
+
 # Compose .ENV File
 .env*
 

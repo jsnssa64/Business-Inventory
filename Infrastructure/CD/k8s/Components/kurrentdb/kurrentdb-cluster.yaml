@@ -1,0 +1,23 @@
+apiVersion: kubernetes.kurrent.io/v1
+kind: KurrentDB
+metadata:
+  name: kurrentdb-cluster
+  namespace: kurrent
+spec:
+  replicas: 1
+  image: docker.kurrent.io/kurrent-latest/kurrentdb:25.0.0
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 1Gi
+  storage:
+    volumeMode: "Filesystem"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 512Mi
+  network:
+    domain: kurrentdb-cluster.kurrent.test
+    loadBalancer:
+      enabled: true

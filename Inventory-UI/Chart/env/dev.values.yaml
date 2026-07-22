@@ -1,0 +1,15 @@
+application: 
+  appVersion: 0.1.0
+  platform: product-platform
+  # DO NOT CHANGE NAME - this is used in the template files to reference the application name 
+  name: inventorydb
+  namespace: inventory
+  environment: dev
+
+secret:
+  # Choose Infisical environment and project to pull secrets from
+  infisicalConfig:
+    environment: dev
+    syncConfig:
+      resyncInterval: 15s
+      instantUpdates: false
