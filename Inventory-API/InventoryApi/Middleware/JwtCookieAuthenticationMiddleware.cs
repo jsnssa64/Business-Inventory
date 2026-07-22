@@ -1,5 +1,6 @@
 ﻿using Services.DataModel.User;
 using Services.Service.SecurityService;
+using Services.Service.SecurityService.Models;
 using Services.Service.UserService;
 using Shared.Constants;
 using Shared.Utilities.User;
@@ -7,14 +8,13 @@ using System.Security.Claims;
 
 namespace InventoryApi.Middleware
 {
-    public class JwtCookieAuthenticationMiddleware(RequestDelegate next, IUserService userService, IJWTUtility JWTUtility, IUserUtility userUtility)
+    public class JwtCookieAuthenticationMiddleware(RequestDelegate next, IJWTUtility JWTUtility, IUserUtility userUtility)
     {
         private readonly RequestDelegate _next = next;
         private readonly IJWTUtility _JWTUtility = JWTUtility;
-        private readonly IUserService _userService = userService;
         private readonly IUserUtility _userUtility = userUtility;
 
-        public async Task InvokeAsync(HttpContext context)
+        public async Task InvokeAsync(HttpContext context, IUserService userService)
         {
             string? accessToken = null;
             string? refreshToken = null;
@@ -34,7 +34,7 @@ namespace InventoryApi.Middleware
 
             try
             {
-                /*  Validate Access Token*/
+                /*  Is Valid Token but has expired */
                 if (!_JWTUtility.HasTokenExpired(accessToken, KeyType.access))
                 {
                     var claimIdentity = await _JWTUtility.GetTokenClaims(accessToken, KeyType.access);
@@ -44,7 +44,7 @@ namespace InventoryApi.Middleware
                     return;
                 }
 
-                /*  Backup: Validate Refresh Token */
+                /*  Validate Refresh Token */
                 if (_JWTUtility.IsTokenValid(refreshToken, KeyType.refresh))
                 {
                     var refreshClaimIdentity = await _JWTUtility.GetTokenClaims(refreshToken, KeyType.refresh);
@@ -56,14 +56,14 @@ namespace InventoryApi.Middleware
                         Username = currentClaims.Username
                     };
 
-                    var latestUserClaims = await _userService.GenerateLogin(context.Response, userIdentifier);
+                    var latestUserClaims = await userService.GenerateLogin(context.Response, userIdentifier);
 
                     context.User = new ClaimsPrincipal(new ClaimsIdentity(latestUserClaims));
                 }
             }
             catch (Exception ex)
             {
-                _userService.LogoutUser(context.Response);
+                userService.LogoutUser(context.Response);
                 throw new Exception($"Failed to validate JWT: {ex.Message}");
             }
 

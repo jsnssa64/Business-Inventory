@@ -6,6 +6,9 @@
 # Ignore Notes
 Notes/
 
+# API test scripts - cookie jar (contains auth tokens)
+scripts/.cookies.json
+
 # Compose .ENV File
 .env*
 

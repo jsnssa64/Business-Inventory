@@ -108,7 +108,7 @@ namespace InventoryApi.Controllers
             return Ok();
         }
 
-        //  Send EMail to reset password
+        //  Send Email to reset password
         [HttpPost("ForgottenPasswordByEmail")]
         [AllowAnonymous]
         public async Task<IActionResult> ForgottenPasswordByEmail(UserEmailDTO userEmailDTO, CancellationToken cancellationToken)
@@ -118,7 +118,7 @@ namespace InventoryApi.Controllers
             return Ok();
         }
 
-        //  Send EMail to reset password
+        //  Send Email to reset password
         [HttpGet("ForgottenPasswordByUsername")]
         [AllowAnonymous]
         public async Task<IActionResult> ForgottenPasswordByUsername(string userName, CancellationToken cancellationToken)
@@ -182,6 +182,7 @@ namespace InventoryApi.Controllers
             return Ok();
         }
 
+        /*  Default Registration for User   */
         [HttpPost("Register")]
         [AllowAnonymous]
         public async Task<IActionResult> RegisterDefaultUser(UserRegisterDTO userRegisterDTO,  CancellationToken cancellationToken)
@@ -201,6 +202,7 @@ namespace InventoryApi.Controllers
             return Ok();
         }
 
+        /*  Allow administrator to register a user with a pre-defined role e.g. Guest, User, Admin */
         [HttpPost("RegisterUserWithRole")]
         [MinimumRole(Shared.Constants.Roles.RoleLevel.Admin)]
         public async Task<IActionResult> RegisterUserWithRole(UserWithRoleRegisterDTO userWithRoleRegisterDTO, CancellationToken cancellationToken)
@@ -226,6 +228,7 @@ namespace InventoryApi.Controllers
             return Ok();
         }
 
+        /*  */
         [HttpPost("ResetPassword")]
         [AllowAnonymous]
         public async Task<IActionResult> ResetPassword(ResetPasswordDTO resetPasswordDTO, CancellationToken cancellationToken)

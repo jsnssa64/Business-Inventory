@@ -46,7 +46,7 @@ Chart/                 Helm charts for Kubernetes deployment
 - KurrentDB on `localhost:2113`
 - RabbitMQ on `localhost`
 
-All three can be started with the Docker Compose files in `../Infrastructure/Docker/`.
+All three can be started with the Docker Compose files in `../Infrastructure/CI/Docker/`.
 
 ## Getting Started
 
@@ -74,10 +74,10 @@ docker run -p 8080:8080 inventory-api:latest
 ### Kubernetes (Helm)
 
 ```bash
-helm install inventory-api ./Chart -f Chart/env/dev.yaml
+./Chart/deploy.sh --environment dev --release-name inventory-api
 ```
 
-Environment-specific value files are provided for `dev`, `staging`, and `prod`. Required secrets: `db-credentials`, `rabbitmq-credentials`, `kurrentdb-credentials`, `security-keys`.
+Environment-specific value files (`Chart/env/dev.values.yaml`, `staging.values.yaml`, `prod.values.yaml`) are selected by the `--environment` flag. Required secrets: `db-credentials`, `rabbitmq-credentials`, `kurrentdb-credentials`, `security-keys`.
 
 ## Configuration
 
@@ -85,11 +85,13 @@ Key settings in `appsettings.json` / `appsettings.Development.json`:
 
 | Key | Description |
 |---|---|
-| `ConnectionStrings:DefaultConnection` | SQL Server connection string |
-| `ConnectionStrings:EventStoreDb` | KurrentDB gRPC connection string |
-| `ConnectionStrings:RabbitMq` | RabbitMQ connection string |
-| `Security:PrivateKey` | Base64-encoded RSA private key for JWT signing |
-| `Security:PublicKey` | Base64-encoded RSA public key for JWT validation |
+| `ConnectionStrings:InventoryDb` | SQL Server connection string |
+| `ConnectionStrings:KurrentDb` | KurrentDB gRPC connection string (`kurrentdb://...`) |
+| `ConnectionStrings:RabbitMQ` | RabbitMQ connection string |
+| `Security:AccessToken:Key` | Base64-encoded RSA key for access token signing (20 min) |
+| `Security:RefreshToken:Key` | Base64-encoded RSA key for refresh token signing (30 days) |
+| `Security:ConfirmationToken:Key` | Base64-encoded RSA key for email confirmation tokens |
+| `Security:ResetPasswordToken:Key` | Base64-encoded RSA key for password reset tokens |
 | `Security:Issuer` / `Security:Audience` | JWT issuer and audience claims |
 
 ## API Endpoints

@@ -42,7 +42,7 @@ namespace Services.Repository.Webhook
             }
         }
 
-        public async Task<IEnumerable<WebhookDetails>> GetWebhookByAction(SubscriptionType subscriptionType)
+        public async Task<IEnumerable<WebhookDetails>> GetWebhooksByAction(SubscriptionType subscriptionType)
         {
             using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
 

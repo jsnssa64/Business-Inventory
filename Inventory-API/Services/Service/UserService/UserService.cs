@@ -14,6 +14,7 @@ using Shared.Constants;
 using Domain.Service.UserService;
 using Services.Service.SecurityService;
 using Services.Service.SecurityService.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Services.Service.UserService
 {
@@ -27,6 +28,7 @@ namespace Services.Service.UserService
         private IUserUtility _userUtility;
         private IJWTUtility _jwtUtility;
         private IDbConnectionFactory _dbConnectionFactory;
+        private ILogger<UserService> _logger;
 
         public UserService(IUserRepository userRepository,
             IPublishEndpoint publishEndpoint,
@@ -35,12 +37,14 @@ namespace Services.Service.UserService
             IUserUtility userUtility, 
             IJWTUtility jwtUtility,
             IDbConnectionFactory dbConnectionFactory,
-            IFusionCache fusionCache) 
+            IFusionCache fusionCache,
+            ILogger<UserService> logger) 
         {
             _mediator = mediator;
             _publishEndpoint = publishEndpoint;
             _fusionCache = fusionCache;
             _userRepository = userRepository;
+            _logger = logger;
             _securityService = securityService;
             _userUtility = userUtility;
             _jwtUtility = jwtUtility;
@@ -96,28 +100,34 @@ namespace Services.Service.UserService
                 };
 
                 await _userRepository.AssignRoleToUser(conn, userIdentifierModel, roleNameModel, transaction);
-                
-                //  Temp - Auto Activate User
+
+                //  TODO: This line will auto activate the User - TEMPORARY until email confirmation is implemented
                 await _userRepository.ActivateUser(conn, userIdentifierModel, transaction);
 
                 transaction.Commit();
 
-                await _mediator.Publish(
-                    new UserCreatedNotification()
-                    {
-                        Version = 1,
-                        userIdentity = new UserIdentity(userRegistrationModel.UserId.ToString(), "", userRegistrationModel.Email),
-                    }
-                );
+                try
+                {
+                    await _mediator.Publish(
+                        new UserCreatedNotification()
+                        {
+                            Version = 1,
+                            userIdentity = new UserIdentity(userRegistrationModel.UserId.ToString(), "", userRegistrationModel.Email),
+                        }
+                    );
+                }
+                catch (Exception ex)
+                {
+                    //  Log failed notification, but do not fail the user registration
+                    _logger.LogError($"Failed to publish {nameof(UserCreatedNotification)}: {ex.Message}");
+                }
 
-                var userLoginModel = new UserLoginModel()
+                //  Auto login user after registration
+                await LoginUser(httpResponse, new UserLoginModel()
                 {
                     Username = userIdentifierModel.Username,
                     Password = userRegistrationModel.Password
-                };
-
-                await LoginUser(httpResponse, userLoginModel);
-
+                });
                 return userIdModel;
             }
             catch(Exception ex)
@@ -169,7 +179,7 @@ namespace Services.Service.UserService
         public async Task UserConfirmation(string token)
         {
             if (!_jwtUtility.IsTokenValid(token, KeyType.confirmation))
-                throw new Exception("Confirmation no longer valid");
+                throw new Exception("Confirmation Token no longer valid");
 
             var tokenClaims = await _jwtUtility.GetTokenClaims(token, KeyType.confirmation);
 
@@ -315,7 +325,6 @@ namespace Services.Service.UserService
         {
             try
             {
-
                 if (!await _userRepository.IsValidUserByUsername(userIdentifierModel))
                 {
                     throw new Exception("Invalid Username");

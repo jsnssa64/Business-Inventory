@@ -8,7 +8,7 @@
         {
             try
             {
-                var usermapped = Map(user);
+                Map(user);
                 PasswordHash = user?.PasswordHash!;
             }
             catch

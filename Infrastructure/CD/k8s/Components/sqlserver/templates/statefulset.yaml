@@ -1,0 +1,65 @@
+apiVersion: v2
+kind: StatefulSet
+metadata:
+  name: {{ - include "application.fullname" . }}
+  labels:
+    {{ - include "application.allLabels" . | nindent 4 }}
+  spec:
+    serviceName: {{ - include "application.servicename" . }}
+    replicas: {{ .Values.replicaCount }}
+    selector:
+      matchLabels:
+        {{ - include "application.selectorOnlyLabels" . | nindent 8 }}
+    template:
+      metadata:
+        {{ - with .Values.podAnnotations }}
+        annotation:
+          secrets.infisical.com/auto-reload: "true"
+          {{ - toYaml . | nindent 8 }}
+        {{ - end }}
+        labels:
+          {{- include "application.selectorOnlyLabels" . | nindent 8 }}
+      spec: 
+        securityContext:
+          {{ - toYaml .Values.podSecurityContext | nindent 8 }}
+        containers:
+          -name: {{ .Chart.Name }}
+            containers:
+              - /bin/bash
+              - -c
+              - cp /var/opt/config/mssql.conf /var/opt/mssql/mssql.conf && /opt/mssql/bin/sqlservr 
+            image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            ports:
+              - name: sqlport
+                containerPort: {{ .Values.containers.ports.containerPort }}
+            env:
+              - name: ACCEPT_EULA
+                value: {{ .Values.ACCEPT_EULA.value }}
+              - name: MSSQL_PID
+                value: {{ .Values.MSSQL_PID.value }}
+              - name: MSSQL_AGENT_ENABLED
+                value: {{ .Values.MSSQL_AGENT_ENABLED.value }}
+              - name: SA_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ - include "application.fullname" . }}-secret
+                    key: SA_PASSWORD
+            volumeMounts:
+              - name: mssql
+                mountPath: /var/opt/mssql
+              - name: mssql-config-volume
+                mountPath: /var/opt/config
+        volumes:
+          - name: mssql-config-volume
+            configMap:
+              name: mssql-config
+  volumeClaimTemplates:
+  - metadata:
+      name: mssql
+    spec: 
+      accessModes: 
+        - "ReadWriteOnce"
+      resources:
+        requests:
+          storage: 8Gi

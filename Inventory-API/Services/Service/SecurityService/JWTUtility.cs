@@ -7,25 +7,18 @@ using System.Security.Cryptography;
 
 namespace Services.Service.SecurityService
 {
-    public enum KeyType
-    {
-        refresh,
-        access,
-        confirmation,
-        resetPassword
-    }
-
     public class JWTUtility: IJWTUtility
     {
         private IOptions<Security> _security;
 
-        private JwtSecurityTokenHandler _securityTokenHandler;
+        private JwtSecurityTokenHandler _securityTokenHandler = new JwtSecurityTokenHandler();
 
         private RSA accessKey;
         
         private RSA refreshKey;
 
         private RSA confirmationKey;
+
         private RSA resetPasswordKey;
 
         private RSA GetKey(KeyType keyType)
@@ -65,7 +58,6 @@ namespace Services.Service.SecurityService
         public JWTUtility(IOptions<Security> security)
         {
             _security = security;
-            _securityTokenHandler = new JwtSecurityTokenHandler();
             accessKey = LoadAccessKey();
             refreshKey = LoadRefreshKey();
             confirmationKey = LoadConfirmationKey();
@@ -83,10 +75,12 @@ namespace Services.Service.SecurityService
             return result.ClaimsIdentity;
         }
                 
-        private RSA LoadRefreshKey() => LoadRSAKey(_security.Value.RefreshToken.Key ?? throw new ArgumentNullException("Failed to load RSA Key"));
-        private RSA LoadAccessKey() => LoadRSAKey(_security.Value.AccessToken.Key ?? throw new ArgumentNullException("Failed to load RSA Key"));
-        private RSA LoadConfirmationKey() => LoadRSAKey(_security.Value.ConfirmationToken.Key ?? throw new ArgumentNullException("Failed to load RSA Key"));
-        private RSA LoadResetPasswordKey() => LoadRSAKey(_security.Value.ResetPasswordToken.Key ?? throw new ArgumentNullException("Failed to load RSA Key"));
+        private RSA LoadRefreshKey() => LoadRSAKey(_security.Value.RefreshToken.Key ?? throw FailedToLoadRSAKey);
+        private RSA LoadAccessKey() => LoadRSAKey(_security.Value.AccessToken.Key ?? throw FailedToLoadRSAKey);
+        private RSA LoadConfirmationKey() => LoadRSAKey(_security.Value.ConfirmationToken.Key ?? throw FailedToLoadRSAKey);
+        private RSA LoadResetPasswordKey() => LoadRSAKey(_security.Value.ResetPasswordToken.Key ?? throw FailedToLoadRSAKey);
+
+        private ArgumentNullException FailedToLoadRSAKey => new ArgumentNullException("Failed to load RSA Key");
 
         private RSA LoadRSAKey(string key)
         {
@@ -95,9 +89,10 @@ namespace Services.Service.SecurityService
                 throw new Exception("Unable To Retrieve Keys");
             }
 
-            var rsa = RSA.Create();
             var decodedKey = Convert.FromBase64String(key);
             var pemString = System.Text.Encoding.UTF8.GetString(decodedKey);
+
+            var rsa = RSA.Create();
             rsa.ImportFromPem(pemString.AsSpan());
 
             return rsa;
@@ -126,22 +121,23 @@ namespace Services.Service.SecurityService
 
             try
             {
-                var now = DateTime.UtcNow;
+                //  Without LifeTime Validation
                 var validation = new TokenValidationParameters
                 {
                     IssuerSigningKey = new RsaSecurityKey(GetKey(keyType)),
                     ValidateIssuerSigningKey = true,
                     ValidateIssuer = true,
                     ValidateAudience = true,
+                    ValidateLifetime = false,
                     ValidAudience = _security.Value.Audience,
                     ValidIssuer = _security.Value.Issuer
-                    //  Without LifeTime Validation
                 };
 
+                //  Validate the token and retrieve the valid token
                 _securityTokenHandler.ValidateToken(token, validation, out var validToken);
 
-                //  LifeTime Verification
-                return (now >= validToken.ValidTo);
+                //  Check if token has expired
+                return (DateTime.UtcNow >= validToken.ValidTo);
             }
             catch {
                 return true;

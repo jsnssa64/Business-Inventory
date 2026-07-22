@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using Services.Service.SecurityService.Models;
+using System.Security.Claims;
 
 namespace Services.Service.SecurityService
 {

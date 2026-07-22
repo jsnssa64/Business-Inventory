@@ -6,8 +6,20 @@ Local development infrastructure managed with Docker Compose. Compose files are 
 
 ```
 Infrastructure/
-├── CI/Docker/     # Docker Compose files (one per service)
-└── CD/            # Kubernetes manifests and Helm configurations
+├── CI/
+│   ├── Docker/        # Docker Compose files (one per service)
+│   └── Terraform/     # Terraform stub (not yet in use)
+└── CD/
+    ├── k8s/
+    │   ├── Components/    # Per-service Helm-style templates (api, ui, rabbitmq, sqlserver, kurrentdb)
+    │   │   └── unused/    # Reference manifests (not deployed)
+    │   └── Manifests/     # Flat raw Kubernetes manifests
+    └── Platform/          # Cluster-level Helm charts
+        ├── cert-manager/
+        ├── gateway-api/
+        ├── nginx-gateway/
+        ├── nginx-gateway-fabric/
+        └── secrets/       # Infisical operator + universal-auth-credentials
 ```
 
 ## Docker Networks
@@ -64,7 +76,8 @@ The compose files rely on a `.env` file in the same directory. Required variable
 | `API_PROJECT_PATH` | Path to Inventory-API project | _(relative path)_ |
 | `UI_PROJECT_PATH` | Path to Inventory-UI project | _(relative path)_ |
 | `CONTAINER_NAME` | Suffix for container names | _(e.g. `dev`)_ |
-| `ENV_MODE` | Build mode for dacpac | `Debug` or `Release` |
+| `ENV_MODE` | Build mode for dacpac | `Dev` |
+| `ENVIRONMENT_SHORTFORM` | Environment label used in container naming | `Development` |
 | `ASPNETCORE_ENVIRONMENT` | ASP.NET environment | `Development` |
 | `RABBITMQ_DEFAULT_USER` | RabbitMQ username | `guest` |
 | `RABBITMQ_DEFAULT_PASS` | RabbitMQ password | `test123!` |
@@ -79,8 +92,28 @@ The compose files rely on a `.env` file in the same directory. Required variable
 | `SECURITY_CONFIRM_EXPIRY` | Confirmation token lifetime | `30` |
 | `SECURITY_AUDIENCE` | JWT audience | `http://api.myapp.com` |
 | `SECURITY_ISSUER` | JWT issuer | `http://auth.myapp.com` |
-| `NODE_ENV` | Node environment for UI | `development` |
+| `BASE_URL` | UI base URL | `http://localhost:3000` |
+| `NODE_ENVIRONMENT` | Node environment for UI | `Development` |
 
 ## Kubernetes (CD)
 
-Helm charts and Kubernetes manifests live under `CD/`. See the API's `Chart/deploy.sh` for the deployment script used against these manifests.
+### Workload — `CD/k8s/`
+
+`Components/` contains per-service Helm-style templates (api, ui, rabbitmq, sqlserver, kurrentdb). `Manifests/` holds the same resources as flat raw manifests. `Components/unused/` is reference-only and not deployed.
+
+### Platform — `CD/Platform/`
+
+Cluster-level charts that must be installed before workloads:
+
+| Chart | Purpose |
+|---|---|
+| `cert-manager/` | TLS certificate management; per-environment values under `environments/` |
+| `gateway-api/` | Gateway API CRD installation |
+| `nginx-gateway/` | NGINX Gateway CRDs |
+| `nginx-gateway-fabric/` | NGINX Gateway Fabric controller; environment overrides under `env/`; `deploy.sh` for install |
+| `secrets/infisical` | Infisical secrets operator |
+| `secrets/universal-auth-credentials` | Machine identity credentials for Infisical auth |
+
+### Terraform — `CI/Terraform/`
+
+Stub only — not yet in use.

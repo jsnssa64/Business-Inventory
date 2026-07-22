@@ -195,7 +195,7 @@ namespace Services.Repository.UserRepo
                     throw new DbUpdateException($"User not found for username: {userIdentifierModel.Username}");
 
                 var user = new UserWithPassword();
-                user.Map(result);
+                user.MapWithPassword(result);
 
                 return user;
             }

@@ -1,0 +1,1 @@
+helm upgrade --install "$RELEASE_NAME" . --namespace "$NAMESPACE" --create-namespace -f "$VALUES_FILE"

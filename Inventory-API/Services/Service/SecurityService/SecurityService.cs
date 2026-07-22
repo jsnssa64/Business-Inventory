@@ -22,24 +22,20 @@ namespace Services.Service.SecurityService
             _userUtility = userUtility;
         }
 
+        private CookieOptions CreateCookieOptions(DateTimeOffset cookieExpiry) => new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = false,
+            SameSite = SameSiteMode.Lax,
+            Expires = cookieExpiry
+        };
+
         public void SetCookieForLogin(HttpResponse httpResponse, string accessToken, string refreshToken, DateTimeOffset cookieExpiry)
         {
-            httpResponse.Cookies.Append(JWTCookie.AccessCookie, accessToken, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = false,
-                SameSite = SameSiteMode.Lax,
-                Expires = cookieExpiry
-            });
-
-            httpResponse.Cookies.Append(JWTCookie.RefreshCookie, refreshToken, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = false,
-                SameSite = SameSiteMode.Lax,
-                Expires = cookieExpiry
-            });
+            httpResponse.Cookies.Append(JWTCookie.AccessCookie, accessToken, CreateCookieOptions(cookieExpiry));
+            httpResponse.Cookies.Append(JWTCookie.RefreshCookie, refreshToken, CreateCookieOptions(cookieExpiry));
         }
+
 
         public void SetCookieForLogout(HttpResponse httpResponse)
         {
@@ -64,7 +60,7 @@ namespace Services.Service.SecurityService
         {
             var bytes = new byte[byteLength];
             RandomNumberGenerator.Fill(bytes);
-            return Convert.ToHexString(bytes).ToLower(); // hex string
+            return Convert.ToHexString(bytes).ToLower();
         }
 
         public string GetHashFromPayload(string payload, string secret)

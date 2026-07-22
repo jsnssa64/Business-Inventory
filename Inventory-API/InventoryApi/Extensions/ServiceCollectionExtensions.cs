@@ -26,39 +26,37 @@ namespace InventoryApi.Extensions
     {
         public static IServiceCollection AddSecurityServices(this IServiceCollection services, IConfigurationManager configuration)
         {
-
-            services.AddSingleton<IJWTUtility, JWTUtility>();
+            services.AddTransient<IJWTUtility, JWTUtility>();
             services.Configure<Security>(configuration.GetSection("Security"));
-            services.AddSingleton<ISecurityService, SecurityService>();
+            services.AddScoped<ISecurityService, SecurityService>();
             return services;
         }
 
         public static IServiceCollection AddWebhook(this IServiceCollection services)
         {
-            services.AddSingleton<IWebhookService, WebhookService>();
-            services.AddSingleton<IWebhookRepository, WebhookRepository>();
+            services.AddScoped<IWebhookService, WebhookService>();
+            services.AddScoped<IWebhookRepository, WebhookRepository>();
             return services;
         }
 
         public static IServiceCollection AddApiServices(this IServiceCollection services, IConfigurationManager configuration)
         {
-            services.AddSingleton<IUserUtility, UserUtility>();
-            services.AddSingleton<IUserService, UserService>();
-            services.AddSingleton<IUserRepository, UserRepository>();
+            services.AddTransient<IUserUtility, UserUtility>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IUserRepository, UserRepository>();
 
-            services.AddSingleton<IInventoryService, InventoryService>();
-            services.AddSingleton<IInventoryRepository, InventoryRepository>();
+            services.AddScoped<IInventoryService, InventoryService>();
+            services.AddScoped<IInventoryRepository, InventoryRepository>();
 
-            services.AddSingleton<IRoleService, RoleService>();
-            services.AddSingleton<IRoleRepository, RoleRepository>();
+            services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IRoleRepository, RoleRepository>();
 
-            services.AddSingleton<IProductService, ProductService>();
-            services.AddSingleton<IProductRepository, ProductRepository>();
-
+            services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IProductRepository, ProductRepository>();
             return services;
         }
 
-        public static string GetConnectionString(this IConfigurationManager configuration, string name)
+        public static string GetDataConnection(this IConfigurationManager configuration, string name)
         {
             var connectionString = configuration.GetConnectionString(name);
             if (string.IsNullOrEmpty(connectionString))
@@ -70,7 +68,7 @@ namespace InventoryApi.Extensions
 
         public static IServiceCollection AddEventServices(this IServiceCollection services, IConfigurationManager configuration)
         {
-            var rabbitmqConnectionString = configuration.GetConnectionString(DatabaseConnections.RabbitMQ.ToString());
+            var rabbitmqConnectionString = configuration.GetDataConnection(DatabaseConnections.RabbitMQ.ToString());
 
             services.AddMassTransit(config =>
             {
@@ -85,7 +83,7 @@ namespace InventoryApi.Extensions
 
             services.AddKurrentDBClient((KurrentDBClientSettings settings) =>
             {
-                settings.ConnectionName = configuration.GetConnectionString(DatabaseConnections.KurrentDb.ToString());
+                settings.ConnectionName = configuration.GetDataConnection(DatabaseConnections.KurrentDb.ToString());
                 settings.ChannelCredentials = ChannelCredentials.Insecure;
 
                 //settings.ConnectivitySettings = new KurrentDBClientConnectivitySettings();
@@ -93,6 +91,7 @@ namespace InventoryApi.Extensions
                 //{
                 //    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true // For development purposes only, do not use in production
                 //};
+
                 settings.DefaultCredentials = new UserCredentials("Test", "Test");
                 settings.DefaultDeadline = TimeSpan.FromSeconds(30);
                 //settings.OperationOptions = new KurrentDBClientOperationOptions()
@@ -126,7 +125,7 @@ namespace InventoryApi.Extensions
 
         private static IServiceCollection AddDapper(this IServiceCollection services, IConfigurationManager configuration)
         {
-            var connectionString = configuration.GetConnectionString(DatabaseConnections.InventoryDb.ToString());
+            var connectionString = configuration.GetDataConnection(DatabaseConnections.InventoryDb.ToString());
             if (connectionString == null)
             {
                 throw new InvalidOperationException("Database:Address configuration is missing or invalid.");

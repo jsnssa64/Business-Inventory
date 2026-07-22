@@ -21,9 +21,9 @@ namespace Services.Service.UserService
             _logger = logger;
         }
 
-        public async Task WebHookTest(string userName, SubscriptionType subscriptionType)
+        public async Task PostWebhookBySubscription(string userName, SubscriptionType subscriptionType)
         {
-            var webhooks = await _webhookRepository.GetWebhookByAction(subscriptionType);
+            var webhooks = await _webhookRepository.GetWebhooksByAction(subscriptionType);
 
             await PostToWebhook(webhooks.Select(webhook => new WebhookPost()
             {
@@ -43,25 +43,48 @@ namespace Services.Service.UserService
             try
             {
                 using HttpClient client = new HttpClient();
-
                 var tasks = new List<Task<HttpResponseMessage>>();
 
                 foreach (var webhook in webhooks)
                 {
-                    var jsonPayload = JsonSerializer.Serialize(webhook.payload);
-                    var request = new HttpRequestMessage(HttpMethod.Post, webhook.WebhookURI);
-                    request.Content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+                    try
+                    {
+                        var jsonPayload = JsonSerializer.Serialize(webhook.payload);
 
-                    request.Headers.Add(HubSignatureHeader, $"sha256={_securityService.GetHashFromPayload(jsonPayload, webhook.SharedSecret)}");
+                        if (string.IsNullOrEmpty(jsonPayload))
+                        {
+                            // Record failure to serialize payload, but continue with other webhooks
+                            _logger.LogError("Failed to serialize payload for webhook {WebhookURI}. Skipping.", webhook.WebhookURI);
+                            continue;
+                        }
 
-                    tasks.Add(client.SendAsync(request));
+                        var request = new HttpRequestMessage(HttpMethod.Post, webhook.WebhookURI);
+                        request.Content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+                        request.Headers.Add(HubSignatureHeader, $"sha256={_securityService.GetHashFromPayload(jsonPayload, webhook.SharedSecret)}");
+
+                        tasks.Add(client.SendAsync(request));
+                    }
+                    catch (Exception ex)
+                    {
+                        // Keep going even if one webhook fails, but log the error
+                        _logger.LogError(ex, "Failed to create request for webhook {WebhookURI}. Message: {Message}", webhook.WebhookURI, ex.Message);
+                    }
                 }
 
                 var responses = await Task.WhenAll(tasks);
 
                 foreach (var response in responses)
                 {
-                    response.EnsureSuccessStatusCode();
+                    try
+                    {
+                        response.EnsureSuccessStatusCode();
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        // Keep going even if one webhook fails, but log the error
+                        _logger.LogError(ex, "Failed to post to webhook. Status Code: {StatusCode}, Message: {Message}", response.StatusCode, ex.Message);
+                    }
                 }
             }
             catch (Exception ex)

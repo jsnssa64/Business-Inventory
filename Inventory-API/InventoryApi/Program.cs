@@ -11,12 +11,13 @@ internal class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
+        builder.Services.AddApiServices(builder.Configuration);
+
         builder.Services.AddMemoryServices(builder.Configuration);
         builder.Services.AddSecurityServices(builder.Configuration);
         builder.Services.AddDatabaseServices(builder.Configuration);
         builder.Services.AddEventServices(builder.Configuration);
 
-        builder.Services.AddApiServices(builder.Configuration);
         builder.Services.AddWebhook();
 
         builder.Services.AddLoginAuthentication();
