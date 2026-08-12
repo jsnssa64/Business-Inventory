@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using static Shared.Constants.Roles;
+using Domain.ValueObjects.User;
 
 namespace InventoryApi.Authentication
 {

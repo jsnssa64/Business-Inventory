@@ -48,7 +48,7 @@ docker build \
 
 ## Running via Docker Compose
 
-See `../Infrastructure/README.md`. The `compose.db.yml` file handles all variables via the shared `.env` file.
+See `../Infrastructure/README.md`. The `compose.db.yml` file handles all variables via the shared `.env` file in `../Infrastructure/Local/Docker/`.
 
 ## Connecting Locally
 

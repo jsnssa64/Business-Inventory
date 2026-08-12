@@ -37,7 +37,7 @@ NotificationService/
 ## Prerequisites
 
 - [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- RabbitMQ (see `../Infrastructure/CI/Docker/compose.rabbitmq.yml`)
+- RabbitMQ (see `../Infrastructure/Local/Docker/compose.rabbitmq.yml`)
 
 ## Getting Started
 

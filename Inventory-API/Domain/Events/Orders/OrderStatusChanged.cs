@@ -1,5 +1,5 @@
-﻿using Domain.Entities.Order;
-using Domain.Events.Orders.Enum;
+﻿using Domain.Events.Orders.Enum;
+using Domain.ValueObjects.Order;
 using InventoryApi.Model.Events.Product;
 
 namespace Domain.Events.Orders

@@ -7,13 +7,13 @@ using Services.DataModel.Role;
 using Services.DataModel.User;
 using Services.Service.SecurityService;
 using Services.Service.UserService;
-using Shared.Constants;
+using Domain.ValueObjects.User;
 
 namespace InventoryApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [MinimumRole(Shared.Constants.Roles.RoleLevel.User)]
+    [MinimumRole(RoleLevel.User)]
     public class UserController : BaseController
     {
         private readonly ILogger<InventoryController> _logger;
@@ -28,7 +28,7 @@ namespace InventoryApi.Controllers
         }
 
         [HttpPost("AssignUserRole")]
-        [MinimumRole(Shared.Constants.Roles.RoleLevel.Admin)]
+        [MinimumRole(RoleLevel.Admin)]
         public async Task<IActionResult> AssignUserRole(UsersRoleDTO usersRoleDTO, CancellationToken cancellationToken)
         {
             await _userService.AssignUserToRole(
@@ -76,7 +76,7 @@ namespace InventoryApi.Controllers
         }
 
         [HttpGet("Disable")]
-        [MinimumRole(Shared.Constants.Roles.RoleLevel.Admin)]
+        [MinimumRole(RoleLevel.Admin)]
         public IActionResult DisableUser(string username, CancellationToken cancellationToken)
         {
             var userIdentifier = new UserIdentifierModel()
@@ -92,7 +92,7 @@ namespace InventoryApi.Controllers
         }
 
         [HttpGet("Enable")]
-        [MinimumRole(Shared.Constants.Roles.RoleLevel.Admin)]
+        [MinimumRole(RoleLevel.Admin)]
         public IActionResult EnableUser(string username, CancellationToken cancellationToken)
         {
             _userService.SetUserStatus(
@@ -132,7 +132,7 @@ namespace InventoryApi.Controllers
         }
 
         [HttpGet("GetUserDetailsByUser")]
-        [MinimumRole(Shared.Constants.Roles.RoleLevel.Admin)]
+        [MinimumRole(RoleLevel.Admin)]
         public async Task<IActionResult> GetUserDetails(string username, CancellationToken cancellationToken)
         {
             var allUserData = await _userService.GetUserDetails(new UserIdentifierModel() { Username = username });
@@ -140,7 +140,7 @@ namespace InventoryApi.Controllers
         }
 
         [HttpGet("GetUsers")]
-        [MinimumRole(Shared.Constants.Roles.RoleLevel.Admin)]
+        [MinimumRole(RoleLevel.Admin)]
         public async Task<IActionResult> GetUsers(CancellationToken cancellationToken)
         {
             var allUserData = await _userService.GetUsers();
@@ -204,10 +204,10 @@ namespace InventoryApi.Controllers
 
         /*  Allow administrator to register a user with a pre-defined role e.g. Guest, User, Admin */
         [HttpPost("RegisterUserWithRole")]
-        [MinimumRole(Shared.Constants.Roles.RoleLevel.Admin)]
+        [MinimumRole(RoleLevel.Admin)]
         public async Task<IActionResult> RegisterUserWithRole(UserWithRoleRegisterDTO userWithRoleRegisterDTO, CancellationToken cancellationToken)
         {
-            if (Roles.IsValidRoleLevel(userWithRoleRegisterDTO.RoleName))
+            if (!Roles.IsValidRoleLevel(userWithRoleRegisterDTO.RoleName))
             {
                 return BadRequest("Invalid role name provided.");
             }
@@ -244,7 +244,7 @@ namespace InventoryApi.Controllers
         }
 
         [HttpPost("Update")]
-        [MinimumRole(Shared.Constants.Roles.RoleLevel.User)]
+        [MinimumRole(RoleLevel.User)]
         public async Task<IActionResult> UpdateUser(UpdateUserDetailsDTO updateUserDetailsDTO, CancellationToken cancellationToken)
         {
             await _userService.UpdateUser(

@@ -12,7 +12,7 @@ Business-Inventory/
 ├── AuthenticationService/ # gRPC service for seeding the admin user (scaffolded, WIP)
 ├── Grpc.Shared/           # Shared gRPC contract library (proto is a placeholder, WIP)
 ├── NotificationService/   # SignalR hub + MassTransit/RabbitMQ consumer (WIP, doesn't compile)
-├── Infrastructure/        # Docker Compose (local dev) + Kubernetes/Helm (CD)
+├── Infrastructure/        # Local Docker Compose + Kubernetes/Helm (CD)
 ├── deploy-scripts/        # Convenience wrappers around Helm deploys and secret sync
 ├── glossary/              # Ubiquitous language glossary — shared domain vocabulary
 ```
@@ -75,22 +75,10 @@ dotnet test                                               # from solution root
 ### Full Stack via Docker Compose
 
 ```bash
-cd Infrastructure/CI/Docker
-
-# One-time: create shared networks
-docker network create app-shared-network
-docker network create internal-shared-network
-
-# Start everything (compose files are split by service)
-docker-compose \
-  -f compose.base.yml \
-  -f compose.db.yml \
-  -f compose.eventstoredb.yml \
-  -f compose.rabbitmq.yml \
-  -f compose.api.yml \
-  -f compose.ui.yml \
-  up -d
+./Infrastructure/Local/Docker/deploy.sh
 ```
+
+Creates the three shared networks (one per trust tier) if they don't already exist, then starts every service (compose files are split by service). Also available as `deploy-scripts/docker/deploy.sh`.
 
 Default `.env` values for local dev: `MSSQL_SA_PASSWORD=test123!`, `DEFAULT_ADMIN_PASSWORD=test123!`, `RABBITMQ_DEFAULT_PASS=test123!`.
 

@@ -1,4 +1,4 @@
-﻿using Domain.Entities.User;
+﻿using Domain.ValueObjects.User;
 using FluentValidation;
 
 namespace InventoryApi.Validation

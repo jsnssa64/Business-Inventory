@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Reference files
+
+- **`.claude/RULES.md`** — architecture style per subproject, confirmed placement rules, and open questions.
+- **`.claude/STACK.md`** — which library fulfills which architectural role, per subproject.
+- **`glossary/`** — ubiquitous language: canonical business-domain terms, shared vs. project-specific, with a context map of where vocabulary overlaps.
+
 ## Repository Layout
 
 ```
@@ -15,7 +21,7 @@ Business-Inventory/
 ├── Inventory-DB/          # SQL Server setup with seeding service
 ├── NotificationService/   # SignalR hub + MassTransit consumer for real-time alerts
 └── Infrastructure/
-    ├── CI/Docker/         # Docker Compose files (one per service, merged at startup)
+    ├── Local/Docker/      # Docker Compose files (one per service, merged at startup)
     └── CD/                # Kubernetes manifests + Helm charts
 ```
 
@@ -40,22 +46,9 @@ dotnet test                                               # from solution root
 
 ### Full Stack via Docker Compose
 ```bash
-cd Infrastructure/CI/Docker
-
-# One-time: create shared networks
-docker network create app-shared-network
-docker network create internal-shared-network
-
-# Start everything (compose files are split by service)
-docker-compose \
-  -f compose.base.yml \
-  -f compose.db.yml \
-  -f compose.eventstoredb.yml \
-  -f compose.rabbitmq.yml \
-  -f compose.api.yml \
-  -f compose.ui.yml \
-  up -d
+./Infrastructure/Local/Docker/deploy.sh
 ```
+Creates the three shared networks (`api-shared-network`, `data-shared-network`, `backend-shared-network`) if missing, then starts every service. Always use this script rather than invoking `docker-compose` directly — it's the single entry point for local deployment, same role `deploy-scripts/` scripts play for Kubernetes. Also available as `deploy-scripts/docker/deploy.sh`.
 
 Default `.env` values for local dev: `MSSQL_SA_PASSWORD=test123!`, `DEFAULT_ADMIN_PASSWORD=test123!`, `RABBITMQ_DEFAULT_PASS=test123!`.
 

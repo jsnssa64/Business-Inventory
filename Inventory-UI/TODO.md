@@ -61,4 +61,4 @@ Mark done with `[x]` or `[done]`.
 - [ ] `useRole.tsx` is a copy of `useProduct.tsx` — it wraps the product service instead of the role service. All role hooks are broken.
 - [ ] `roleService.tsx` exports a constant named `inventoryService` (copy-paste error).
 - [ ] `InventoryItemKeys` lists `"quantity"` but `InventoryItem` interface has `initialQuantity`. Key mismatch.
-- [ ] `axiosInstance` reads `process.env.BASE_URL` — no webpack env config or `.env` file defines this. All API calls resolve against an undefined base URL.
+- [x] `axiosInstance` reads `process.env.BASE_URL` — `.env`/`.env.development` do define it now but pointed at the UI's own port (3000) instead of the API. Fixed — now `http://localhost:3001`, matching the Dockerized API's published port.

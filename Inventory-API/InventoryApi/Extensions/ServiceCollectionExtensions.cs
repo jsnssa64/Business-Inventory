@@ -1,5 +1,4 @@
 ﻿using InventoryApi.Factory;
-using System.Data.Entity.Infrastructure;
 using InventoryApi.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using InventoryApi.Repository.Inventory;

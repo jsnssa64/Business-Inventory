@@ -1,18 +1,27 @@
 ---
 term: Product
 scope: shared
-services: [ProductService, InventoryService]
-aliases: [Catalog Item, Listing]
-related: [InventoryItem, ProductVariant, SKU]
-status: active
+services: [inventory-api, inventory-ui]
+aliases: []
+related: [Price, ProductStatus, InventoryItem]
+status: draft
 ---
 
-A sellable concept in our catalog — the abstract thing a customer browses, searches for, and decides to buy. A Product describes *what* something is (name, description, images, category), not *how many of it exist* or *where it physically lives*. Stock and location are properties of `InventoryItem`, not Product.
+A distinct item the business sells or stocks. A Product has a name and
+description identifying it, a price it's sold at, and a flag for whether
+it's currently active — inactive products are presumably hidden or
+unavailable for sale, though the code doesn't spell out the consequence.
 
-A single Product may have multiple variants (size, color, configuration) and each variant maps to one or more `InventoryItem` records. The Product itself has no quantity.
+**Inferred, not confirmed by code:** "presumably hidden or unavailable"
+above is a guess at what "inactive" means for the business, not something
+stated in the code.
 
-## Notes
+Marked `draft`: whether a product is active is tracked two ways — a
+boolean field directly on `Product`, and a separate `ProductStatus` enum
+(`Active`/`Inactive`) used in the events that change it. It's unclear
+whether these are meant to be the same concept kept in sync, or something
+is mid-migration from one to the other.
 
-- Do not use `Product` to mean a physical unit on a shelf. That is an `InventoryItem`.
-- A Product can exist without any stock (out-of-stock listings, pre-orders, discontinued items still visible in order history). Treat the relationship to inventory as optional, not mandatory.
-- `ProductService` owns the lifecycle of this entity. `InventoryService` references it by ID but does not modify it.
+> **Review before updating:** this entry was generated from an initial code
+> scan. Re-check that the description below still reflects the original
+> intention before editing it.

@@ -38,12 +38,14 @@ Webpack injects environment variables at build time via `dotenv-webpack`. Create
 - `.env.development` — loaded by `npm start`
 - `.env.production` — loaded by `npm run build` / `npm run start:prod`
 
-Example variables (add your own per environment):
+Variables actually read by the app (`src/api/axios/axiosInstance.tsx`):
 
 ```env
-REACT_APP_API_URL=http://localhost:3001
-REACT_APP_SIGNALR_HUB_URL=http://localhost:5050/hub
+BASE_URL=http://localhost:3001
+ALLOW_CORS_CREDENTIALS=true
 ```
+
+`BASE_URL` should point at wherever the API is running — `http://localhost:3001` for the Dockerized API (see `../Infrastructure/README.md`), or your local `dotnet run` port if running the API natively instead.
 
 ## Routes
 
@@ -63,4 +65,4 @@ docker build -t inventory-ui .
 docker run -p 3000:3000 inventory-ui
 ```
 
-Or start via Docker Compose — see `../Infrastructure/README.md`.
+Or start via Docker Compose — see `../Infrastructure/README.md` and the files under `../Infrastructure/Local/Docker/`.

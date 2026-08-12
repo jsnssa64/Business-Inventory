@@ -6,8 +6,9 @@ Local development infrastructure managed with Docker Compose. Compose files are 
 
 ```
 Infrastructure/
+├── Local/
+│   └── Docker/        # Docker Compose files (one per service)
 ├── CI/
-│   ├── Docker/        # Docker Compose files (one per service)
 │   └── Terraform/     # Terraform stub (not yet in use)
 └── CD/
     ├── k8s/
@@ -24,37 +25,49 @@ Infrastructure/
 
 ## Docker Networks
 
-Two bridge networks must exist before starting any services. Create them once:
+Three bridge networks must exist before starting any services — one per trust tier. Create them once:
 
 ```bash
-docker network create app-shared-network
-docker network create internal-shared-network
+docker network create api-shared-network
+docker network create data-shared-network
+docker network create backend-shared-network
 ```
 
-- `app-shared-network` — UI, API, and external-facing services
-- `internal-shared-network` — RabbitMQ, KurrentDB, and internal services only
+- `api-shared-network` — UI and API only (public-facing tier)
+- `data-shared-network` — API and DB only (DB also publishes a host port for local tooling, but must not be reachable from the UI)
+- `backend-shared-network` — API, RabbitMQ, and KurrentDB (must never be reachable except through the API)
+
+`api` is the only service on all three networks. No other service should be on more than one.
 
 ## Services
 
 | File | Service | Ports |
 |---|---|---|
 | `compose.db.yml` | SQL Server (Inventory-DB) | `${DB_HOST_PORT}:1433` |
-| `compose.eventstoredb.yml` | KurrentDB | `2113:2113` |
+| `compose.kurrentdb.yml` | KurrentDB | `2113:2113` |
 | `compose.rabbitmq.yml` | RabbitMQ + Management UI | `5672:5672`, `15672:15672` |
 | `compose.api.yml` | Inventory API | `3001:8080`, `3002:8081` |
 | `compose.ui.yml` | Inventory UI | `3000:3000` |
 
-`compose.base.yml` defines the shared network references and is always required.
+`compose.network.yml` defines the shared network references and is always required.
 
 ## Starting the Full Stack
 
+Run `Infrastructure/Local/Docker/deploy.sh` (or its alias, `deploy-scripts/docker/deploy.sh`) — it creates the three networks if they don't already exist and starts every service:
+
 ```bash
-cd Infrastructure/CI/Docker
+./Infrastructure/Local/Docker/deploy.sh
+```
+
+Equivalent to running manually:
+
+```bash
+cd Infrastructure/Local/Docker
 
 docker-compose \
-  -f compose.base.yml \
+  -f compose.network.yml \
   -f compose.db.yml \
-  -f compose.eventstoredb.yml \
+  -f compose.kurrentdb.yml \
   -f compose.rabbitmq.yml \
   -f compose.api.yml \
   -f compose.ui.yml \

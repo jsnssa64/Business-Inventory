@@ -1,4 +1,5 @@
 ﻿using Domain.Events.Orders.Enum;
+using Domain.ValueObjects.Order;
 
 namespace Domain.Entities.Order
 {

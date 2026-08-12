@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-using Domain.Entities.User;
+using Domain.ValueObjects.User;
 
 namespace Shared.Utilities.User
 {

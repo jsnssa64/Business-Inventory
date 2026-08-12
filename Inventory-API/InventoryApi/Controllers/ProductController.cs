@@ -10,7 +10,7 @@ namespace InventoryApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [MinimumRole(Shared.Constants.Roles.RoleLevel.User)]
+    [MinimumRole(Domain.ValueObjects.User.RoleLevel.User)]
     public class ProductController : BaseController
     {
         private readonly IProductService _productService;
@@ -27,7 +27,7 @@ namespace InventoryApi.Controllers
         {
             try
             {
-                var productIdentifierModel = new ProductIdentifierModel()
+                var productIdentifierModel = new ProductIdentity()
                 {
                     Username = GetUsername(),
                     PublicProductId = productid
@@ -104,7 +104,7 @@ namespace InventoryApi.Controllers
         {
             try
             {
-                var productIdentifierModel = new ProductIdentifierModel
+                var productIdentifierModel = new ProductIdentity
                 {
                     Username = GetUsername(),
                     PublicProductId = productId
@@ -132,7 +132,7 @@ namespace InventoryApi.Controllers
                     Quantity =      updateProductDTO.Quantity
                 };
 
-                var productIdentifier = new ProductIdentifierModel()
+                var productIdentifier = new ProductIdentity()
                 {
                     Username = GetUsername(),
                     PublicProductId = updateProductDTO.ProductId
