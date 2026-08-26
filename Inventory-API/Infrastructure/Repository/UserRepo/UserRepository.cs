@@ -195,10 +195,12 @@ namespace Services.Repository.UserRepo
                 if (result is null)
                     throw new DbUpdateException($"User not found for username: {userIdentifierModel.Username}");
 
-                var user = new UserWithPassword();
-                user.MapWithPassword(result);
+                var user = new User(
+                    (string)result.Username,
+                    (string)result.Email,
+                    new UserRole(Enum.Parse<RoleLevel>((string)result.RoleName, true)));
 
-                return user;
+                return new UserWithPassword(user, (string)result.PasswordHash);
             }
             catch (Exception ex)
             {

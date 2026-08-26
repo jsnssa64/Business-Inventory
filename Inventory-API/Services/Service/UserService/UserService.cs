@@ -233,7 +233,7 @@ namespace Services.Service.UserService
 
             await this.GenerateLogin(httpResponse, userIdentifierModel, (usersRole) =>
             {
-                if (!_securityService.VerifyPassword(userLoginModel.Password, usersRole.PasswordHash ?? throw new Exception("Unable to verify password")))
+                if (!_securityService.VerifyPassword(userLoginModel.Password, usersRole.PasswordHash))
                 {
                     throw new Exception("Invalid password");
                 }
@@ -247,7 +247,7 @@ namespace Services.Service.UserService
             if (validate is not null)
                 validate(user);
 
-            var claims = _userUtility.MapUserToClaims(user);
+            var claims = _userUtility.MapUserToClaims(user.User);
 
             var cookieExpiry = DateTimeOffset.UtcNow.AddDays(1);
 
