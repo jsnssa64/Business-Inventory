@@ -3,7 +3,7 @@ using InventoryApi.DTOs.RoleDTO;
 using Microsoft.AspNetCore.Mvc;
 using Services.DataModel.Role;
 using Services.Service.RoleService;
-using static Shared.Constants.Roles;
+using Domain.ValueObjects.User;
 
 namespace InventoryApi.Controllers
 {

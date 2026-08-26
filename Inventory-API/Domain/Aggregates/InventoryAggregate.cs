@@ -1,4 +1,6 @@
-﻿using Domain.Entities.Inventory;
+﻿using Domain.Aggregates;
+using Domain.Entities.Inventory;
+using Domain.ValueObjects.Inventory;
 using InventoryApi.Model.Events.Inventory;
 
 namespace InventoryApi.Model.Action

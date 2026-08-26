@@ -1,7 +1,7 @@
 ﻿using InventoryApi.Model.Events;
 using System.Collections.Concurrent;
 
-namespace InventoryApi.Model.Action
+namespace Domain.Aggregates
 {
 
     public abstract class Aggregate
@@ -15,7 +15,7 @@ namespace InventoryApi.Model.Action
 
         public const int _maximumUncommited = 50;
 
-        private readonly Object lockObject = new();
+        private readonly object lockObject = new();
 
         public ConcurrentDictionary<Version, DomainEvent> Uncommited;
 

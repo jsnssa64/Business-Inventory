@@ -1,18 +1,26 @@
 ---
 term: InventoryItem
 scope: shared
-services: [InventoryService, ProductService]
-aliases: [Stock Unit, SKU Instance, Stock Keeping Unit]
-related: [Product, ProductVariant, StockLevel]
-status: active
+services: [inventory-api, inventory-ui]
+aliases: [Stock]
+related: [Product]
+status: draft
 ---
 
-A physical, countable instance of a `Product` (or `ProductVariant`) held in inventory. An InventoryItem has a location, a quantity, and a state (available, reserved, damaged, in-transit). Where `Product` answers "what is this thing?", InventoryItem answers "how many do we have and where?"
+The record of how much stock the business currently holds for a given
+Product. An InventoryItem tracks a quantity on hand, tied back to the
+Product it counts stock for.
 
-One Product can have many InventoryItem records — typically one per location or per batch.
+**Inferred, not confirmed by code:** the link back to a specific Product is
+assumed from context (an inventory count only makes sense in relation to
+something being counted); the backend entity itself doesn't carry a
+product reference, only its own identity and a quantity.
 
-## Notes
+Marked `draft`: the backend representation is minimal (identity + quantity
+only), while the UI's version of this concept also carries the product's
+name, description, and price directly — the two representations don't
+currently agree on what an InventoryItem is made of.
 
-- The distinction between `Product` and `InventoryItem` is the most commonly violated boundary in this codebase. If you find yourself wanting to put `quantity` on a Product, you want an InventoryItem instead.
-- "SKU" is in common usage as an alias here, but technically a SKU is the *identifier code* for a Product variant, not the inventory record itself. We accept the loose usage but the canonical term is InventoryItem.
-- `InventoryService` is the only writer for this entity. Other services read via API.
+> **Review before updating:** this entry was generated from an initial code
+> scan. Re-check that the description below still reflects the original
+> intention before editing it.

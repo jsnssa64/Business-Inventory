@@ -1,6 +1,6 @@
 ﻿using Services.DataModel.Role;
 using Services.Repository.RoleRepo;
-using Shared.Constants;
+using Domain.ValueObjects.User;
 
 namespace Services.Service.RoleService
 {

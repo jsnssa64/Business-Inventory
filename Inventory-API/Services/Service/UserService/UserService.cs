@@ -1,5 +1,4 @@
-﻿using System.Data.Entity.Infrastructure;
-using System.Data;
+﻿using System.Data;
 using System.Security.Claims;
 using ZiggyCreatures.Caching.Fusion;
 using MassTransit;
@@ -11,9 +10,11 @@ using Microsoft.AspNetCore.Http;
 using Shared.Utilities.User;
 using Services.Repository.UserRepo;
 using Shared.Constants;
+using Domain.ValueObjects.User;
 using Domain.Service.UserService;
 using Services.Service.SecurityService;
 using Services.Service.SecurityService.Models;
+using Services.Service.UserService.Notification;
 using Microsoft.Extensions.Logging;
 
 namespace Services.Service.UserService
@@ -232,7 +233,7 @@ namespace Services.Service.UserService
 
             await this.GenerateLogin(httpResponse, userIdentifierModel, (usersRole) =>
             {
-                if (!_securityService.VerifyPassword(userLoginModel.Password, usersRole.PasswordHash ?? throw new Exception("Unable to verify password")))
+                if (!_securityService.VerifyPassword(userLoginModel.Password, usersRole.PasswordHash))
                 {
                     throw new Exception("Invalid password");
                 }
@@ -246,7 +247,7 @@ namespace Services.Service.UserService
             if (validate is not null)
                 validate(user);
 
-            var claims = _userUtility.MapUserToClaims(user);
+            var claims = _userUtility.MapUserToClaims(user.User);
 
             var cookieExpiry = DateTimeOffset.UtcNow.AddDays(1);
 
@@ -269,9 +270,6 @@ namespace Services.Service.UserService
 
             if (userDetails is null)
                 throw new Exception("Not valid userdetails");
-
-            if (Shared.Constants.Roles.IsValidRoleLevel(userDetails.Role?.Rolename))
-                throw new Exception("Not Valid Role");
 
             return userDetails;
         }
@@ -307,8 +305,8 @@ namespace Services.Service.UserService
 
                 var token = await _securityService.GenerateUserJWT(userIdentifierModel, KeyType.resetPassword);
 
-                //  Send to rabbitmq 
-                await _mediator.Publish(new EmailConfirmationModel()
+                //  Send to rabbitmq
+                await _mediator.Publish(new PasswordResetRequestedNotification()
                 {
                     Username = user.Username,
                     Email = user.Email,
@@ -334,7 +332,7 @@ namespace Services.Service.UserService
                 
                 var token = await _securityService.GenerateUserJWT(userIdentifierModel, KeyType.resetPassword);
 
-                await _mediator.Publish(new EmailConfirmationModel()
+                await _mediator.Publish(new PasswordResetRequestedNotification()
                 {
                     Username = user.Username,
                     Email = user.Email,

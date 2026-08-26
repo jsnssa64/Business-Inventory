@@ -1,4 +1,4 @@
-﻿using Domain.Entities.User;
+﻿using Domain.ValueObjects.User;
 using System.Security.Claims;
 
 namespace Shared.Utilities.User
@@ -40,7 +40,7 @@ namespace Shared.Utilities.User
                 case UserClaim.Username:
                     return new(ClaimTypes.Name, user.Username ?? throw new Exception("Unable to generate Username claim"));        // Ensure non-null value
                 case UserClaim.Role:
-                    return new(ClaimTypes.Role, user.Role?.Rolename?.ToString() ?? throw new Exception("Unable to generate Role claim"));       // Ensure non-null value
+                    return new(ClaimTypes.Role, user.Role.Level.ToString());
                 default:
                     throw new NotImplementedException();
             }

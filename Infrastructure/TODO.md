@@ -6,13 +6,16 @@ Mark done with `[x]` or `[done]`.
 
 ## Docker Compose — Local Dev
 
-- [ ] `compose.eventstoredb.yml` — KurrentDB container has no `networks:` block. Silently isolated from the API; event store connection will fail on startup.
-- [ ] `compose.db.yml` — DB container is on `app-shared-network` instead of `internal-shared-network`.
-- [ ] `compose.ui.yml` — bind mounts are relative to the compose file directory, not the UI project path. Silently mount empty directories.
-- [ ] `compose.ui.yml` — references `NODE_ENV` but the env file defines `NODE_ENVIRONMENT`. Variable is unset inside the container.
-- [ ] `compose.api.yml` — references `INFISICAL_TOKEN_SERVICE_A` which is absent from all `.env` files.
-- [ ] `.env.prod` and `.env.staging` still contain dev values (`test123!` passwords, localhost URLs). Neither updated for non-local use.
+- [x] `compose.kurrentdb.yml` (formerly `compose.eventstoredb.yml`) — KurrentDB container had no `networks:` block, silently isolated from the API. Fixed — now on `backend-network`.
+- [x] `compose.db.yml` — DB container was on the wrong network. Fixed — now on its own `data-network`, reachable only by `api`.
+- [x] `compose.ui.yml` — bind mounts were relative to the compose file directory, not the UI project path, silently mounting empty directories. Removed entirely instead — the Dockerfile's production stage runs `serve -s dist` on a prebuilt bundle, so nothing in the container ever reads `/app/src` or `/app/public`; the mount was inert either way. UI container is now a build-time snapshot, not a live-reload target.
+- [x] `compose.ui.yml` — referenced `NODE_ENV` but the env file defines `NODE_ENVIRONMENT`, so it was unset inside the container. Fixed — now sources from `NODE_ENVIRONMENT`.
+- [x] `compose.api.yml` — referenced `INFISICAL_TOKEN_SERVICE_A`, absent from `.env` and unused by the app (Infisical was the intended k8s secrets path, not local Docker). Removed the env var entirely.
 - [ ] Docker secrets block in `compose.db.yml` is commented out (marked as a future task).
+- [x] `.env` — `DB_PROJECT_PATH`, `UI_PROJECT_PATH`, `API_PROJECT_PATH` each only went up two directories (`./../../`), resolving to `Infrastructure/Inventory-*` instead of the repo root. All three `build.context` paths were broken. Fixed — now `./../../../`.
+- [x] `compose.api.yml` — `depends_on` only listed `db`, not `kurrentdb.db`/`rabbitmq`. Fixed — all three listed (no healthchecks exist, so this only affects start order, not readiness).
+- [x] `compose.ui.yml` — `container_name` was hardcoded (`react-app`) instead of using `${CONTAINER_NAME}` like the other services. Fixed.
+- [x] `version: '3.8'` was obsolete and inconsistently present across compose files (Compose ignores it and warns). Removed from all.
 
 ---
 

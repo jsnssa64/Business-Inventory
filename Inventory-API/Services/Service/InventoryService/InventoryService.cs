@@ -18,7 +18,7 @@ namespace Services.Service.InventoryService
             _inventoryRepository = inventoryRepository;
         }
 
-        public async Task UpdateItemToInventoryByProductId(ProductIdentifierModel productIdentifierModel, InventoryItemModel inventoryItemModel, CancellationToken cancellationToken)
+        public async Task UpdateItemToInventoryByProductId(ProductIdentity productIdentifierModel, InventoryItemModel inventoryItemModel, CancellationToken cancellationToken)
         {
             if (inventoryItemModel == null)
             {
@@ -28,7 +28,7 @@ namespace Services.Service.InventoryService
             await _inventoryRepository.UpdateItemToInventoryByProductId(productIdentifierModel, inventoryItemModel);
         }
 
-        public async Task<InventoryItem> GetInventoryItemByProductId(ProductIdentifierModel productIdentifierModel, CancellationToken cancellationToken)
+        public async Task<InventoryItem> GetInventoryItemByProductId(ProductIdentity productIdentifierModel, CancellationToken cancellationToken)
         {
             return await _inventoryRepository.GetInventoryItemByProductId(productIdentifierModel);
         }

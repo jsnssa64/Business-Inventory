@@ -1,5 +1,4 @@
-﻿using System.Data.Entity.Infrastructure;
-using System.Data;
+﻿using System.Data;
 using InventoryApi.Repository.Inventory;
 using Microsoft.IdentityModel.Tokens;
 using MediatR;
@@ -68,7 +67,7 @@ namespace Services.Service.InventoryService
 
                 if (productDetailsModel.EnabledPrice && priceModel is not null)
                 {
-                    var productIdentifier = new ProductIdentifierModel()
+                    var productIdentifier = new ProductIdentity()
                     {
                         PublicProductId = productResult.PublicProductId,
                         Username = userIdentifierModel.Username
@@ -82,7 +81,7 @@ namespace Services.Service.InventoryService
                     Quantity = productDetailsModel.InventoryQuantity < 0 ? 0 : productDetailsModel.InventoryQuantity
                 };
 
-                var productIdentifierModel = new ProductIdentifierModel()
+                var productIdentifierModel = new ProductIdentity()
                 {
                     PublicProductId = productResult.PublicProductId,
                     Username = userIdentifierModel.Username,
@@ -121,7 +120,7 @@ namespace Services.Service.InventoryService
             }
         }
 
-        public async Task<Product> GetProductByIdAsync(ProductIdentifierModel productIdentifierModel, CancellationToken cancellationToken)
+        public async Task<Product> GetProductByIdAsync(ProductIdentity productIdentifierModel, CancellationToken cancellationToken)
         {
             var result = await _productRepository.GetProductById(productIdentifierModel);
 
@@ -133,12 +132,12 @@ namespace Services.Service.InventoryService
             return await _productRepository.GetProducts(userIdentifierModel);
         }
 
-        public async Task UpdateProduct(ProductIdentifierModel productIdentifierModel, UpdateProductDetailsModel updateProductDetailsModel, CancellationToken cancellationToken)
+        public async Task UpdateProduct(ProductIdentity productIdentifierModel, UpdateProductDetailsModel updateProductDetailsModel, CancellationToken cancellationToken)
         {
             await _productRepository.UpdateProduct(productIdentifierModel, updateProductDetailsModel);
         }
 
-        public async Task RemoveProduct(ProductIdentifierModel productIdentifierModel, CancellationToken cancellationToken)
+        public async Task RemoveProduct(ProductIdentity productIdentifierModel, CancellationToken cancellationToken)
         {
             await _productRepository.RemoveProductById(productIdentifierModel);
         }

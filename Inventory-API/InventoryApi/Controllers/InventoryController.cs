@@ -9,7 +9,7 @@ using Services.DataModel.Inventory;
 using Services.DataModel.Product;
 using Services.DataModel.User;
 using Services.Service.InventoryService;
-using static Shared.Constants.Roles;
+using Domain.ValueObjects.User;
 
 namespace InventoryApi.Controllers
 {
@@ -32,7 +32,7 @@ namespace InventoryApi.Controllers
         {
             try
             {
-                var productIdentifier = new ProductIdentifierModel
+                var productIdentifier = new ProductIdentity
                 {
                     PublicProductId = productid,
                     Username = GetUsername()
@@ -79,7 +79,7 @@ namespace InventoryApi.Controllers
                     Quantity = updateInventoryItemDTO.Quantity
                 };
 
-                var productIdentifier = new ProductIdentifierModel()
+                var productIdentifier = new ProductIdentity()
                 {
                     PublicProductId = updateInventoryItemDTO.ProductId,
                     Username = GetUsername()

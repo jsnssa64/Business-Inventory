@@ -46,7 +46,7 @@ Chart/                 Helm charts for Kubernetes deployment
 - KurrentDB on `localhost:2113`
 - RabbitMQ on `localhost`
 
-All three can be started with the Docker Compose files in `../Infrastructure/CI/Docker/`.
+All three can be started with the Docker Compose files in `../Infrastructure/Local/Docker/`.
 
 ## Getting Started
 

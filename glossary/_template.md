@@ -1,21 +1,12 @@
 ---
-term: TermName
-scope: shared
-services: [InventoryService, ProductService, UserService]
+term: 
+scope: shared | inventory-api | inventory-ui | notification-service
+services: []
 aliases: []
 related: []
-status: active
+status: draft | active | deprecated
 ---
 
-One or two sentences defining this term precisely. Be specific about what
-distinguishes it from adjacent concepts. The description is what reviewers
-(and Claude) compare against when checking for overlap, so vague
-descriptions defeat the purpose of this glossary.
-
-## Notes
-
-Optional section. Use it for:
-- Edge cases or boundary conditions
-- Common confusions with similar terms
-- Historical context (why this term won over alternatives)
-- Links to relevant ADRs, RFCs, or design docs
+Prose description of the business concept — written for a domain expert,
+not a developer reading the code. Explain intent and real-world meaning,
+not data structures or implementation.
