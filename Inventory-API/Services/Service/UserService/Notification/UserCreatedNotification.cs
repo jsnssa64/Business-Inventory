@@ -1,7 +1,8 @@
-﻿using InventoryApi.Service.NotificationService;
+﻿using Domain.Events.User;
 using MassTransit;
+using Services.Service.NotificationService;
 
-namespace InventoryApi.Service.UserService.Notification
+namespace Services.Service.UserService.Notification
 {
     public class UserCreatedNotification : EventNotificationService<UserCreated>
     {

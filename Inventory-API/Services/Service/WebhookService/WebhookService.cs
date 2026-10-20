@@ -1,17 +1,18 @@
 ﻿using System.Data;
-using InventoryApi.Service.SecurityService;
 using System.Text.Json;
 using System.Text;
-using InventoryApi.Repository.Webhook;
 using Services.DataModel.Webhook;
+using Services.Repository.Webhook;
+using Services.Service.SecurityService;
+using Microsoft.Extensions.Logging;
 
-namespace InventoryApi.Service.UserService
+namespace Services.Service.WebhookService
 {
     public class WebhookService : IWebhookService
     {
-        private ISecurityService _securityService;
-        private IWebhookRepository _webhookRepository;
-        private ILogger<WebhookService> _logger;
+        private readonly ISecurityService _securityService;
+        private readonly IWebhookRepository _webhookRepository;
+        private readonly ILogger<WebhookService> _logger;
         private const string HubSignatureHeader = "X-Hub-Signature-256";
 
         public WebhookService(IWebhookRepository webhookRepository, ISecurityService securityService, ILogger<WebhookService> logger) {

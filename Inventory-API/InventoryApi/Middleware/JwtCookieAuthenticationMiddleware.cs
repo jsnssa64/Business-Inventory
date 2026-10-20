@@ -1,8 +1,7 @@
 ﻿using InventoryApi.Constants;
-using InventoryApi.Repository.Data.Product;
-using InventoryApi.Service.SecurityService;
-using InventoryApi.Service.UserService;
-using InventoryApi.Service.UserService.Utility;
+using Services.Service.SecurityService;
+using Services.Service.UserService;
+using Services.Service.UserService.Utility;
 using System.Security.Claims;
 
 namespace InventoryApi.Middleware

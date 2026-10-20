@@ -1,17 +1,11 @@
-﻿using Domain.User;
-using InventoryApi.Repository.RoleRepo;
+﻿using Services.Repository.RoleRepo;
 using Services.DataModel.Role;
 
-namespace InventoryApi.Service.RoleService
+namespace Services.Service.RoleService
 {
-    public class RoleService : IRoleService
+    public class RoleService(IRoleRepository roleRepository) : IRoleService
     {
-        private readonly IRoleRepository _roleRepository;
-
-        public RoleService(IRoleRepository roleRepository) 
-        {
-            _roleRepository = roleRepository;
-        }
+        private readonly IRoleRepository _roleRepository = roleRepository;
 
         [Obsolete]
         public async Task<RoleModel> CreateRole(CreateRoleModel createRoleModel)

@@ -1,18 +1,16 @@
 ﻿using Domain.Entities.Inventory;
-using Domain.User;
-using InventoryApi.Repository.Data.User;
-using InventoryApi.Repository.Inventory;
-using Microsoft.IdentityModel.Tokens;
+using Services.Repository.Inventory;
+using Microsoft.Extensions.Logging;
 using Services.DataModel.Inventory;
 using Services.DataModel.Product;
 using Services.DataModel.User;
 
-namespace InventoryApi.Service.InventoryService
+namespace Services.Service.InventoryService
 {
     public class InventoryService : IInventoryService
     {
-        private ILogger<InventoryService> _logger;
-        private IInventoryRepository _inventoryRepository;
+        private readonly ILogger<InventoryService> _logger;
+        private readonly IInventoryRepository _inventoryRepository;
 
         public InventoryService(IInventoryRepository inventoryRepository, ILogger<InventoryService> logger)
         {
@@ -27,12 +25,12 @@ namespace InventoryApi.Service.InventoryService
                 throw new ArgumentNullException(nameof(inventoryItemModel));
             }
 
-            await _inventoryRepository.UpdateItemToInventoryByProductId(productIdentifierModel, inventoryItemModel);
+            await _inventoryRepository.UpdateItemInInventory(productIdentifierModel, inventoryItemModel, cancellationToken);
         }
 
         public async Task<InventoryItem> GetInventoryItemByProductId(ProductIdentifierModel productIdentifierModel, CancellationToken cancellationToken)
         {
-            return await _inventoryRepository.GetInventoryItemByProductId(productIdentifierModel);
+            return await _inventoryRepository.GetInventoryItemByProductId(productIdentifierModel, cancellationToken);
         }
 
         public async Task<IEnumerable<InventoryItem>> GetInventoryItems(UserIdentifierModel userIdentifierModel, CancellationToken cancellationToken)
@@ -42,35 +40,7 @@ namespace InventoryApi.Service.InventoryService
                 throw new Exception("Username cannot be null or empty");
             }
 
-            return await _inventoryRepository.GetInventoryItems(userIdentifierModel);
-        }
-
-        public async Task<bool> RemoveInventoryItemFromStream(object eventObject, string type, long intialPos)
-        {
-            try
-            {
-                await _inventoryRepository.AppendEventStream(eventObject, type, intialPos);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error removing inventory");
-                return false;
-            }
-        }
-
-        public async Task<bool> AddInventoryItemToStream(object eventObject, string type, long intialPos)
-        {
-            try
-            {
-                await _inventoryRepository.AppendEventStream(eventObject, type, intialPos);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error add inventory");
-                return false;
-            }
+            return await _inventoryRepository.GetInventoryItems(userIdentifierModel, cancellationToken);
         }
     }
 }

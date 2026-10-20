@@ -1,23 +1,25 @@
 ﻿using System.Data;
 using Domain.Entities.User;
-using InventoryApi.Repository.UserRepo.Enum;
 using Services.DataModel.Role;
 using Services.DataModel.User;
-namespace InventoryApi.Repository
+namespace Services.Repository.UserRepo
 {
     public interface IUserRepository
     {
-        Task ActivateUser(IDbConnection dbConnection, UserIdentifierModel userIdentifier, IDbTransaction? dbTransaction = null);
-        Task AssignRoleToUser(IDbConnection dbConnection, UserIdentifierModel userIdentifier, RoleNameModel roleIdModel, IDbTransaction? dbTransaction = null);
-        Task SetUserStatus(UserIdentifierModel userIdentifier, StatusModel statusModel);
-        Task<UserWithPassword> GetUser(UserIdentifierModel userIdentifierModel);
-        Task<User> GetUserByEmail(UserEmailModel userEmailModel);
-        Task<UserDetails> GetUserDetails(UserIdentifierModel userIdentifierModel);
+        Task<UserIdModel> CreateUser(UserIdentifierModel userIdentifier, UserRegistrationModel userRegisterModel);
+        Task<UserIdModel> CreateUser(UserIdentifierModel userIdentifier, UserRegistrationModel userRegisterModel, IDbConnection dbConnection, IDbTransaction? dbTransaction = null);
         Task UpdateUserDetails(UserIdentifierModel userIdentifier, UserDetailsModel useDetailsModel);
-        Task<UserIdModel> CreateUser(IDbConnection dbConnection, UserIdentifierModel userIdentifier, UserRegistrationModel userRegisterModel, IDbTransaction? dbTransaction = null);
-        Task<bool> IsValidUserByUsername(UserIdentifierModel userIdentifierModel);
-        Task<bool> IsValidUserByEmail(UserEmailModel userEmailModel);
+        Task ActivateUser(UserIdentifierModel userIdentifier);
+        Task ActivateUser(UserIdentifierModel userIdentifier, IDbConnection dbConnection, IDbTransaction? dbTransaction = null);
+        Task AssignRoleToUser(UserIdentifierModel userIdentifier, RoleNameModel roleNameModel);
+        Task AssignRoleToUser(UserIdentifierModel userIdentifier, RoleNameModel roleNameModel, IDbConnection dbConnection, IDbTransaction? dbTransaction = null);
         Task ResetPassword(UserIdentifierModel userIdentifier, PasswordModel passwordModel);
-        Task<IEnumerable<User>> GetAllUsers();
+        Task SetUserStatus(UserIdentifierModel userIdentifier, StatusModel statusModel);
+        Task<IEnumerable<User?>> GetAllUsers();
+        Task<UserWithPassword?> GetUser(UserIdentifierModel userIdentifierModel);
+        Task<User?> GetUserByEmail(UserEmailModel userEmailModel);
+        Task<bool> IsValidUserByEmail(UserEmailModel userEmailModel);
+        Task<bool> IsValidUserByUsername(UserIdentifierModel userIdentifierModel);
+        Task<UserDetails> GetUserDetails(UserIdentifierModel userIdentifierModel);
     }
 }

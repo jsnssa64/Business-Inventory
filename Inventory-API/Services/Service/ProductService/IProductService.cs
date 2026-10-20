@@ -2,14 +2,14 @@
 using Services.DataModel.Product;
 using Services.DataModel.User;
 
-namespace InventoryApi.Service.InventoryService
+namespace Services.Service.ProductService
 {
     public interface IProductService
     {
-        Task<ProductIdModel> AddProductAsync(UserIdentifierModel userIdentifierModel, ProductDetailsModel productDetailsModel, PriceModel? priceModel);
-        Task<Product> GetProductByIdAsync(ProductIdentifierModel productIdentifierModel, CancellationToken cancellationToken);
-        Task<IEnumerable<ProductBase>> GetProducts(UserIdentifierModel userIdentifierModel, CancellationToken cancellationToken);
-        Task RemoveProduct(ProductIdentifierModel productIdentifierModel, CancellationToken cancellationToken);
-        Task UpdateProduct(ProductIdentifierModel productIdentifierModel, UpdateProductDetailsModel updateProductDetailsModel, CancellationToken cancellationToken);
+        Task<ProductIdModel> AddAsync(UserIdentifierModel userIdentifierModel, ProductDetailsModel productDetailsModel, PriceModel? priceModel, CancellationToken cancellationToken);
+        Task<ProductEntity> GetAsync(ProductIdentifierModel productIdentifierModel, CancellationToken cancellationToken);
+        Task<IEnumerable<ProductEntity>> GetByUserAsync(UserIdentifierModel userIdentifierModel, CancellationToken cancellationToken);
+        Task DeleteAsync(ProductIdentifierModel productIdentifierModel, CancellationToken cancellationToken);
+        Task UpdateAsync(ProductIdentifierModel productIdentifierModel, UpdateProductDetailsModel updateProductDetailsModel, CancellationToken cancellationToken);
     }
 }

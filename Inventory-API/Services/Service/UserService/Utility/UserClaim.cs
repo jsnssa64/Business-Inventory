@@ -1,4 +1,4 @@
-﻿namespace InventoryApi.Service.UserService.Utility
+﻿namespace Services.Service.UserService.Utility
 {
     public enum UserClaim
     {

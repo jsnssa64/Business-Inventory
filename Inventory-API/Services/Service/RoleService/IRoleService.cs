@@ -1,6 +1,6 @@
 ﻿using Services.DataModel.Role;
 
-namespace InventoryApi.Service.RoleService
+namespace Services.Service.RoleService
 {
     public interface IRoleService
     {

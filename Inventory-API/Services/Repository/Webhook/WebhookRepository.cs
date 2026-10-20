@@ -1,26 +1,18 @@
 ﻿using System.Data;
 using System.Data.Entity.Infrastructure;
+using Dapper;
 using Services.DataModel.Webhook;
 
-namespace InventoryApi.Repository.Webhook
+namespace Services.Repository.Webhook
 {
-    public class WebhookRepository : IWebhookRepository
+    public class WebhookRepository(
+        IDbConnectionFactory dbConnectionFactory) : IWebhookRepository
     {
-        private IDbConnectionFactory _dbConnectionFactory;
-        private EventStoreClient _storeClient;
-
-        public WebhookRepository(
-                IDbConnectionFactory dbConnectionFactory
-            )
-        {
-            _dbConnectionFactory = dbConnectionFactory;
-        }
-
         public async Task Subscribe(Subscription subscriptionModel)
         {
-            using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
+            using IDbConnection conn = dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
 
-            DynamicParameters parameters = new DynamicParameters();
+            DynamicParameters parameters = new();
             parameters.Add(nameof(Subscription.userName), subscriptionModel.userName);
             parameters.Add(nameof(Subscription.webhookUrl), subscriptionModel.webhookUrl);
             parameters.Add(nameof(Subscription.secret), subscriptionModel.secret);
@@ -34,17 +26,15 @@ namespace InventoryApi.Repository.Webhook
             }
         }
 
+
         public async Task<IEnumerable<WebhookDetails>> GetWebhookByAction(SubscriptionType subscriptionType)
         {
-            using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
+            using IDbConnection conn = dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
 
-            DynamicParameters parameters = new DynamicParameters();
+            DynamicParameters parameters = new();
             parameters.Add(nameof(SubscriptionType), subscriptionType);
 
             var result = await conn.QueryAsync<WebhookDetails>("dbo.GetWebhooksByAction", parameters, commandType: CommandType.StoredProcedure);
-
-            //if(result is null)
-            //    throw new DbUpdateException($"No webhook found for user: {getWebhookByAction.userName} with action: {getWebhookByAction.subscriptionType}");
 
             return result;
         }

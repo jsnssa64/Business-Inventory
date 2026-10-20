@@ -4,20 +4,21 @@ using System.Data.Entity.Infrastructure;
 using InventoryApi.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using InventoryApi.Constants;
-using InventoryApi.Repository.Inventory;
-using InventoryApi.Repository.RoleRepo;
-using InventoryApi.Repository;
-using InventoryApi.Service.InventoryService;
-using InventoryApi.Service.RoleService;
-using InventoryApi.Service.UserService.Utility;
-using InventoryApi.Service.UserService;
-using InventoryApi.Service.SecurityService.Models;
-using InventoryApi.Service.SecurityService;
+using Services.Repository.Inventory;
+using Services.Repository.RoleRepo;
+using Services.Service.InventoryService;
+using Services.Service.RoleService;
+using Services.Service.UserService.Utility;
+using Services.Service.UserService;
+using Services.Service.SecurityService.Models;
+using Services.Service.SecurityService;
 using MassTransit;
 using Microsoft.Extensions.Caching.Memory;
 using ZiggyCreatures.Caching.Fusion;
-using InventoryApi.Repository.Webhook;
+using Services.Repository.Webhook;
 using KurrentDB.Client;
+using Services.Repository.UserRepo;
+using Services.Service.ProductService;
 
 namespace InventoryApi.Extensions
 {

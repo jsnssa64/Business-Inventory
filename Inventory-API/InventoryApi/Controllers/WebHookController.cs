@@ -1,9 +1,9 @@
 using InventoryApi.Authentication;
 using InventoryApi.Controllers.CustomController;
-using InventoryApi.Repository.Webhook;
-using InventoryApi.Service.SecurityService;
 using Microsoft.AspNetCore.Mvc;
 using Services.DataModel.Webhook;
+using Services.Repository.Webhook;
+using Services.Service.SecurityService;
 using static Domain.User.Roles;
 
 namespace InventoryApi.Controllers

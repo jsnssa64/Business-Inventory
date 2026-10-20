@@ -1,9 +1,9 @@
 ﻿namespace InventoryApi.Constants
 {
-    public enum DatabaseConnections
+    public static class DatabaseConnections
     {
-        InventoryDb,
-        KurrentDb,
-        RabbitMQ
+        public const string InventoryDb = "InventoryDb";
+        public const string KurrentDb = "KurrentDb";
+        public const string RabbitMQ = "RabbitMQ";
     }
 }

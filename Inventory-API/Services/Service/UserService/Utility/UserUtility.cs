@@ -1,7 +1,8 @@
 ﻿using Domain.Entities.User;
+using Services.Service.UserService.Utility;
 using System.Security.Claims;
 
-namespace InventoryApi.Service.UserService.Utility
+namespace Services.Service.UserService.Utility
 {
     public class UserUtility: IUserUtility
     {

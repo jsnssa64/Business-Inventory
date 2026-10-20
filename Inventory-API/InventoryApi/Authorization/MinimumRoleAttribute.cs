@@ -6,14 +6,9 @@ using System.Security.Claims;
 
 namespace InventoryApi.Authentication
 {
-    public class MinimumRoleAttribute : Attribute, IAsyncActionFilter
+    public class MinimumRoleAttribute(RoleLevel minimumRole) : Attribute, IAsyncActionFilter
     {
-        private readonly RoleLevel _minimumRole;
-
-        public MinimumRoleAttribute(RoleLevel minimumRole)
-        {
-            _minimumRole = minimumRole;
-        }
+        private readonly RoleLevel _minimumRole = minimumRole;
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {

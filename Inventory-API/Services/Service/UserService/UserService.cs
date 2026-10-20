@@ -1,50 +1,37 @@
 ﻿using System.Data.Entity.Infrastructure;
 using System.Data;
 using System.Security.Claims;
-using InventoryApi.Repository;
-using InventoryApi.Service.SecurityService;
-using InventoryApi.Service.SecurityService.Models;
-using InventoryApi.Service.UserService.Utility;
-using ZiggyCreatures.Caching.Fusion;
+using Services.Service.SecurityService;
+using Services.Service.SecurityService.Models;
+using Services.Service.UserService.Utility;
 using MassTransit;
-using MassTransit.Transports;
 using MediatR;
-using InventoryApi.Constants;
 using Services.DataModel.Role;
 using Services.DataModel.User;
 using Domain.Entities.User;
+using Services.Repository.UserRepo;
+using Microsoft.AspNetCore.Http;
+using Domain.Events.User;
 
-namespace InventoryApi.Service.UserService
+namespace Services.Service.UserService
 {
-    public class UserService : IUserService
-    {
-        private IMediator _mediator;
-        private IPublishEndpoint _publishEndpoint;
-        private IFusionCache _fusionCache;
-        private IUserRepository _userRepository;
-        private ISecurityService _securityService;
-        private IUserUtility _userUtility;
-        private IJWTUtility _jwtUtility;
-        private IDbConnectionFactory _dbConnectionFactory;
-
-        public UserService(IUserRepository userRepository,
+    public class UserService(IUserRepository userRepository,
             IPublishEndpoint publishEndpoint,
             IMediator mediator,
-            ISecurityService securityService, 
-            IUserUtility userUtility, 
+            ISecurityService securityService,
+            IUserUtility userUtility,
             IJWTUtility jwtUtility,
             IDbConnectionFactory dbConnectionFactory,
-            IFusionCache fusionCache) 
-        {
-            _mediator = mediator;
-            _publishEndpoint = publishEndpoint;
-            _fusionCache = fusionCache;
-            _userRepository = userRepository;
-            _securityService = securityService;
-            _userUtility = userUtility;
-            _jwtUtility = jwtUtility;
-            _dbConnectionFactory = dbConnectionFactory; 
-        }
+            IFusionCache fusionCache) : IUserService
+    {
+        private readonly IMediator _mediator = mediator;
+        private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
+        private readonly IFusionCache _fusionCache = fusionCache;
+        private readonly IUserRepository _userRepository = userRepository;
+        private readonly ISecurityService _securityService = securityService;
+        private readonly IUserUtility _userUtility = userUtility;
+        private readonly IJWTUtility _jwtUtility = jwtUtility;
+        private readonly IDbConnectionFactory _dbConnectionFactory = dbConnectionFactory;
 
         public async Task RegisterUser(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, UserRegistrationModel userRegistrationModel)
         {
@@ -61,23 +48,17 @@ namespace InventoryApi.Service.UserService
 
         public async Task RegisterDefaultUser(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, UserRegistrationModel userRegistrationModel)
         {
-            try
-            {
-                userRegistrationModel.RoleName = Roles.DefaultRole.ToString();
-                await this.CreateUser(httpResponse, userIdentifierModel, userRegistrationModel);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to register new User: {ex.Message}");
-            }
+            userRegistrationModel.RoleName = Roles.DefaultRole.ToString();
+            await this.CreateUser(httpResponse, userIdentifierModel, userRegistrationModel);
         }
 
         private async Task<UserIdModel> CreateUser(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, UserRegistrationModel userRegistrationModel)
         {
-            if(!Roles.IsValidRoleLevel(userRegistrationModel.RoleName))
-            {
-                throw new Exception("Invalid Role");
-            }
+            //  Does not belong here
+            //if(!Roles.IsValidRoleLevel(userRegistrationModel.RoleName))
+            //{
+            //    throw new Exception("Invalid Role");
+            //}
 
             using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
             conn.Open();
@@ -85,27 +66,23 @@ namespace InventoryApi.Service.UserService
 
             try
             {
-                userRegistrationModel.EncryptedPassword = _securityService.EncryptPassword(userRegistrationModel.Password, SecurityLevel.Mid);
+                userRegistrationModel.EncryptedPassword = _securityService.HashPassword(userRegistrationModel.Password, SecurityLevel.Mid);
 
-                var userIdModel = await _userRepository.CreateUser(conn, userIdentifierModel, userRegistrationModel, transaction);
+                var userIdModel = await _userRepository.CreateUser(userIdentifierModel, userRegistrationModel, conn, transaction);
 
                 var roleNameModel = new RoleNameModel
                 {
                     RoleName = userRegistrationModel.RoleName.ToString()
                 };
 
-                await _userRepository.AssignRoleToUser(conn, userIdentifierModel, roleNameModel, transaction);
-                
-                //  Temp - 
-                await _userRepository.ActivateUser(conn, userIdentifierModel, transaction);
+                await _userRepository.AssignRoleToUser(userIdentifierModel, roleNameModel, conn, transaction);
+
+                //  Temp - Auto Activate User, will not be permenantly, will be replaced with email confirmation
+                await _userRepository.ActivateUser(userIdentifierModel, conn, transaction);
 
                 transaction.Commit();
 
-                await _mediator.Publish(new UserCreated()
-                {
-                    Id = userIdModel.UserId,
-                    Username = userIdentifierModel.Username
-                });
+                await _mediator.Publish(new UserCreated(default, new UserIdentity(userIdModel.UserId, userIdentifierModel.Username)));
 
                 var userLoginModel = new UserLoginModel()
                 {
@@ -117,50 +94,26 @@ namespace InventoryApi.Service.UserService
 
                 return userIdModel;
             }
-            catch(Exception ex)
+            catch
             {
                 if(transaction?.Connection != null)
                     transaction.Rollback();
-
-                throw new Exception($"Failed to register new User: {ex.Message}");
             }
         }
 
         private async Task ActivateUser(UserIdentifierModel userIdentifierModel)
-        {
-            try
-            {
-                using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
-                await _userRepository.ActivateUser(conn, userIdentifierModel);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to activate User: {ex.Message}");
-            }
+        { 
+            await _userRepository.ActivateUser(userIdentifierModel);
         }
 
         public async Task UpdateUser(UserIdentifierModel userIdentifierModel, UserDetailsModel userDetailsModel)
         {
-            try
-            {
-                await _userRepository.UpdateUserDetails(userIdentifierModel, userDetailsModel);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to register new User: {ex.Message}");
-            }
+            await _userRepository.UpdateUserDetails(userIdentifierModel, userDetailsModel);
         }
 
         public async Task SetUserStatus(UserIdentifierModel userIdentifierModel, StatusModel statusModel)
         {
-            try
-            {
-                await _userRepository.SetUserStatus(userIdentifierModel, statusModel);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to set User Status {ex.Message}");
-            }
+            await _userRepository.SetUserStatus(userIdentifierModel, statusModel);
         }
 
         public async Task UserConfirmation(string token)
@@ -192,32 +145,25 @@ namespace InventoryApi.Service.UserService
 
         public async Task ChangePassword(UserIdentifierModel userIdentifierModel, PasswordModel passwordModel)
         {
-            try
+            var user = await _userRepository.GetUser(userIdentifierModel);
+
+            if (!_securityService.VerifyPassword(passwordModel.OldPassword, user.PasswordHash))
             {
-                var user = await _userRepository.GetUser(userIdentifierModel);
-
-                if (!_securityService.VerifyPassword(passwordModel.OldPassword, user.PasswordHash))
-                {
-                    throw new Exception("Invalid password");
-                }
-
-                passwordModel.NewPassword = _securityService.EncryptPassword(passwordModel.NewPassword);
-
-                await _userRepository.ResetPassword(userIdentifierModel, passwordModel);
+                throw new Exception("Invalid password");
             }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to Reset User password: {ex.Message}");
-            }
+
+            passwordModel.NewPassword = _securityService.HashPassword(passwordModel.NewPassword, SecurityLevel.Mid);
+
+            await _userRepository.ResetPassword(userIdentifierModel, passwordModel);
         }
 
-        public async Task LoginUser(HttpResponse httpResponse, UserLoginModel userLoginModel)
+        private async Task LoginUser(HttpResponse httpResponse, UserLoginModel userLoginModel)
         {
             var userIdentifierModel = new UserIdentifierModel() { 
                 Username = userLoginModel.Username 
             };
 
-            await this.GenerateLogin(httpResponse, userIdentifierModel, (usersRole) =>
+            await GenerateLogin(httpResponse, userIdentifierModel, (usersRole) =>
             {
                 if (!_securityService.VerifyPassword(userLoginModel.Password, usersRole.PasswordHash ?? throw new Exception("Unable to verify password")))
                 {
@@ -226,7 +172,7 @@ namespace InventoryApi.Service.UserService
             });
         }
 
-        public async Task<IEnumerable<Claim>> GenerateLogin(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, Action<UserWithPassword>? validate = null)
+        private async Task<IEnumerable<Claim>> GenerateLogin(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, Action<UserWithPassword>? validate = null)
         {
             var user = await _userRepository.GetUser(userIdentifierModel);
 
@@ -244,7 +190,7 @@ namespace InventoryApi.Service.UserService
             return claims;
         }
 
-        public async Task<UserDetails> GetUserDetails(UserIdentifierModel userName)
+        private async Task<UserDetails> GetUserDetails(UserIdentifierModel userName)
         {
             var userDetails = await _fusionCache
                                     .GetOrSetAsync<UserDetails>($"UserDetail-{userName.Username}", 
@@ -283,8 +229,6 @@ namespace InventoryApi.Service.UserService
 
         public async Task ForgottenPasswordByEmail(UserEmailModel userEmailModel)
         {
-            try
-            {
                 var user = await _userRepository.GetUserByEmail(userEmailModel);
 
                 var userIdentifierModel = new UserIdentifierModel()
@@ -292,73 +236,48 @@ namespace InventoryApi.Service.UserService
                     Username = user.Username
                 };
 
-                var token = await _securityService.GenerateUserJWT(userIdentifierModel, KeyType.resetPassword);
-
-                //  Send to rabbitmq 
-                await _mediator.Publish(new EmailConfirmationModel()
-                {
-                    Username = user.Username,
-                    Email = user.Email,
-                    Token = token
-                });
+                var token = await _securityService.GenerateUserJWT(userIdentifierModel, KeyType.resetPassword); 
+                
+            try { 
+                await _mediator.Publish(new EmailConfirmationModel(user.Username, user.Email, token));
             }
-            catch(Exception ex)
+            catch
             {
-                throw new Exception("Failed to send email");
+                //  Handle Gracefully/Retry etc...
+                throw;
             } 
         }
 
         public async Task ForgottenPasswordByUsername(UserIdentifierModel userIdentifierModel)
         {
-            try
+            if (!await _userRepository.IsValidUserByUsername(userIdentifierModel))
             {
-
-                if (!await _userRepository.IsValidUserByUsername(userIdentifierModel))
-                {
-                    throw new Exception("Invalid Username");
-                }
-
-                var user = await _userRepository.GetUser(userIdentifierModel);
-                
-                var token = await _securityService.GenerateUserJWT(userIdentifierModel, KeyType.resetPassword);
-
-                await _mediator.Publish(new EmailConfirmationModel()
-                {
-                    Username = user.Username,
-                    Email = user.Email,
-                    Token = token
-                });
+                throw new Exception("Invalid Username");
             }
-            catch(Exception ex)
+
+            var user = await _userRepository.GetUser(userIdentifierModel);
+                
+            var token = await _securityService.GenerateUserJWT(userIdentifierModel, KeyType.resetPassword);
+
+            try 
+            { 
+                await _mediator.Publish(new EmailConfirmationModel(user.Username, user.Email, token));
+            }
+            catch
             {
-                throw new Exception("Failed to send email");
+                //  Resolve gracefully
+                throw;
             }
         }
 
         public void LogoutUser(HttpResponse httpResponse)
         {
-            try
-            {
-                _securityService.SetCookieForLogout(httpResponse);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to Set User Cookie: {ex.Message}");
-            }
+            _securityService.SetCookieForLogout(httpResponse);
         }
 
         public async Task AssignUserToRole(UserIdentifierModel userIdentifierModel, RoleNameModel roleIdModel)
         {
-            try
-            {
-                using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
-
-                await _userRepository.AssignRoleToUser(conn, userIdentifierModel, roleIdModel);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to assign user to role: {ex.Message}");
-            }
+            await _userRepository.AssignRoleToUser(userIdentifierModel, roleIdModel);
         }
     }
 }

@@ -2,28 +2,19 @@
 using System.Data.Entity.Infrastructure;
 using System.Data;
 using Microsoft.IdentityModel.Tokens;
-using InventoryApi.Constants;
 using Services.DataModel.Role;
+using Services.Repository.RoleRepo;
 
-namespace InventoryApi.Repository.RoleRepo
+namespace Services.Repository.RoleRepo
 {
-    public class RoleRepository: IRoleRepository
+    public class RoleRepository(IDbConnectionFactory dbConnectionFactory) : IRoleRepository
     {
-        private IDbConnectionFactory _dbConnectionFactory;
-
-        public RoleRepository(
-            IDbConnectionFactory dbConnectionFactory
-            )
-        {
-            _dbConnectionFactory = dbConnectionFactory;
-        }
-
         [Obsolete]
         public async Task<RoleModel> CreateRole(CreateRoleModel createRole)
         {
             try
             {
-                using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
+                using IDbConnection conn = dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
 
                 var parameters = new DynamicParameters();
                 parameters.Add(nameof(CreateRoleModel.RoleName), createRole.RoleName);
@@ -52,7 +43,7 @@ namespace InventoryApi.Repository.RoleRepo
         {
             try
             {
-                using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
+                using IDbConnection conn = dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
 
                 var parameters = new DynamicParameters();
                 parameters.Add(nameof(RoleNameModel.RoleName), roleNameModel.RoleName);
@@ -75,7 +66,7 @@ namespace InventoryApi.Repository.RoleRepo
         {
             try
             {
-                using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
+                using IDbConnection conn = dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
 
                 var result = await conn.QueryAsync<dynamic>("dbo.GetRoles", new DynamicParameters(), commandType: CommandType.StoredProcedure);
 
@@ -99,7 +90,7 @@ namespace InventoryApi.Repository.RoleRepo
         {
             try
             {
-                using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
+                using IDbConnection conn = dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
 
                 var parameters = new DynamicParameters();
 

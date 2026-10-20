@@ -29,7 +29,7 @@ namespace Services.Repository.EventStoreDbRepository
                 cancellationToken: cancellationToken
             );
 
-            return await result.ToListAsync(cancellationToken);
+            return await result.ToListAsync<ResolvedEvent>(cancellationToken);
         }
 
         public async Task<IWriteResult> AppendEventStream(object eventObject, string type, long intialPos)
@@ -51,4 +51,5 @@ namespace Services.Repository.EventStoreDbRepository
         {
             return $"{type}-{streamName}";
         }
+    }
 }

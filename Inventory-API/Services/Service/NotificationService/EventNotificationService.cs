@@ -1,7 +1,7 @@
 ﻿using MassTransit;
 using MediatR;
 
-namespace InventoryApi.Service.NotificationService
+namespace Services.Service.NotificationService
 {
     public abstract class EventNotificationService<T> : INotificationHandler<T> where T : INotification
     {

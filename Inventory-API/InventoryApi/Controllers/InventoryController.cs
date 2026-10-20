@@ -1,140 +1,80 @@
-using Domain.Entities.Inventory;
-using Domain.Entities.Product;
 using InventoryApi.Authentication;
-using InventoryApi.Controllers.CustomController;
 using InventoryApi.DTOs.Inventory;
-using InventoryApi.Model.Events.Inventory;
-using InventoryApi.Repository.Data.Inventory;
-using InventoryApi.Repository.Data.Product;
-using InventoryApi.Service.InventoryService;
+using Services.DataModel.Product;
+using Services.DataModel.User;
+using Services.DataModel.Inventory;
+using Services.Service.InventoryService;
 using Microsoft.AspNetCore.Mvc;
 using static Domain.User.Roles;
+using InventoryApi.Controllers.Base;
 
 namespace InventoryApi.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route(V)]
     [MinimumRole(RoleLevel.User)]
-    public class InventoryController : BaseController
+    public class InventoryController(IInventoryService inventoryService) : BaseController
     {
-        private readonly IInventoryService _inventoryService;
-        private readonly ILogger<InventoryController> _logger;
+        private readonly IInventoryService _inventoryService = inventoryService;
 
-        public InventoryController(IInventoryService inventoryService, ILogger<InventoryController> logger)
+        [HttpGet("Inventory/{inventoryItemId}")]
+        public async Task<IActionResult> GetInventoryItem(string inventoryItemId, CancellationToken cancellationToken)
         {
-            _inventoryService = inventoryService;
-            _logger = logger;
+            if(!Guid.TryParse(inventoryItemId, out var inventoryItemGuid))
+            {
+                return BadRequest();
+            }
+            
+            var productIdentifier = new ProductIdentifierModel
+            {
+                PublicProductId = inventoryItemGuid,
+                Username = GetUsernameFromClaim()
+            };
+
+            var result = await _inventoryService.GetInventoryItemByProductId(productIdentifier, cancellationToken);
+
+            return Ok(result);
         }
 
-        [HttpGet("GetInventoryItemByProductId")]
-        public async Task<IActionResult> GetInventoryItemByProductId(Guid productid, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var productIdentifier = new ProductIdentifierModel
-                {
-                    PublicProductId = productid,
-                    Username = GetUsername()
-                };
-
-                var inventoryItems = await _inventoryService.GetInventoryItemByProductId(productIdentifier, cancellationToken);
-
-                return Ok(inventoryItems);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error adding inventory");
-                return StatusCode(500);
-            }
-        }
-
-        [HttpGet("GetInventory")]
+        [HttpGet("Inventory")]
         public async Task<IActionResult> GetInventory(CancellationToken cancellationToken)
         {
-            try
-            {
-                var userIdentifier = new UserIdentifierModel() { 
-                    Username = GetUsername() 
-                };
-
-                var inventoryItems = await _inventoryService.GetInventoryItems(userIdentifier, cancellationToken);
-
-                return Ok(inventoryItems);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error adding inventory");
-                return StatusCode(500);
-            }
-        }
-
-        [HttpPost("UpdateItemInInventory")]
-        public async Task<IActionResult> UpdateItemInInventory(UpdateInventoryItemDTO updateInventoryItemDTO, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var inventoryItemModel = new InventoryItemModel
-                {
-                    Quantity = updateInventoryItemDTO.Quantity
-                };
-
-                var productIdentifier = new ProductIdentifierModel()
-                {
-                    PublicProductId = updateInventoryItemDTO.ProductId,
-                    Username = GetUsername()
-                };
-
-                await _inventoryService.UpdateItemToInventoryByProductId(productIdentifier, inventoryItemModel, cancellationToken);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error adding item to inventory");
-                return StatusCode(500);
-            }
-        }
-
-        [HttpPost("AddInventoryToStream")]
-        [Obsolete]
-        private async Task<IActionResult> AddToStream(Product product, InventoryItem inventoryItem)
-        {
-            var restockedEvent = new InventoryAdded(default, null, default)
-            {
-                ProductId = product.PublicProductId
+            var userIdentifier = new UserIdentifierModel() { 
+                Username = GetUsernameFromClaim() 
             };
 
-            try
-            {
-                await _inventoryService.AddInventoryItemToStream(restockedEvent, "InventoryItemRestocked", 0);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error adding inventory");
-                return StatusCode(500);
-            }
+            var inventoryItems = await _inventoryService.GetInventoryItems(userIdentifier, cancellationToken);
 
-            return Ok();
+            return Ok(inventoryItems);
         }
 
-        [HttpPost("RemoveInventoryFromStream")]
-        [Obsolete]
-        private async Task<IActionResult> RemoveFromStream(Product product, InventoryItem inventoryItem)
+        [HttpPatch("Inventory/{inventoryItemId}")]
+        public async Task<IActionResult> UpdateInventory(string inventoryItemId, UpdateInventoryItemDTO updateInventoryItemDTO, CancellationToken cancellationToken)
         {
-            var removeEvent = new InventoryRemoved(default, null, default)
+            if(!Guid.TryParse(inventoryItemId, out var inventoryItemGuid))
             {
-                ProductId = product.PublicProductId
+                return BadRequest();
+            }
+            var inventoryItemModel = new InventoryItemModel
+            {
+                Quantity = updateInventoryItemDTO.Quantity
             };
 
-            try
+            var productIdentifier = new ProductIdentifierModel()
             {
-                await _inventoryService.RemoveInventoryItemFromStream(removeEvent, "InventoryItemRemoved", 0);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error removing inventory");
-                return StatusCode(500);
-            }
+                PublicProductId = inventoryItemGuid,
+                Username = GetUsernameFromClaim()
+            };
 
+            await _inventoryService.UpdateItemToInventoryByProductId(productIdentifier, inventoryItemModel, cancellationToken);
+            
+            //  How should I handle failures and whether i should just catch this in a middleware
+            if(result.Status == FailedToSend)
+            {
+                //  Appropriate Status code
+                return BadRequest();
+            }
+            
             return Ok();
         }
     }
