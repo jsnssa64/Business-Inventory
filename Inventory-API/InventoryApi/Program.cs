@@ -1,17 +1,19 @@
 using InventoryApi.Extensions;
-using InventoryApi.Repository.Webhook;
-using InventoryApi.Service.SecurityService;
-using InventoryApi.Service.UserService;
-using Microsoft.Extensions.Caching.Memory;
-using ZiggyCreatures.Caching.Fusion;
 
-internal class Program
+namespace InventoryApi;
+
+internal static class Program
 {
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.Services.AddProblemDetails();
         builder.Services.AddControllers();
+        builder.Services.Configure<CookiePolicyOptions>(options =>
+            options.Secure = builder.Environment.IsDevelopment()
+                ? CookieSecurePolicy.SameAsRequest
+                : CookieSecurePolicy.Always);
         
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
@@ -28,6 +30,8 @@ internal class Program
 
         var app = builder.Build();
 
+        app.UseExceptionHandler();
+
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
@@ -35,7 +39,8 @@ internal class Program
             app.UseSwaggerUI();
         }
 
-        app.UseJwtCookieAuth();
+        app.UseCookiePolicy();
+        app.UseJwtCookieAuthMiddleware();
         app.UseAuthentication();
         app.UseAuthorization();
 

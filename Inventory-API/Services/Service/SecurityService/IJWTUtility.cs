@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace InventoryApi.Service.SecurityService
+namespace Services.Service.SecurityService
 {
     public interface IJWTUtility
     {

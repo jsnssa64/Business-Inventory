@@ -1,10 +1,11 @@
-﻿using InventoryApi.Service.SecurityService.Models;
+﻿using Services.Service.SecurityService.Models;
 using Microsoft.Extensions.Options;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using Microsoft.IdentityModel.Tokens;
 
-namespace InventoryApi.Service.SecurityService
+namespace Services.Service.SecurityService
 {
     public enum KeyType
     {
@@ -16,16 +17,17 @@ namespace InventoryApi.Service.SecurityService
 
     public class JWTUtility: IJWTUtility
     {
-        private IOptions<Security> _security;
+        private readonly IOptions<Security> _security;
 
-        private JwtSecurityTokenHandler _securityTokenHandler;
+        private readonly JwtSecurityTokenHandler _securityTokenHandler;
 
-        private RSA accessKey;
+        private readonly RSA accessKey;
         
-        private RSA refreshKey;
+        private readonly RSA refreshKey;
 
-        private RSA confirmationKey;
-        private RSA resetPasswordKey;
+        private readonly RSA confirmationKey;
+
+        private readonly RSA resetPasswordKey;
 
         private RSA GetKey(KeyType keyType)
         {

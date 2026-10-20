@@ -1,4 +1,4 @@
-﻿namespace InventoryApi.Service.SecurityService.Models
+﻿namespace Services.Service.SecurityService.Models
 {
     public class Security
     {

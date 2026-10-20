@@ -1,40 +1,32 @@
 ﻿using System.Security.Claims;
 using System.Security.Cryptography;
-using InventoryApi.Constants;
-using InventoryApi.Repository;
-using InventoryApi.Service.SecurityService.Models;
-using InventoryApi.Service.UserService.Utility;
+using Services.Service.SecurityService.Models;
+using Services.Service.UserService.Utility;
 using Services.DataModel.User;
+using Services.Repository.UserRepo;
 
-namespace InventoryApi.Service.SecurityService
+namespace Services.Service.SecurityService
 {
-    public class SecurityService: ISecurityService
+    public class SecurityService(IJWTUtility JWTUtility, IUserUtility userUtility, IUserRepository userRepository) : ISecurityService
     {
-        private IJWTUtility _JWTUtility;
-        private IUserRepository _userRepository;
-        private IUserUtility _userUtility;
-
-        public SecurityService(IJWTUtility JWTUtility, IUserUtility userUtility, IUserRepository userRepository) 
-        {
-            _JWTUtility = JWTUtility;
-            _userRepository = userRepository;
-            _userUtility = userUtility;
-        }
+        private readonly IJWTUtility _JWTUtility = JWTUtility;
+        private readonly IUserRepository _userRepository = userRepository;
+        private readonly IUserUtility _userUtility = userUtility;
 
         public void SetCookieForLogin(HttpResponse httpResponse, string accessToken, string refreshToken, DateTimeOffset cookieExpiry)
         {
             httpResponse.Cookies.Append(Cookie.AccessCookie, accessToken, new CookieOptions
             {
+                // Secure is inherited from the cookie policy
                 HttpOnly = true,
-                Secure = false,
                 SameSite = SameSiteMode.Lax,
                 Expires = cookieExpiry
             });
 
             httpResponse.Cookies.Append(Cookie.RefreshCookie, refreshToken, new CookieOptions
             {
+                // Secure is inherited from the cookie policy
                 HttpOnly = true,
-                Secure = false,
                 SameSite = SameSiteMode.Lax,
                 Expires = cookieExpiry
             });
@@ -54,8 +46,8 @@ namespace InventoryApi.Service.SecurityService
             return (accessToken, refreshToken);
         }
 
-        public string EncryptPassword(string password, SecurityLevel securityLevel = SecurityLevel.Default) =>
-            BCrypt.Net.BCrypt.HashPassword(password, (int)securityLevel, BCrypt.Net.SaltRevision.Revision2B);
+        public string HashPassword(string password, SecurityLevel securityLevel = SecurityLevel.Default) =>
+            BCrypt.Net.BCrypt.HashPassword(password, BCrypt.Net.BCrypt.GenerateSalt((int)securityLevel, 'b'));
 
         public bool VerifyPassword(string password, string hashPassword) => BCrypt.Net.BCrypt.Verify(password, hashPassword);
 
@@ -70,19 +62,18 @@ namespace InventoryApi.Service.SecurityService
         {
             var secretBytes = System.Text.Encoding.UTF8.GetBytes(secret);
 
-            using (var hashGenerator = new HMACSHA256(secretBytes))
-            {
-                var payloadBytes = System.Text.Encoding.UTF8.GetBytes(payload);
-                var hashBytes = hashGenerator.ComputeHash(payloadBytes);
+            using var hashGenerator = new HMACSHA256(secretBytes);
+            var payloadBytes = System.Text.Encoding.UTF8.GetBytes(payload);
+            var hashBytes = hashGenerator.ComputeHash(payloadBytes);
 
-                // Return as lowercase hex string  
-                return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
-            }
+            // Return as lowercase hex string  
+            return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
         }
 
         public async Task<string> GenerateUserJWT(UserIdentifierModel userIdentifierModel, KeyType keyType)
         {
-            var user = await _userRepository.GetUser(userIdentifierModel);
+            var user = await _userRepository.GetUser(userIdentifierModel)
+                ?? throw new KeyNotFoundException($"User not found for username: {userIdentifierModel.Username}");
 
             var claims = _userUtility.MapUserToClaims(user);
             return _JWTUtility.GenerateJWT(claims, keyType);
