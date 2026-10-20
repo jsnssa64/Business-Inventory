@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import Navigation from "../../components/navigation/Navigation";
-import LeftMenu from "../../components/navigation/Menu/LeftMenu";
+import Navigation from "../../components/Navigation/Navigation";
+import LeftMenu from "../../components/Navigation/Menu/LeftMenu";
 import { Outlet } from "react-router-dom";
 
 export default function App() {

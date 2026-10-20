@@ -1,13 +1,14 @@
 import React, { useEffect, useRef } from "react";
 import { useState } from "react";
-import PagingBar from "../paging/Paging";
+import PagingBar from "../Paging/Paging";
 import DataTable from "../dataTable/DataTable";
 import { Level } from "../../models/ui/user/permission";
 import Tile from "../tiles/tile";
 
-export default function Inventory({ maxPages = 10, maxAvailablePages = 2 }: { maxPages?: number, maxAvailablePages?:number, currentPage?: number }) {
-    const [currentPage, setCurrentPage] = useState(0);
+export default function Inventory({ maxPages = 10, maxAvailablePages = 2, currentPage = 0 }: { maxPages?: number, maxAvailablePages?:number, currentPage?: number }) {
+    
     const [permissionLevel, setPermissionLevel] = useState(Level.read_only);
+    const [currentPageState, setCurrentPage] = useState(currentPage ?? 0);
 
     useEffect(() => {
       const setUserPermission = async () => {
@@ -19,8 +20,6 @@ export default function Inventory({ maxPages = 10, maxAvailablePages = 2 }: { ma
       };
       setUserPermission();
     }, []);
-    
-
     
     return (
       <div className="overflow-x-auto w-full p-4">
@@ -45,12 +44,12 @@ export default function Inventory({ maxPages = 10, maxAvailablePages = 2 }: { ma
         <div className="flex flex-col justify-center items-center">
           <DataTable permission={permissionLevel} data={[{id:'1', 'test': 'test', 'another' : 'testanother'}, {id: '2', 'test': 'test2', 'another' : 'teswtanother'}]} />
           <PagingBar
-            totalPages={maxPages}
-            maxAvailablePages={maxAvailablePages}
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-            incrementPage={() => setCurrentPage((p) => Math.min(p + 1, maxPages))}
-            deIncrementPage={() => setCurrentPage((p) => Math.max(p - 1, 0))}
+            totalPageCount={maxPages}
+            pagingRangeCount={maxAvailablePages}
+            currentPageIndex={currentPageState}
+            setPageIndex={setCurrentPage}
+            totalItemCount={100}
+            itemsPerPage={10}
           />
         </div>
       </div>

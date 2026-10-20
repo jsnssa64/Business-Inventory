@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import MenuSpan from "./MenuSpan";
-import MenuDropdown from "./MenuDropdown";
+import MenuSpan from "../../Navigation/Menu/MenuSpan";
+import MenuDropdown from "../../Navigation/Menu/MenuDropdown";
 import { MenuLink } from "./Abstract/menuLink";
 
 export default function SideMenuList ({ parentTitle, childTitles }: { parentTitle:string, childTitles:MenuLink[]}) {

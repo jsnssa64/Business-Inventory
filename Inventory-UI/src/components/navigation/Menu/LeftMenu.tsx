@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import SideMenuList from "./SideMenuList";
+import SideMenuList from "../../Navigation/Menu/SideMenuList";
 import { Link } from "react-router-dom";
 
 type LeftMenu = {

@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "ES6", // Compile to ES5 JavaScript
+        "target": "ES6", // Compile to ES6 JavaScript
         "module": "ES6", // Use the latest module system
         "strict": true, // Enable strict type-checking
         "sourceMap": true, // Generate source map files
@@ -10,6 +10,6 @@
         "esModuleInterop": true,
         "moduleResolution": "node", // Use Node.js module resolution strategy
     },
-    "include": ["src"], // Include all files in the 'src' directory
+    "include": ["src", "./jest.setup.ts"], // Include all files in the 'src' directory
     "exclude": ["node_modules"] // Exclude the 'node_modules' directory
 }

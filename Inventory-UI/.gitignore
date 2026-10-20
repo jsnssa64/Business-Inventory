@@ -27,3 +27,5 @@ yarn-error.log*
 # Miscellaneous
 .DS_Store
 Thumbs.db
+# Personal Claude Code notes (not shared project docs)
+CLAUDE.local.md
