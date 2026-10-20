@@ -1,5 +1,5 @@
 ﻿using Domain.Entities.Inventory;
-using Domain.Entities.User;
+using Domain.ValueObjects.User;
 using InventoryApi.Model.Events;
 
 namespace InventoryApi.Service.UserService

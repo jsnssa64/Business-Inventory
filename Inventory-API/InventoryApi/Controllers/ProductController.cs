@@ -1,18 +1,16 @@
 using InventoryApi.Authentication;
 using InventoryApi.Controllers.CustomController;
 using InventoryApi.DTOs.Product;
-using InventoryApi.Repository.Data;
-using InventoryApi.Repository.Data.Product;
-using InventoryApi.Service.InventoryService;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static Domain.User.Roles;
+using Services.DataModel.Product;
+using Services.DataModel.User;
+using Services.Service.InventoryService;
 
 namespace InventoryApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [MinimumRole(RoleLevel.User)]
+    [MinimumRole(Domain.ValueObjects.User.RoleLevel.User)]
     public class ProductController : BaseController
     {
         private readonly IProductService _productService;
@@ -29,7 +27,7 @@ namespace InventoryApi.Controllers
         {
             try
             {
-                var productIdentifierModel = new ProductIdentifierModel()
+                var productIdentifierModel = new ProductIdentity()
                 {
                     Username = GetUsername(),
                     PublicProductId = productid
@@ -106,7 +104,7 @@ namespace InventoryApi.Controllers
         {
             try
             {
-                var productIdentifierModel = new ProductIdentifierModel
+                var productIdentifierModel = new ProductIdentity
                 {
                     Username = GetUsername(),
                     PublicProductId = productId
@@ -134,7 +132,7 @@ namespace InventoryApi.Controllers
                     Quantity =      updateProductDTO.Quantity
                 };
 
-                var productIdentifier = new ProductIdentifierModel()
+                var productIdentifier = new ProductIdentity()
                 {
                     Username = GetUsername(),
                     PublicProductId = updateProductDTO.ProductId

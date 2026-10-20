@@ -26,7 +26,7 @@ AS
             DECLARE @CurrentName VARCHAR(100), 
                 @CurrentDesc VARCHAR(100), 
                 @CurrentQty INT, 
-                @CurrentPrice BIT,
+                @CurrentPrice DECIMAL(19, 4),
                 @CurrentCurrencyCode BIT,
                 @CurrentEnabledPrice BIT;
 

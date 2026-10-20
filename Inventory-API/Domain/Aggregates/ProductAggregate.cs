@@ -1,11 +1,12 @@
 ﻿using Domain.Entities.Product;
 using Domain.Events.Product;
+using Domain.ValueObjects.Product;
 
-namespace InventoryApi.Model.Action
+namespace Domain.Aggregates
 {
     public class ProductAggregate : Aggregate
     {
-        public Product CurrentProduct { get; set; } = new Product();
+        public Product? CurrentProduct { get; set; }
 
         public void CreateProduct(
             int Version,
@@ -73,40 +74,61 @@ namespace InventoryApi.Model.Action
 
         public void Apply(ProductCreated productCreated)
         {
-            //currentProduct.publicProductId = productCreated.ProductIdentity.PublicProductId,
-            //currentProduct.name = productCreated.ProductIdentity.Name,
-            //currentProduct.description = productCreated.ProductIdentity.Description,
-            //currentProduct.version = productCreated.Version,
-            //currentProduct.price = price ?? new Price()
-            //{
-            //    Amount = productCreated.Price?.Amount ?? 0,
-            //    Currency = productCreated.Price?.Currency ?? "USD"
-            //},
-            //currentProduct.metaData = productCreated.MetaData
+            if(CurrentProduct != null)
+            {
+                throw new InvalidOperationException("CurrentProduct is already set. Cannot apply ProductCreated event.");
+            }
+
+            CurrentProduct = new Product(
+                productCreated.ProductIdentity,
+                new ProductInfo(
+                    productCreated.ProductIdentity.PublicProductId,
+                    productCreated.ProductIdentity.Name,
+                    productCreated.ProductIdentity.Description),
+                true,
+                productCreated.Price,
+                productCreated.Version);
         }
 
         public void Apply(ProductInfo productInfo)
         {
-            CurrentProduct.ProductInfo = new ProductInfo()
+            if(CurrentProduct == null)
             {
-                Name = productInfo.Name ?? CurrentProduct.ProductInfo.Name,
-                Description = productInfo.Description ?? CurrentProduct.ProductInfo.Description,
-                MetaData = productInfo.MetaData ?? CurrentProduct.ProductInfo.MetaData
-            };
+                throw new InvalidOperationException("CurrentProduct is null. Cannot apply product info.");
+            }
+
+            CurrentProduct.ProductInfo = new ProductInfo(
+                productInfo.Name,
+                productInfo.Description);
         }
 
         public void Apply(Price price)
         {
+            if(CurrentProduct == null)
+            {
+                throw new InvalidOperationException("CurrentProduct is null. Cannot apply price.");
+            }
+
             CurrentProduct.Price = price;
         }
 
         public void Apply(ProductDeactivated productDeactivated)
         {
+            if(CurrentProduct == null)
+            {
+                throw new InvalidOperationException("CurrentProduct is null. Cannot apply product deactivation.");
+            }
+
             CurrentProduct.Active = false;
         }
 
-        public void Apply(ProductActivated productDeactivated)
+        public void Apply(ProductActivated productActivated)
         {
+            if(CurrentProduct == null)
+            {
+                throw new InvalidOperationException("CurrentProduct is null. Cannot apply product activation.");
+            }
+
             CurrentProduct.Active = true;
         }
     }

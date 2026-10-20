@@ -1,7 +1,6 @@
-﻿using Domain.Entities.Inventory;
-using Domain.Entities.Order;
-using Domain.Events.Orders.Enum;
-using Domain.Events.Orders;
+﻿using Domain.Aggregates;
+using Domain.Entities.Inventory;
+using Domain.ValueObjects.Inventory;
 using InventoryApi.Model.Events.Inventory;
 
 namespace InventoryApi.Model.Action
@@ -17,9 +16,14 @@ namespace InventoryApi.Model.Action
                 throw new InvalidOperationException("Quantity to remove must be a positive number.");
             }
 
-            var inventoryItemAdded = new InventoryAdded(eventVersion, inventoryItemIdentity, Quantity);
+            var inventoryItemAdded = new InventoryAdded
+            {
+                Version = eventVersion,
+                InventoryEvent = new InventoryEvent(eventVersion, inventoryItemIdentity),
+                Quantity = Quantity
+            };
 
-            AddEvent(inventoryItemAdded);
+            AddEvent(inventoryItemAdded.InventoryEvent);
 
             Apply(inventoryItemAdded);
 
@@ -38,9 +42,14 @@ namespace InventoryApi.Model.Action
                 throw new InvalidOperationException("Quantity to remove must be a positive number.");
             }
 
-            var inventoryItemRemoved = new InventoryRemoved(eventVersion, inventoryItemIdentity, Quantity);
+            var inventoryItemRemoved = new InventoryRemoved()
+            {
+                Version = eventVersion,
+                InventoryEvent = new InventoryEvent(eventVersion, inventoryItemIdentity)
+            };
+            //(eventVersion, inventoryItemIdentity, Quantity);
 
-            AddEvent(inventoryItemRemoved);
+            AddEvent(inventoryItemRemoved.InventoryEvent);
 
             Apply(inventoryItemRemoved);
 

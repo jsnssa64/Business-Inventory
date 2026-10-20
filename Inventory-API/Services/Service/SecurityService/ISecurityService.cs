@@ -1,8 +1,9 @@
 ﻿using System.Security.Claims;
-using InventoryApi.Service.SecurityService.Models;
+using Microsoft.AspNetCore.Http;
 using Services.DataModel.User;
+using Services.Service.SecurityService.Models;
 
-namespace InventoryApi.Service.SecurityService
+namespace Services.Service.SecurityService
 {
     public interface ISecurityService
     {

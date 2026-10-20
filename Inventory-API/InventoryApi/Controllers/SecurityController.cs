@@ -1,7 +1,7 @@
 ﻿using InventoryApi.Controllers.CustomController;
 using InventoryApi.DTOs.User;
-using InventoryApi.Service.SecurityService;
 using Microsoft.AspNetCore.Mvc;
+using Services.Service.SecurityService;
 
 namespace InventoryApi.Controllers
 {

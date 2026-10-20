@@ -1,20 +1,23 @@
-﻿using System.Data.Entity.Infrastructure;
-using System.Data;
+﻿using System.Data;
 using System.Security.Claims;
-using InventoryApi.Repository;
-using InventoryApi.Service.SecurityService;
-using InventoryApi.Service.SecurityService.Models;
-using InventoryApi.Service.UserService.Utility;
 using ZiggyCreatures.Caching.Fusion;
 using MassTransit;
-using MassTransit.Transports;
 using MediatR;
-using InventoryApi.Constants;
 using Services.DataModel.Role;
 using Services.DataModel.User;
 using Domain.Entities.User;
+using Microsoft.AspNetCore.Http;
+using Shared.Utilities.User;
+using Services.Repository.UserRepo;
+using Shared.Constants;
+using Domain.ValueObjects.User;
+using Domain.Service.UserService;
+using Services.Service.SecurityService;
+using Services.Service.SecurityService.Models;
+using Services.Service.UserService.Notification;
+using Microsoft.Extensions.Logging;
 
-namespace InventoryApi.Service.UserService
+namespace Services.Service.UserService
 {
     public class UserService : IUserService
     {
@@ -26,6 +29,7 @@ namespace InventoryApi.Service.UserService
         private IUserUtility _userUtility;
         private IJWTUtility _jwtUtility;
         private IDbConnectionFactory _dbConnectionFactory;
+        private ILogger<UserService> _logger;
 
         public UserService(IUserRepository userRepository,
             IPublishEndpoint publishEndpoint,
@@ -34,12 +38,14 @@ namespace InventoryApi.Service.UserService
             IUserUtility userUtility, 
             IJWTUtility jwtUtility,
             IDbConnectionFactory dbConnectionFactory,
-            IFusionCache fusionCache) 
+            IFusionCache fusionCache,
+            ILogger<UserService> logger) 
         {
             _mediator = mediator;
             _publishEndpoint = publishEndpoint;
             _fusionCache = fusionCache;
             _userRepository = userRepository;
+            _logger = logger;
             _securityService = securityService;
             _userUtility = userUtility;
             _jwtUtility = jwtUtility;
@@ -95,26 +101,34 @@ namespace InventoryApi.Service.UserService
                 };
 
                 await _userRepository.AssignRoleToUser(conn, userIdentifierModel, roleNameModel, transaction);
-                
-                //  Temp - 
+
+                //  TODO: This line will auto activate the User - TEMPORARY until email confirmation is implemented
                 await _userRepository.ActivateUser(conn, userIdentifierModel, transaction);
 
                 transaction.Commit();
 
-                await _mediator.Publish(new UserCreated()
+                try
                 {
-                    Id = userIdModel.UserId,
-                    Username = userIdentifierModel.Username
-                });
+                    await _mediator.Publish(
+                        new UserCreatedNotification()
+                        {
+                            Version = 1,
+                            userIdentity = new UserIdentity(userRegistrationModel.UserId.ToString(), "", userRegistrationModel.Email),
+                        }
+                    );
+                }
+                catch (Exception ex)
+                {
+                    //  Log failed notification, but do not fail the user registration
+                    _logger.LogError($"Failed to publish {nameof(UserCreatedNotification)}: {ex.Message}");
+                }
 
-                var userLoginModel = new UserLoginModel()
+                //  Auto login user after registration
+                await LoginUser(httpResponse, new UserLoginModel()
                 {
                     Username = userIdentifierModel.Username,
                     Password = userRegistrationModel.Password
-                };
-
-                await LoginUser(httpResponse, userLoginModel);
-
+                });
                 return userIdModel;
             }
             catch(Exception ex)
@@ -166,7 +180,7 @@ namespace InventoryApi.Service.UserService
         public async Task UserConfirmation(string token)
         {
             if (!_jwtUtility.IsTokenValid(token, KeyType.confirmation))
-                throw new Exception("Confirmation no longer valid");
+                throw new Exception("Confirmation Token no longer valid");
 
             var tokenClaims = await _jwtUtility.GetTokenClaims(token, KeyType.confirmation);
 
@@ -219,7 +233,7 @@ namespace InventoryApi.Service.UserService
 
             await this.GenerateLogin(httpResponse, userIdentifierModel, (usersRole) =>
             {
-                if (!_securityService.VerifyPassword(userLoginModel.Password, usersRole.PasswordHash ?? throw new Exception("Unable to verify password")))
+                if (!_securityService.VerifyPassword(userLoginModel.Password, usersRole.PasswordHash))
                 {
                     throw new Exception("Invalid password");
                 }
@@ -233,7 +247,7 @@ namespace InventoryApi.Service.UserService
             if (validate is not null)
                 validate(user);
 
-            var claims = _userUtility.MapUserToClaims(user);
+            var claims = _userUtility.MapUserToClaims(user.User);
 
             var cookieExpiry = DateTimeOffset.UtcNow.AddDays(1);
 
@@ -256,9 +270,6 @@ namespace InventoryApi.Service.UserService
 
             if (userDetails is null)
                 throw new Exception("Not valid userdetails");
-
-            if (Roles.IsValidRoleLevel(userDetails.Role?.Rolename))
-                throw new Exception("Not Valid Role");
 
             return userDetails;
         }
@@ -294,8 +305,8 @@ namespace InventoryApi.Service.UserService
 
                 var token = await _securityService.GenerateUserJWT(userIdentifierModel, KeyType.resetPassword);
 
-                //  Send to rabbitmq 
-                await _mediator.Publish(new EmailConfirmationModel()
+                //  Send to rabbitmq
+                await _mediator.Publish(new PasswordResetRequestedNotification()
                 {
                     Username = user.Username,
                     Email = user.Email,
@@ -304,7 +315,7 @@ namespace InventoryApi.Service.UserService
             }
             catch(Exception ex)
             {
-                throw new Exception("Failed to send email");
+                throw new Exception("Failed to send email", ex);
             } 
         }
 
@@ -312,7 +323,6 @@ namespace InventoryApi.Service.UserService
         {
             try
             {
-
                 if (!await _userRepository.IsValidUserByUsername(userIdentifierModel))
                 {
                     throw new Exception("Invalid Username");
@@ -322,7 +332,7 @@ namespace InventoryApi.Service.UserService
                 
                 var token = await _securityService.GenerateUserJWT(userIdentifierModel, KeyType.resetPassword);
 
-                await _mediator.Publish(new EmailConfirmationModel()
+                await _mediator.Publish(new PasswordResetRequestedNotification()
                 {
                     Username = user.Username,
                     Email = user.Email,
@@ -331,7 +341,7 @@ namespace InventoryApi.Service.UserService
             }
             catch(Exception ex)
             {
-                throw new Exception("Failed to send email");
+                throw new Exception("Failed to send email", ex);
             }
         }
 

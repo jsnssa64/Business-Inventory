@@ -1,6 +1,13 @@
-﻿using Domain.Entities.Inventory;
+﻿using MediatR;
 
 namespace InventoryApi.Model.Events.Inventory
 {
-    public record InventoryAdded(int Version, InventoryItemIdentity InventoryItemIdentity, int Quantity) : InventoryEvent(Version, InventoryItemIdentity);
+    public record InventoryAdded: INotification
+    {
+        public int Version {  get; set; }
+
+        public int Quantity { get; set; }
+        
+        public required InventoryEvent InventoryEvent { get; set; }
+    }
 }

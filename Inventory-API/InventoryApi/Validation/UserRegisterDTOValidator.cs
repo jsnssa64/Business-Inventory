@@ -1,7 +1,5 @@
-﻿using Domain.User;
-using FluentValidation;
+﻿using FluentValidation;
 using InventoryApi.DTOs.User;
-using InventoryApi.Repository.Data;
 
 namespace InventoryApi.Validation
 {

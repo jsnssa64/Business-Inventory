@@ -1,0 +1,18 @@
+services:
+  react-app:
+    build:
+      context: ${UI_PROJECT_PATH}
+      dockerfile: Dockerfile
+    container_name: react-app-${CONTAINER_NAME}
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=${NODE_ENVIRONMENT}
+    restart: unless-stopped
+    networks:
+      - api-network
+
+networks:
+  api-network:
+    external: true
+    

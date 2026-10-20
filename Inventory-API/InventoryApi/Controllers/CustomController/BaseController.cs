@@ -1,5 +1,4 @@
 ﻿using System.Security.Claims;
-using Domain.User;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InventoryApi.Controllers.CustomController

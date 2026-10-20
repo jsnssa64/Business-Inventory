@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: developer-environment
+  labels:
+    name: developer-environment
+    environment: development

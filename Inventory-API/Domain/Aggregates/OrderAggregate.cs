@@ -1,10 +1,11 @@
-﻿using Domain.Entities.Order;
+﻿using Domain.Aggregates;
+using Domain.Entities.Order;
 using Domain.Events.Orders;
 using Domain.Events.Orders.Enum;
+using Domain.ValueObjects.Order;
 
 namespace InventoryApi.Model.Action
 {
-
     public class OrderAggregate : Aggregate
     {
         public Order currentOrder { get; set; }

@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Services.DataModel.Webhook;
+﻿using Services.DataModel.Webhook;
 
-namespace InventoryApi.Service.UserService
+namespace Services.Service.UserService
 {
     public interface IWebhookService
     {
+        Task PostWebhookBySubscription(string userName, SubscriptionType subscriptionType);
         Task PostToWebhook(IEnumerable<WebhookPost> webhooks, SubscriptionType subscriptionType);
     }
 }

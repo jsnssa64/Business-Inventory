@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from "react";
 import { useState } from "react";
-import PagingBar from "../paging/Paging";
-import DataTable from "../dataTable/DataTable";
+import PagingBar from "../Paging/Paging";
+import DataTable from "../../rootComponents/dataTable/DataTable";
 import { Level } from "../../models/ui/user/permission";
-import Tile from "../tiles/tile";
+import Tile from "../../rootComponents/tile/tile";
 
 export default function Inventory({ maxPages = 10, maxAvailablePages = 2 }: { maxPages?: number, maxAvailablePages?:number, currentPage?: number }) {
     const [currentPage, setCurrentPage] = useState(0);

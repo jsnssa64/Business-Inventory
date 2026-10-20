@@ -51,30 +51,30 @@ export default function Paging({ totalPages, maxAvailablePages, currentPage, inc
 
 
     const setActiveIndex = (index: number): any => {
-        return {
-          onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
-            setCurrentPage(index);
-          }
-        }    
-      }
+      return {
+        onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
+          setCurrentPage(index);
+        }
+      }    
+    }
 
-        return (
-        <div className="flex items-center"> 
-          <div className="join-left">
-            showing 1-200 of {totalPages * 200} items
-          </div>
-          <div className="join-right">
-              <button {...previousPage()}>Previous</button>
-              <button {...previousPage(true)}>P</button>
-              {startingIndex > 0 && <button key="leftdots" {...setActivePage(false)} {...setActiveIndex(startingIndex - 1)}>...</button>}
-              {Array.from({length: maxAvailablePages }, (_, index) => {
-                  var pageIndexItem = startingIndex + index;
+    return (
+      <div className="flex items-center"> 
+        <div className="join-left">
+          showing 1-200 of {totalPages * 200} items
+        </div>
+        <div className="join-right">
+            <button {...previousPage()}>Previous</button>
+            <button {...previousPage(true)}>P</button>
+            {startingIndex > 0 && <button key="leftdots" {...setActivePage(false)} {...setActiveIndex(startingIndex - 1)}>...</button>}
+            {Array.from({length: maxAvailablePages }, (_, index) => {
+                var pageIndexItem = startingIndex + index;
 
-                  return  (<button key={index} {...setActivePage(pageIndexItem == currentPage)} {...setActiveIndex(pageIndexItem)} >{pageIndexItem + 1}</button>)
-              })}
-              {endingIndex < totalPages && <button key="rightdots" {...setActivePage(false)} {...setActiveIndex(endingIndex)}>...</button>}
-              <button {...nextPage()}>Next</button>
-              <button {...nextPage(true)}>N</button>
-          </div>
-        </div>)
+                return  (<button key={index} {...setActivePage(pageIndexItem == currentPage)} {...setActiveIndex(pageIndexItem)} >{pageIndexItem + 1}</button>)
+            })}
+            {endingIndex < totalPages && <button key="rightdots" {...setActivePage(false)} {...setActiveIndex(endingIndex)}>...</button>}
+            <button {...nextPage()}>Next</button>
+            <button {...nextPage(true)}>N</button>
+        </div>
+      </div>)
 }

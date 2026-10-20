@@ -8,7 +8,7 @@ module.exports = (_env, argv) => {
     const dotenvFilename = isProduction ? '.env.production' : '.env.development';
 
     return {
-        mode: 'development',
+        mode: isProduction ? 'production' : 'development',
         entry: {
             app: './src/index.tsx'
         },

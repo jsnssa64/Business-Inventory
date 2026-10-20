@@ -1,13 +1,11 @@
 ﻿using Domain.Entities.Inventory;
-using Domain.User;
-using InventoryApi.Repository.Data.User;
 using InventoryApi.Repository.Inventory;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Logging;
 using Services.DataModel.Inventory;
 using Services.DataModel.Product;
 using Services.DataModel.User;
 
-namespace InventoryApi.Service.InventoryService
+namespace Services.Service.InventoryService
 {
     public class InventoryService : IInventoryService
     {
@@ -20,7 +18,7 @@ namespace InventoryApi.Service.InventoryService
             _inventoryRepository = inventoryRepository;
         }
 
-        public async Task UpdateItemToInventoryByProductId(ProductIdentifierModel productIdentifierModel, InventoryItemModel inventoryItemModel, CancellationToken cancellationToken)
+        public async Task UpdateItemToInventoryByProductId(ProductIdentity productIdentifierModel, InventoryItemModel inventoryItemModel, CancellationToken cancellationToken)
         {
             if (inventoryItemModel == null)
             {
@@ -30,7 +28,7 @@ namespace InventoryApi.Service.InventoryService
             await _inventoryRepository.UpdateItemToInventoryByProductId(productIdentifierModel, inventoryItemModel);
         }
 
-        public async Task<InventoryItem> GetInventoryItemByProductId(ProductIdentifierModel productIdentifierModel, CancellationToken cancellationToken)
+        public async Task<InventoryItem> GetInventoryItemByProductId(ProductIdentity productIdentifierModel, CancellationToken cancellationToken)
         {
             return await _inventoryRepository.GetInventoryItemByProductId(productIdentifierModel);
         }

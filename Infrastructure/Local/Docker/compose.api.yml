@@ -1,0 +1,39 @@
+services:
+  api:
+    build:
+      context: ${API_PROJECT_PATH}
+      dockerfile: Dockerfile
+    container_name: api-${CONTAINER_NAME}
+    restart: always
+    ports:
+      - "3001:8080"
+      - "3002:8081"
+    depends_on:
+      - db
+      - kurrentdb.db
+      - rabbitmq
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - ConnectionStrings__InventoryDb=${DB_CONNECTION}
+      - ConnectionStrings__EventStoreDb=${EVENTSTORE_CONNECTION}
+      - ConnectionStrings__RabbitMQ=${RABBITMQ_CONNECTION}
+      - Security__AccessToken__Key=${SECURITY_ACCESS_KEY}
+      - Security__AccessToken__Expiry=${SECURITY_ACCESS_EXPIRY}
+      - Security__RefreshToken__Key=${SECURITY_REFRESH_KEY}
+      - Security__RefreshToken__Expiry=${SECURITY_REFRESH_EXPIRY}
+      - Security__ConfirmationToken__Key=${SECURITY_CONFIRM_KEY}
+      - Security__ConfirmationToken__Expiry=${SECURITY_CONFIRM_EXPIRY}
+      - Security__Audience=${SECURITY_AUDIENCE}
+      - Security__Issuer=${SECURITY_ISSUER}
+    networks:
+      - api-network
+      - data-network
+      - backend-network
+
+networks:
+  api-network:
+    external: true
+  data-network:
+    external: true
+  backend-network:
+    external: true

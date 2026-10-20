@@ -1,6 +1,6 @@
 ﻿CREATE TABLE [dbo].[UserDetails]
 (
-	UserId INT NOT NULL PRIMARY KEY,
+	UserId INT NOT NULL,
 	FirstName VARCHAR(50) NOT NULL,
 	LastName VARCHAR(50) NOT NULL,
 	ContactNumber VARCHAR(50) NULL,
@@ -11,7 +11,8 @@
 	Country VARCHAR(50) NULL,
 	PostCode VARCHAR(50) NULL,
     CreatedAt DATETIME NOT NULL DEFAULT GETDATE()
-	CONSTRAINT [FK_UserDetails_User] FOREIGN KEY (UserId) REFERENCES [dbo].[User]([Id])
+	CONSTRAINT [FK_UserDetails_User] FOREIGN KEY (UserId) REFERENCES [dbo].[User]([Id]),
+	CONSTRAINT [PK_UserDetails] PRIMARY KEY (UserId)
 )
 
 GO

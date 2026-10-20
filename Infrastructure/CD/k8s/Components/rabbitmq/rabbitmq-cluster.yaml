@@ -1,0 +1,20 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: rabbitmq-cluster
+spec:
+  replicas: 3
+  persistence:
+    storageClassName: standard
+    storage: 10Gi
+  resources:
+    requests:
+      memory: 1Gi
+      cpu: 500m
+    limits:
+      memory: 2Gi
+      cpu: 1
+  rabbitmq:
+    additionalConfig: |
+      default_user = admin
+      default_pass = changeme

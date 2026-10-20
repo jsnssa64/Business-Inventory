@@ -1,0 +1,38 @@
+name: Build DACPAC
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-dacpac:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore ./MySolution.sln
+
+      - name: Build database project
+        run: dotnet build ./database/MyDatabase.sqlproj --configuration Release
+
+      - name: Find output
+        run: |
+          echo "Workspace: $GITHUB_WORKSPACE"
+          find . -name "*.dacpac"
+
+      - name: Upload DACPAC artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: my-database-dacpac
+          path: "**/*.dacpac"
+  deploy-dacpac:
+  

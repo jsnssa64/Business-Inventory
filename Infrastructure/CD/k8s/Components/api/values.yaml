@@ -1,0 +1,57 @@
+replicaCount: 1
+
+application: 
+  # DO NOT CHANGE NAME - this is used in the template files to reference the application name 
+  appName: 
+  fullname: 
+
+image:
+  repository:
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+secrets:
+  # dbCredentialsSecret: db-credentials
+  # rabbitmqCredentialsSecret: rabbitmq-credentials
+  # kurrentdbCredentialsSecret: kurrentdb-credentials
+  # securityKeysSecret: security-keys
+
+env:
+  # ASPNETCORE_ENVIRONMENT: Development
+
+ingress:
+  className: nginx
+  pathType: Prefix
+  host: app.local
+  port: 80
+
+resources: {
+  limits: {
+    cpu: 500m
+    memory: 512Mi
+  },
+  requests: {
+    cpu: 250m
+    memory: 128Mi
+  }
+}
+
+nodeSelector: {
+  // Choose Specific Node to Place Application on
+  // Example Based On Labels: "kubernetes.io/os": "linux"
+}
+
+tolerations: []
+
+affinity: {}
+
+// Additional configuration for TLS settings
+security:
+  tls:
+    enabled: false
+    issuer: selfsigned-{{ .Release.Name }}
