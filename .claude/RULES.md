@@ -1,37 +1,29 @@
 # Architecture rules for this project
 
 ## Architecture style
+Clean Architecture + DDD. Work in progress - the codebase is mid-migration towards this,
+so existing code is not yet conformant.
 
-This is a multi-service monorepo; architecture style varies by subproject.
-
-### Inventory-API
-Clean Architecture + DDD. Layers: Presentation (`InventoryApi/`) → Application (`Services/`) → Domain (`Domain/`) → Shared (`Shared/`). CQRS via MediatR, aggregate roots raise domain events, events persisted to KurrentDB and published via MassTransit/RabbitMQ.
-
-### Inventory-UI
-Component-based React 19 + TypeScript SPA. Server state via React Query, forms via React Hook Form + Zod.
-
-### NotificationService
-SignalR hub + MassTransit consumer. (Architecture style not yet discussed.)
-
-### AuthenticationService
-(Architecture style not yet discussed.)
-
-### Inventory-DB
-SQL Server setup + seeding service. (Architecture style not yet discussed.)
+Target bounded contexts (see `glossary/CONTEXT-MAP.md`): Supplier Registry, Supplier Catalogue,
+Supplier Pricing, Ordering, Stock, Notifications, Identity. Inventory-API is intended to hold Stock +
+Ordering; Supplier Registry, Hosted Catalogue and Supplier Pricing are separate services of ours, and
+suppliers' own catalogues are external. Today's code does not yet follow these boundaries.
 
 ## Confirmed rules
-
 <!-- appended here as they're established, one per entry -->
 <!-- format: - RULE. Confirmed YYYY-MM-DD. -->
 
 ## Open questions
-
-- What architecture style (if any) applies to NotificationService, AuthenticationService, and Inventory-DB?
+<!-- placement questions that came up but weren't resolved into a rule -->
 
 ## Unconfirmed observations (not rules - candidates only)
-
-- Inventory-API `Domain/` is mid-reorganization into `Aggregates/`, `Entities/`, `Events/`, `ValueObjects/` — many files show as modified/deleted in git status, consistent with an in-progress move.
-- Inventory-API `Domain/ValueObjects/User/` holds 8 files (`EmailConfirmationModel`, `UserAddress`, `UserClaims`, `UserDetails`, `UserId`, `UserIdentity`, `UserLogin`, `UserRole`, `UserWithPassword`) — not all of these look like true value objects; some may be entities, auth/claims models, or DTOs that don't belong in Domain.
-- Inventory-API `Services/Service/SecurityService/Models/` (`KeyType`, `Security`, `SecurityLevel`, `Token`) looks like domain modeling stranded in the Application layer instead of Domain.
-- Inventory-UI groups feature components under `components/` (`Inventory`, `Navigation`, `Paging`, `ProfileNavBar`, `login`, `profile`) and keeps generic UI primitives separate under `rootComponents/` (`Icon`, `dataTable`, `dropDown`, `modal`, `tile`).
-- Inventory-UI `models/` is split into `data/` and `ui/` subfolders.
+<!-- precedent noticed in the code, not yet confirmed as intentional -->
+- Inventory-API is split into `Domain` (aggregates, entities, events), `Services` (services + repositories + data models), `InventoryApi` (controllers, DTOs, validation, auth, middleware).
+- `Services` currently mixes application logic (`Service/`) with infrastructure (`Repository/`, `DataModel/`, `EventStoreDbRepository/`) - candidate split into Application and Infrastructure.
+- `Inventory-API/Infrastructure` and `Inventory-API/Shared` folders exist but are empty - likely the intended Infrastructure/shared-kernel homes.
+- `Aggregate.commit()` decides when to flush to the event store (batches at 50 uncommitted events) - persistence timing lives in the domain rather than a repository.
+- Value objects and identities (`ProductIdentity`, `Price`, `ProductInfo`) live under `Domain/Entities/<Aggregate>/`.
+- Domain events are grouped per aggregate under `Domain/Events/<Aggregate>/`, each with a base `<Aggregate>Event`.
+- Domain classes use the stale namespace `InventoryApi.Model.Action` / `InventoryApi.Model.Events` rather than `Domain.*`.
+- `InventoryApi/Factory/ConnectionFactory.cs` and `Extensions/ServiceCollectionExtensions.cs` reference Dapper/KurrentDB/EF directly from the API project.
+- Domain project depends on MediatR.
