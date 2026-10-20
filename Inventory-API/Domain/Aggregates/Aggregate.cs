@@ -1,7 +1,7 @@
-﻿using InventoryApi.Model.Events;
+﻿using Domain.Events;
 using System.Collections.Concurrent;
 
-namespace InventoryApi.Model.Action
+namespace Domain.Aggregates
 {
 
     public abstract class Aggregate

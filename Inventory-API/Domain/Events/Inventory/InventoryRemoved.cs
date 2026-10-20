@@ -1,6 +1,6 @@
 ﻿using Domain.Entities.Inventory;
 
-namespace InventoryApi.Model.Events.Inventory
+namespace Domain.Events.Inventory
 {
     public record InventoryRemoved(int Version, InventoryItemIdentity InventoryItemIdentity, int Quantity) : InventoryEvent(Version, InventoryItemIdentity);
 }

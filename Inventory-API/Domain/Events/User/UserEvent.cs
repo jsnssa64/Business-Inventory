@@ -1,8 +1,8 @@
 ﻿using Domain.Entities.Inventory;
 using Domain.Entities.User;
-using InventoryApi.Model.Events;
+using Domain.Events;
 
-namespace InventoryApi.Service.UserService
+namespace Domain.Events.User
 {
     public record UserEvent(int Version, UserIdentity UserIdentity) : DomainEvent("User", Version);
 }

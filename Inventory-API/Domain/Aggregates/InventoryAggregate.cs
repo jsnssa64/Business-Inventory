@@ -2,9 +2,10 @@
 using Domain.Entities.Order;
 using Domain.Events.Orders.Enum;
 using Domain.Events.Orders;
-using InventoryApi.Model.Events.Inventory;
+using Domain.Events.Inventory;
+using Domain.Events.Inventory;
 
-namespace InventoryApi.Model.Action
+namespace Domain.Aggregates
 {
     public class InventoryAggregate : Aggregate
     {

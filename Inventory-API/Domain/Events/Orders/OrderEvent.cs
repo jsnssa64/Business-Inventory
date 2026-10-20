@@ -1,7 +1,7 @@
 ﻿using Domain.Entities.Order;
 using Domain.Events.Orders.Enum;
 
-namespace InventoryApi.Model.Events.Product
+namespace Domain.Events.Orders
 {
     public record OrderEvent(OrderIdentity OrderIdentity, OrderStatus OrderStatus, int Version) : DomainEvent("Order", Version);
 }

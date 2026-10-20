@@ -1,7 +1,6 @@
 ﻿using Domain.Entities.Inventory;
-using InventoryApi.Model.Events.Product;
 
-namespace InventoryApi.Model.Events.Inventory
+namespace Domain.Events.Inventory
 {
     public record InventoryEvent(int Version, InventoryItemIdentity InventoryItemIdentity) : DomainEvent("Inventory", Version);
 }

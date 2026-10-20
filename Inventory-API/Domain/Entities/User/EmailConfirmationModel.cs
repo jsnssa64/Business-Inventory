@@ -1,12 +1,12 @@
 ﻿using MediatR;
 
-namespace InventoryApi.Service.UserService
+namespace Domain.Entities.User
 {
-    public class EmailConfirmationModel : INotification
+    public class EmailConfirmationModel(string username, string email, string token) : INotification
     {
-        public string Username { get; internal set; }
-        public string Email { get; internal set; }
-        public string Token { get; internal set; }
+        public string Username { get; set; } = username;
+        public string Email { get; set; } = email;
+        public string Token { get; set; } = token;
     }
 }
 

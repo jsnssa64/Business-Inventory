@@ -2,7 +2,7 @@
 using Domain.Events.Orders;
 using Domain.Events.Orders.Enum;
 
-namespace InventoryApi.Model.Action
+namespace Domain.Aggregates
 {
 
     public class OrderAggregate : Aggregate

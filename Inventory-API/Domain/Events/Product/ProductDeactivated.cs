@@ -1,6 +1,5 @@
 ﻿using Domain.Entities.Product;
 using Domain.Events.Product.Enum;
-using InventoryApi.Model.Events.Product;
 
 namespace Domain.Events.Product
 {

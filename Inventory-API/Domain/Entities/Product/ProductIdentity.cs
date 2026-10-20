@@ -1,4 +1,4 @@
 ﻿namespace Domain.Entities.Product
 {
-    public record struct ProductIdentity(Guid publicProductId);
+    public record struct ProductIdentity(Guid PublicProductId);
 }

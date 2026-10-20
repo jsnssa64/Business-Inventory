@@ -1,11 +1,11 @@
 ﻿using Domain.Entities.Product;
 using Domain.Events.Product;
 
-namespace InventoryApi.Model.Action
+namespace Domain.Aggregates
 {
     public class ProductAggregate : Aggregate
     {
-        public Product CurrentProduct { get; set; } = new Product();
+        public ProductEntity CurrentProduct { get; set; } = new ProductEntity();
 
         public void CreateProduct(
             int Version,

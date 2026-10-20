@@ -1,6 +1,6 @@
 ﻿namespace Domain.Entities.Product
 {
-    public class Product
+    public class ProductEntity
     {
         public ProductIdentity PublicProductId { get; set; }
 
