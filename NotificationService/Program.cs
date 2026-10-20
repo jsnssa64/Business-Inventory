@@ -16,7 +16,7 @@ builder.Services.AddMassTransit(transit =>
 
     transit.SetKebabCaseEndpointNameFormatter();
 
-    switch (buOptions.Type)
+    switch (Options.Type)
     {
         case ServiceBusType.InMemory:
             transit.UsingInMemory(
@@ -57,7 +57,7 @@ builder.Services.AddMassTransit(transit =>
             );
             break;
     }
-}
+});
 
 var app = builder.Build(); 
 
