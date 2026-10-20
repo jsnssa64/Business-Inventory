@@ -10,8 +10,7 @@ BEGIN
     SELECT
         p.PublicId AS PublicProductId,
         p.[Name],
-        p.[Description],
-        p.ProductVersion
+        p.[Description]
     FROM dbo.Product p
     JOIN dbo.[User] u 
         ON u.Id = p.UserId

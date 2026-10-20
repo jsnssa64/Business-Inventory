@@ -6,11 +6,11 @@ BEGIN
     CREATE USER defaultAdmin FOR LOGIN defaultAdmin;
     ALTER LOGIN defaultAdmin WITH PASSWORD = 'NewStrongPassword';
 
-    PRINT 'Default User Created';
+    PRINT 'Default Admin Created';
 END
 GO
 
--- Add to role only if not already in it
+-- Add Admin to db_owner role only if not already in it
 IF NOT EXISTS (
     SELECT dp.name
     FROM sys.database_principals dp
@@ -20,6 +20,8 @@ IF NOT EXISTS (
 )
 BEGIN
     ALTER ROLE db_owner ADD MEMBER defaultAdmin;
+
+    PRINT 'Default Admin Added to db_owner Role';
 END
 
 GO

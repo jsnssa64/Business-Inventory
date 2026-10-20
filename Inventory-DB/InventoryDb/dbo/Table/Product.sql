@@ -15,7 +15,7 @@
 
 GO 
 
-CREATE NONCLUSTERED INDEX IX_User_Products ON Product(UserId, [Id], ProductVersion)
+CREATE NONCLUSTERED INDEX IX_User_Products ON Product(UserId, [Id])
 INCLUDE(PublicId, [Name], [Description], Quantity)
 
 GO

@@ -67,6 +67,17 @@
     <Folder Include="dbo\Table" />
     <Folder Include="Security" />
     <Folder Include="Security\Login" />
+    <Folder Include="Security\Schema" />
+    <Folder Include="org" />
+    <Folder Include="org\Table" />
+    <Folder Include="supplierregistry" />
+    <Folder Include="supplierregistry\Table" />
+    <Folder Include="ordering" />
+    <Folder Include="ordering\Table" />
+    <Folder Include="stock" />
+    <Folder Include="stock\Table" />
+    <Folder Include="hostedcatalogue" />
+    <Folder Include="hostedcatalogue\Table" />
     <Folder Include="Scripts\Function" />
     <Folder Include="Scripts\StoredProcedure" />
     <Folder Include="dbo\StoredProcedure\User" />
@@ -80,6 +91,17 @@
     <PreDeploy Include="Scripts\Pre-Deployment\Script.PreDeployment.sql" />
     <Build Include="dbo\Table\Inventory.sql" />
     <Build Include="dbo\Table\Product.sql" />
+    <Build Include="Security\Schema\org.sql" />
+    <Build Include="Security\Schema\supplierregistry.sql" />
+    <Build Include="Security\Schema\ordering.sql" />
+    <Build Include="Security\Schema\stock.sql" />
+    <Build Include="Security\Schema\hostedcatalogue.sql" />
+    <Build Include="org\Table\Business.sql" />
+    <Build Include="org\Table\StaffMember.sql" />
+    <Build Include="supplierregistry\Table\Supplier.sql" />
+    <Build Include="supplierregistry\Table\SupplierAccess.sql" />
+    <Build Include="hostedcatalogue\Table\Supplier.sql" />
+    <Build Include="hostedcatalogue\Table\Product.sql" />
     <None Include="Scripts\Post-Deployment\SeedData.sql" />
   </ItemGroup>
   <ItemGroup>
@@ -96,7 +118,7 @@
     </SqlCmdVariable>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Security\Login\DefaultUser.sql" />
+    <None Include="Security\Login\DefaultAdmin.sql" />
     <None Include="Scripts\Pre-Deployment\_DeployOnce.sql" />
   </ItemGroup>
   <ItemGroup>
