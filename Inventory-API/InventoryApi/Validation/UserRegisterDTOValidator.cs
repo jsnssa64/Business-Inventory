@@ -1,5 +1,4 @@
-﻿using Domain.User;
-using FluentValidation;
+﻿using FluentValidation;
 using InventoryApi.DTOs.User;
 
 namespace InventoryApi.Validation

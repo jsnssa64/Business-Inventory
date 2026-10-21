@@ -3,11 +3,11 @@ using MediatR;
 
 namespace Services.Service.NotificationService
 {
-    public abstract class EventNotificationService<T> : INotificationHandler<T> where T : INotification
+    public abstract class EventNotificationHandler<T> : INotificationHandler<T> where T : INotification
     {
         private readonly IPublishEndpoint _publishEndpoint;
 
-        protected EventNotificationService(IPublishEndpoint publishEndpoint)
+        protected EventNotificationHandler(IPublishEndpoint publishEndpoint)
         {
             _publishEndpoint = publishEndpoint;
         }

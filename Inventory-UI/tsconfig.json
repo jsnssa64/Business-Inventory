@@ -6,9 +6,9 @@
         "sourceMap": true, // Generate source map files
         "outDir": "./dist", // Output directory
         "rootDir": "./src", // Input directory
-        "jsx": "react", // Enable JSX with React
+        "jsx": "react-jsx", // Javascript XML is transformed into _jsx in React version 17 and above rather than React.createElement
         "esModuleInterop": true,
-        "moduleResolution": "node", // Use Node.js module resolution strategy
+        "moduleResolution": "bundler", // Use Node.js module resolution strategy
     },
     "include": ["src", "./jest.setup.ts"], // Include all files in the 'src' directory
     "exclude": ["node_modules"] // Exclude the 'node_modules' directory

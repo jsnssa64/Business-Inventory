@@ -4,6 +4,9 @@ node_modules/
 # Build output
 dist/
 
+# Obsolete
+obsolete/
+
 # Logs
 npm-debug.log*
 yarn-debug.log*

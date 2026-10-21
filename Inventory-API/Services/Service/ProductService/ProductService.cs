@@ -1,14 +1,17 @@
-﻿using System.Data.Entity.Infrastructure;
-using System.Data;
-using Services.Repository.Inventory;
+﻿using System.Data;
+using InventoryApi.Repository.Inventory;
 using Microsoft.IdentityModel.Tokens;
 using MediatR;
+using InventoryApi.Model.Events.Inventory;
 using Services.DataModel.Product;
 using Services.DataModel.User;
 using Microsoft.Extensions.Logging;
 using Services.Repository.Product;
 using Domain.Entities.Product;
+using Microsoft.Extensions.Logging;
+using Domain.Entities.Inventory;
 using Services.DataModel.Inventory;
+using Shared.Constants;
 
 namespace Services.Service.ProductService
 {
@@ -59,7 +62,7 @@ namespace Services.Service.ProductService
 
                 if (productDetailsModel.EnabledPrice && priceModel is not null)
                 {
-                    var productIdentifier = new ProductIdentifierModel()
+                    var productIdentifier = new ProductIdentity()
                     {
                         PublicProductId = productResult.PublicProductId,
                         Username = userIdentifierModel.Username
@@ -73,7 +76,7 @@ namespace Services.Service.ProductService
                     Quantity = productDetailsModel.InventoryQuantity < 0 ? 0 : productDetailsModel.InventoryQuantity
                 };
 
-                var productIdentifierModel = new ProductIdentifierModel()
+                var productIdentifierModel = new ProductIdentity()
                 {
                     PublicProductId = productResult.PublicProductId,
                     Username = userIdentifierModel.Username,
@@ -83,8 +86,21 @@ namespace Services.Service.ProductService
 
                 transaction.Commit();
 
-                //  TO DO: Publish Action to Event
-                //await _mediator.Publish(new InventoryAdded(default, new(new ProductIdentity(productResult.PublicProductId), Guid.NewGuid()), default));
+                await _mediator.Publish(new InventoryAdded()
+                {
+                    InventoryEvent = new InventoryEvent(
+                        1,                        
+                        new InventoryItemIdentity()
+                        {
+                            InventoryId = default,
+                            productIdentity = new ProductIdentity()
+                            {
+                                publicProductId = productResult.PublicProductId,
+
+                            }
+                        }),
+                    Quantity = inventoryItemModel.Quantity
+                });
 
                 return productResult;
             }
@@ -98,24 +114,24 @@ namespace Services.Service.ProductService
             }
         }
 
-        public async Task<ProductEntity> GetAsync(ProductIdentifierModel productIdentifierModel, CancellationToken cancellationToken)
+        public async Task<Product> GetProductByIdAsync(ProductIdentity productIdentifierModel, CancellationToken cancellationToken)
         {
             var result = await _productRepository.GetProductById(productIdentifierModel, cancellationToken);
 
             return result;
         }
 
-        public async Task<IEnumerable<ProductEntity>> GetByUserAsync(UserIdentifierModel userIdentifierModel, CancellationToken cancellationToken)
+        public async Task<IEnumerable<Product>> GetProducts(UserIdentifierModel userIdentifierModel, CancellationToken cancellationToken)
         {
             return await _productRepository.GetProducts(userIdentifierModel, cancellationToken);
         }
 
-        public async Task UpdateAsync(ProductIdentifierModel productIdentifierModel, UpdateProductDetailsModel updateProductDetailsModel, CancellationToken cancellationToken)
+        public async Task UpdateProduct(ProductIdentity productIdentifierModel, UpdateProductDetailsModel updateProductDetailsModel, CancellationToken cancellationToken)
         {
             await _productRepository.UpdateProduct(productIdentifierModel, updateProductDetailsModel, cancellationToken);
         }
 
-        public async Task DeleteAsync(ProductIdentifierModel productIdentifierModel, CancellationToken cancellationToken)
+        public async Task RemoveProduct(ProductIdentity productIdentifierModel, CancellationToken cancellationToken)
         {
             await _productRepository.RemoveProductById(productIdentifierModel, cancellationToken);
         }

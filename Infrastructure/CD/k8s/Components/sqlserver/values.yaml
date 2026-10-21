@@ -1,0 +1,33 @@
+
+application: 
+  appVersion: 0.1.0
+  platform: product-platform
+  # DO NOT CHANGE NAME - this is used in the template files to reference the application name 
+  name: generic-sqlserver
+
+replicaCount: 3
+
+# SQL Server Image Configuration
+image:
+  repository: mcr.microsoft.com/mssql/server
+  tag: 2019-latest
+  pullPolicy: IfNotPresent
+
+ACCEPT_EULA:
+  value: "Y"
+MSSQL_PID:
+  value: "Developer"
+MSSQL_AGENT_ENABLED:
+  value: "false"
+
+containers:
+  ports:
+    containerPort: 1433
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 1000
+
+service:
+  port: 1433

@@ -1,0 +1,16 @@
+# A headless service for the Inventory DB, allowing direct access to each pod without load balancing or proxying in the StatefulSet.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "application.servicename" . }}
+  labels:
+    {{- include "application.allLabels" . | nindent 4 }}
+type: ClusterIP
+spec:
+  clusterIP: None
+  ports:
+    - protocol: TCP
+      port: {{ include "application.service.port" . | nindent 4 }}
+      targetPort: sqlport
+  selector:
+    {{- include "application.selectorOnlyLabels" . | nindent 4 }}

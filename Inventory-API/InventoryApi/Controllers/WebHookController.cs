@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Services.DataModel.Webhook;
 using Services.Repository.Webhook;
 using Services.Service.SecurityService;
-using static Domain.User.Roles;
+using Domain.ValueObjects.User;
 
 namespace InventoryApi.Controllers
 {

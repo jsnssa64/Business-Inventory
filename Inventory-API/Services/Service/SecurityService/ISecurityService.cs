@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
-using Services.Service.SecurityService.Models;
+using Microsoft.AspNetCore.Http;
 using Services.DataModel.User;
+using Services.Service.SecurityService.Models;
 
 namespace Services.Service.SecurityService
 {

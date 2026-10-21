@@ -6,10 +6,10 @@ namespace Services.Service.ProductService
 {
     public interface IProductService
     {
-        Task<ProductIdModel> AddAsync(UserIdentifierModel userIdentifierModel, ProductDetailsModel productDetailsModel, PriceModel? priceModel, CancellationToken cancellationToken);
-        Task<ProductEntity> GetAsync(ProductIdentifierModel productIdentifierModel, CancellationToken cancellationToken);
-        Task<IEnumerable<ProductEntity>> GetByUserAsync(UserIdentifierModel userIdentifierModel, CancellationToken cancellationToken);
-        Task DeleteAsync(ProductIdentifierModel productIdentifierModel, CancellationToken cancellationToken);
-        Task UpdateAsync(ProductIdentifierModel productIdentifierModel, UpdateProductDetailsModel updateProductDetailsModel, CancellationToken cancellationToken);
+        Task<ProductIdModel> AddProductAsync(UserIdentifierModel userIdentifierModel, ProductDetailsModel productDetailsModel, PriceModel? priceModel);
+        Task<Product> GetProductByIdAsync(ProductIdentity productIdentifierModel, CancellationToken cancellationToken);
+        Task<IEnumerable<Product>> GetProducts(UserIdentifierModel userIdentifierModel, CancellationToken cancellationToken);
+        Task RemoveProduct(ProductIdentity productIdentifierModel, CancellationToken cancellationToken);
+        Task UpdateProduct(ProductIdentity productIdentifierModel, UpdateProductDetailsModel updateProductDetailsModel, CancellationToken cancellationToken);
     }
 }

@@ -8,7 +8,7 @@ using Services.DataModel.User;
 using static Domain.User.Roles;
 using Services.Service.ProductService;
 
-namespace InventoryApi.Controllers
+namespace InventoryApi.Controllers.HostedSupplier
 {
     [ApiController]
     [Route(V)]

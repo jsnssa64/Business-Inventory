@@ -1,0 +1,12 @@
+services: {}
+networks:
+  backend-network:
+    name: backend-shared-network
+    driver: bridge
+  api-network:
+    name: api-shared-network
+    driver: bridge
+  data-network:
+    name: data-shared-network
+    driver: bridge
+volumes: {}

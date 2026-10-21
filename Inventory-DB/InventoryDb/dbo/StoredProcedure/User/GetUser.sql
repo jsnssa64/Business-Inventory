@@ -14,7 +14,7 @@ BEGIN
            p.PasswordHash
     FROM dbo.[User] u
     JOIN dbo.UsersRole ur
-        ON u.Id =  ur.UserId
+        ON u.Id = ur.UserId
     JOIN dbo.[Password] p
         ON u.Id = p.UserId
     WHERE u.Id = @UserId

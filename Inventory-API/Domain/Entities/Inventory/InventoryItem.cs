@@ -1,4 +1,4 @@
-﻿using Domain.Entities.Product;
+﻿using Domain.ValueObjects.Inventory;
 
 namespace Domain.Entities.Inventory
 {

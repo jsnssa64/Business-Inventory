@@ -1,7 +1,7 @@
 ﻿using Confluent.Kafka;
 using System.Threading;
 
-namespace NotificationService.Consumer.ConsumerService
+namespace NotificationService.Consumer.BackgroundService
 {
     public class ConsumerService : BackgroundService
     {

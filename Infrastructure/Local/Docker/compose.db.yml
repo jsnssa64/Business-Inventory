@@ -1,0 +1,32 @@
+services:
+  db:
+    build:
+      context: ${DB_PROJECT_PATH}
+      dockerfile: Dockerfile
+      args:
+        - BIN_MODE=${ENV_MODE}
+    container_name: db-${CONTAINER_NAME}
+    ports:
+      - "${DB_HOST_PORT}:1433"
+    volumes:
+      - type: volume
+        source: db_data
+        target: /var/opt/mssql
+    # secrets:
+    #   - db_password
+    #   - sa_password
+    environment:
+      - ACCEPT_EULA=${MSSQL_ACCEPT_EULA}
+      - MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD}
+      - MSSQL_PID=${MSSQL_PID}
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - DEFAULT_ADMIN_PASSWORD=${DEFAULT_ADMIN_PASSWORD}
+    networks:
+      - data-network
+
+volumes:
+  db_data:
+
+networks:
+  data-network:
+    external: true

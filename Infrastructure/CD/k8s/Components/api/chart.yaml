@@ -1,0 +1,7 @@
+apiVersion: v2
+name: api-component
+description: Helm chart for the API component
+type: application
+component: api
+version: 0.1.0
+appVersion: "1.0.0"

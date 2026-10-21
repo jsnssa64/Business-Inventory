@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static Domain.User.Roles;
 using System.Security.Claims;
+using Domain.ValueObjects.User;
 
-namespace InventoryApi.Authentication
+namespace InventoryApi.Authorization
 {
     public class MinimumRoleAttribute(RoleLevel minimumRole) : Attribute, IAsyncActionFilter
     {

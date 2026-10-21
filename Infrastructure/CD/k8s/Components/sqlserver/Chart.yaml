@@ -1,0 +1,6 @@
+apiVersion: v2
+name: sqlserver
+description: Helm chart for the MSSQL Database
+type: application
+component: db
+version: 0.1.0

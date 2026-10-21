@@ -1,7 +1,7 @@
 ﻿using MassTransit;
 using NotificationService.Consumer.Notification.Message;
 
-namespace NotificationService.Consumer.Notifications
+namespace NotificationService.Consumer.Notification
 {
     public class SMSNotificationConsumer : IConsumer<NotificationMessage>
     {

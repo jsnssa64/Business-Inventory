@@ -1,5 +1,6 @@
-﻿using Services.Repository.RoleRepo;
-using Services.DataModel.Role;
+﻿using Services.DataModel.Role;
+using Services.Repository.RoleRepo;
+using Domain.ValueObjects.User;
 
 namespace Services.Service.RoleService
 {

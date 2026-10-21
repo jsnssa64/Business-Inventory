@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: compute-quota
+  namespace: developer-environment
+spec:
+  hard:
+    - requests:
+        cpu: "10"
+        memory: "20Gi"
+    - limits:
+        cpu: "20"
+        memory: "40Gi"
+    - pods: "100"
+    - services: "10"
+    - persistentvolumeclaims: "5"

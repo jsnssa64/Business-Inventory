@@ -1,0 +1,7 @@
+application: 
+  appVersion: 0.1.0
+  platform: product-platform
+  # DO NOT CHANGE NAME - this is used in the template files to reference the application name 
+  name: inventorydb
+
+env: staging

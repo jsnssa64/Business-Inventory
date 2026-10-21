@@ -1,5 +1,5 @@
 ﻿using Domain.Entities.Inventory;
-using Services.Repository.Inventory;
+using InventoryApi.Repository.Inventory;
 using Microsoft.Extensions.Logging;
 using Services.DataModel.Inventory;
 using Services.DataModel.Product;
@@ -18,7 +18,7 @@ namespace Services.Service.InventoryService
             _inventoryRepository = inventoryRepository;
         }
 
-        public async Task UpdateItemToInventoryByProductId(ProductIdentifierModel productIdentifierModel, InventoryItemModel inventoryItemModel, CancellationToken cancellationToken)
+        public async Task UpdateItemToInventoryByProductId(ProductIdentity productIdentifierModel, InventoryItemModel inventoryItemModel, CancellationToken cancellationToken)
         {
             if (inventoryItemModel == null)
             {
@@ -28,7 +28,7 @@ namespace Services.Service.InventoryService
             await _inventoryRepository.UpdateItemInInventory(productIdentifierModel, inventoryItemModel, cancellationToken);
         }
 
-        public async Task<InventoryItem> GetInventoryItemByProductId(ProductIdentifierModel productIdentifierModel, CancellationToken cancellationToken)
+        public async Task<InventoryItem> GetInventoryItemByProductId(ProductIdentity productIdentifierModel, CancellationToken cancellationToken)
         {
             return await _inventoryRepository.GetInventoryItemByProductId(productIdentifierModel, cancellationToken);
         }

@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import SideMenuList from "../../Navigation/Menu/SideMenuList";
 import { Link } from "react-router-dom";
 
-type LeftMenu = {
+type LeftMenuType = {
     title: string,
     isMenuVisible: boolean
 }
 
 
-export default function LeftMenu({ title, isMenuVisible }: LeftMenu) {
+export default function LeftMenu({ title, isMenuVisible }: LeftMenuType) {
     
     return ( 
         <> 

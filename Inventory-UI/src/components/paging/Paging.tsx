@@ -64,25 +64,39 @@ export default function Paging({ totalItemCount, totalPageCount, pagingRangeCoun
       }
     }
 
+    const setActivePage = (isActive: boolean): any => {
+    {
+      return {
+        className: `btn join-item btn-outline ${isActive ? 'btn-active' : ''}`        }
+      } 
+    }
+
+
+    const setActiveIndex = (index: number): any => {
+      return {
+        onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
+          setCurrentPage(index);
+        }
+      }    
+    }
+
     return (
-    <div className="flex items-center"> 
-      <div className="join-left">
-        showing {minItemsCount}-{maxItemCount} of {totalItemCount} items
-      </div>
-      <div className="join-right">
-          <button {...pageAction(false)}>Previous</button>
-          <button {...pageAction(false, true)}>P</button>
-          <button key="leftdots" aria-label="Previous pages" {...setActivePage(startingIndexOutOfBounds ? 0 : rangeStartIndex - 1, startingIndexOutOfBounds)}>...</button>
-          {Array.from(
-            { length: clampedPagingRangeCount }, 
-            (_, pagingIndex) => {
-              const pageIndexInRange = rangeStartIndex + pagingIndex;
-              const pageNumber = pageIndexInRange + 1;
-              return  (<button key={pagingIndex} aria-label={`Page ${pageNumber}`} {...setActivePage(pageIndexInRange, pageIndexInRange == currentPageIndex)} >{pageNumber}</button>)
-          })}
-          <button key="rightdots" aria-label="More pages" {...setActivePage(endingIndexOutOfBounds ? clampedTotalPageCount - 1 : rangeEndIndex, endingIndexOutOfBounds)}>...</button>
-          <button {...pageAction(true)}>Next</button>
-          <button {...pageAction(true, true)}>N</button>
-      </div>
-    </div>)
+      <div className="flex items-center"> 
+        <div className="join-left">
+          showing 1-200 of {totalPages * 200} items
+        </div>
+        <div className="join-right">
+            <button {...previousPage()}>Previous</button>
+            <button {...previousPage(true)}>P</button>
+            {startingIndex > 0 && <button key="leftdots" {...setActivePage(false)} {...setActiveIndex(startingIndex - 1)}>...</button>}
+            {Array.from({length: maxAvailablePages }, (_, index) => {
+                var pageIndexItem = startingIndex + index;
+
+                return  (<button key={index} {...setActivePage(pageIndexItem == currentPage)} {...setActiveIndex(pageIndexItem)} >{pageIndexItem + 1}</button>)
+            })}
+            {endingIndex < totalPages && <button key="rightdots" {...setActivePage(false)} {...setActiveIndex(endingIndex)}>...</button>}
+            <button {...nextPage()}>Next</button>
+            <button {...nextPage(true)}>N</button>
+        </div>
+      </div>)
 }

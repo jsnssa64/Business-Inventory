@@ -1,5 +1,6 @@
 ﻿using Domain.Entities.Product;
 using Domain.Events.Product.Enum;
+using Domain.ValueObjects.Product;
 
 namespace Domain.Events.Product
 {

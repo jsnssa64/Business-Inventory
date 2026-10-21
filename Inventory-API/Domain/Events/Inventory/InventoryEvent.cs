@@ -1,4 +1,5 @@
 ﻿using Domain.Entities.Inventory;
+using Domain.ValueObjects.Inventory;
 
 namespace Domain.Events.Inventory
 {

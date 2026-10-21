@@ -1,6 +1,4 @@
-﻿using Domain.Entities.Inventory;
-using Domain.Entities.User;
-using Domain.Events;
+﻿using Domain.ValueObjects.User;
 
 namespace Domain.Events.User
 {

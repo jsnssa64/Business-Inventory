@@ -1,8 +1,14 @@
-﻿using Domain.Entities.User;
+﻿using Domain.ValueObjects.User;
+using MediatR;
 
 namespace Domain.Events.User
 {
-    public record UserCreated(int Version, UserIdentity UserIdentity) : UserEvent(Version, UserIdentity);
+    public class UserCreatedNotification: INotification
+    {
+        public int Version { get; set; } = 0;
+        public required UserIdentity userIdentity { get; set; }
+    }
+
 }
 
 

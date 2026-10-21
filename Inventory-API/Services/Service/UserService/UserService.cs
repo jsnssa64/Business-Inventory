@@ -1,37 +1,56 @@
-﻿using System.Data.Entity.Infrastructure;
-using System.Data;
+﻿using System.Data;
 using System.Security.Claims;
-using Services.Service.SecurityService;
-using Services.Service.SecurityService.Models;
-using Services.Service.UserService.Utility;
+using ZiggyCreatures.Caching.Fusion;
 using MassTransit;
 using MediatR;
 using Services.DataModel.Role;
 using Services.DataModel.User;
 using Domain.Entities.User;
-using Services.Repository.UserRepo;
 using Microsoft.AspNetCore.Http;
-using Domain.Events.User;
+using Shared.Utilities.User;
+using Services.Repository.UserRepo;
+using Shared.Constants;
+using Domain.ValueObjects.User;
+using Domain.Service.UserService;
+using Services.Service.SecurityService;
+using Services.Service.SecurityService.Models;
+using Services.Service.UserService.Notification;
+using Microsoft.Extensions.Logging;
 
 namespace Services.Service.UserService
 {
-    public class UserService(IUserRepository userRepository,
+    public class UserService : IUserService
+    {
+        private IMediator _mediator;
+        private IPublishEndpoint _publishEndpoint;
+        private IFusionCache _fusionCache;
+        private IUserRepository _userRepository;
+        private ISecurityService _securityService;
+        private IUserUtility _userUtility;
+        private IJWTUtility _jwtUtility;
+        private IDbConnectionFactory _dbConnectionFactory;
+        private ILogger<UserService> _logger;
+
+        public UserService(IUserRepository userRepository,
             IPublishEndpoint publishEndpoint,
             IMediator mediator,
             ISecurityService securityService,
             IUserUtility userUtility,
             IJWTUtility jwtUtility,
             IDbConnectionFactory dbConnectionFactory,
-            IFusionCache fusionCache) : IUserService
-    {
-        private readonly IMediator _mediator = mediator;
-        private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
-        private readonly IFusionCache _fusionCache = fusionCache;
-        private readonly IUserRepository _userRepository = userRepository;
-        private readonly ISecurityService _securityService = securityService;
-        private readonly IUserUtility _userUtility = userUtility;
-        private readonly IJWTUtility _jwtUtility = jwtUtility;
-        private readonly IDbConnectionFactory _dbConnectionFactory = dbConnectionFactory;
+            IFusionCache fusionCache,
+            ILogger<UserService> logger) 
+        {
+            _mediator = mediator;
+            _publishEndpoint = publishEndpoint;
+            _fusionCache = fusionCache;
+            _userRepository = userRepository;
+            _logger = logger;
+            _securityService = securityService;
+            _userUtility = userUtility;
+            _jwtUtility = jwtUtility;
+            _dbConnectionFactory = dbConnectionFactory; 
+        }
 
         public async Task RegisterUser(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, UserRegistrationModel userRegistrationModel)
         {
@@ -75,23 +94,35 @@ namespace Services.Service.UserService
                     RoleName = userRegistrationModel.RoleName.ToString()
                 };
 
-                await _userRepository.AssignRoleToUser(userIdentifierModel, roleNameModel, conn, transaction);
+                await _userRepository.AssignRoleToUser(conn, userIdentifierModel, roleNameModel, transaction);
 
-                //  Temp - Auto Activate User, will not be permenantly, will be replaced with email confirmation
-                await _userRepository.ActivateUser(userIdentifierModel, conn, transaction);
+                //  TODO: This line will auto activate the User - TEMPORARY until email confirmation is implemented
+                await _userRepository.ActivateUser(conn, userIdentifierModel, transaction);
 
                 transaction.Commit();
 
-                await _mediator.Publish(new UserCreated(default, new UserIdentity(userIdModel.UserId, userIdentifierModel.Username)));
+                try
+                {
+                    await _mediator.Publish(
+                        new UserCreatedNotification()
+                        {
+                            Version = 1,
+                            userIdentity = new UserIdentity(userRegistrationModel.UserId.ToString(), "", userRegistrationModel.Email),
+                        }
+                    );
+                }
+                catch (Exception ex)
+                {
+                    //  Log failed notification, but do not fail the user registration
+                    _logger.LogError($"Failed to publish {nameof(UserCreatedNotification)}: {ex.Message}");
+                }
 
-                var userLoginModel = new UserLoginModel()
+                //  Auto login user after registration
+                await LoginUser(httpResponse, new UserLoginModel()
                 {
                     Username = userIdentifierModel.Username,
                     Password = userRegistrationModel.Password
-                };
-
-                await LoginUser(httpResponse, userLoginModel);
-
+                });
                 return userIdModel;
             }
             catch
@@ -119,7 +150,7 @@ namespace Services.Service.UserService
         public async Task UserConfirmation(string token)
         {
             if (!_jwtUtility.IsTokenValid(token, KeyType.confirmation))
-                throw new Exception("Confirmation no longer valid");
+                throw new Exception("Confirmation Token no longer valid");
 
             var tokenClaims = await _jwtUtility.GetTokenClaims(token, KeyType.confirmation);
 
@@ -165,7 +196,7 @@ namespace Services.Service.UserService
 
             await GenerateLogin(httpResponse, userIdentifierModel, (usersRole) =>
             {
-                if (!_securityService.VerifyPassword(userLoginModel.Password, usersRole.PasswordHash ?? throw new Exception("Unable to verify password")))
+                if (!_securityService.VerifyPassword(userLoginModel.Password, usersRole.PasswordHash))
                 {
                     throw new Exception("Invalid password");
                 }
@@ -179,7 +210,7 @@ namespace Services.Service.UserService
             if (validate is not null)
                 validate(user);
 
-            var claims = _userUtility.MapUserToClaims(user);
+            var claims = _userUtility.MapUserToClaims(user.User);
 
             var cookieExpiry = DateTimeOffset.UtcNow.AddDays(1);
 
@@ -202,9 +233,6 @@ namespace Services.Service.UserService
 
             if (userDetails is null)
                 throw new Exception("Not valid userdetails");
-
-            if (Roles.IsValidRoleLevel(userDetails.Role?.Rolename))
-                throw new Exception("Not Valid Role");
 
             return userDetails;
         }
@@ -236,15 +264,19 @@ namespace Services.Service.UserService
                     Username = user.Username
                 };
 
-                var token = await _securityService.GenerateUserJWT(userIdentifierModel, KeyType.resetPassword); 
-                
-            try { 
-                await _mediator.Publish(new EmailConfirmationModel(user.Username, user.Email, token));
+                var token = await _securityService.GenerateUserJWT(userIdentifierModel, KeyType.resetPassword);
+
+                //  Send to rabbitmq
+                await _mediator.Publish(new PasswordResetRequestedNotification()
+                {
+                    Username = user.Username,
+                    Email = user.Email,
+                    Token = token
+                });
             }
             catch
             {
-                //  Handle Gracefully/Retry etc...
-                throw;
+                throw new Exception("Failed to send email", ex);
             } 
         }
 
@@ -252,7 +284,21 @@ namespace Services.Service.UserService
         {
             if (!await _userRepository.IsValidUserByUsername(userIdentifierModel))
             {
-                throw new Exception("Invalid Username");
+                if (!await _userRepository.IsValidUserByUsername(userIdentifierModel))
+                {
+                    throw new Exception("Invalid Username");
+                }
+
+                var user = await _userRepository.GetUser(userIdentifierModel);
+                
+                var token = await _securityService.GenerateUserJWT(userIdentifierModel, KeyType.resetPassword);
+
+                await _mediator.Publish(new PasswordResetRequestedNotification()
+                {
+                    Username = user.Username,
+                    Email = user.Email,
+                    Token = token
+                });
             }
 
             var user = await _userRepository.GetUser(userIdentifierModel);
@@ -265,8 +311,7 @@ namespace Services.Service.UserService
             }
             catch
             {
-                //  Resolve gracefully
-                throw;
+                throw new Exception("Failed to send email", ex);
             }
         }
 
