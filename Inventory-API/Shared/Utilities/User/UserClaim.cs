@@ -2,7 +2,8 @@
 {
     public enum UserClaim
     {
-        Username,
+        Username, 
+        UserId,
         Role,
         Email
     }

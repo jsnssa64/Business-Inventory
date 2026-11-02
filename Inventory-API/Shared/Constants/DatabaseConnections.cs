@@ -1,6 +1,6 @@
 ﻿namespace Shared.Constants
 {
-    public static class DatabaseConnections
+    public static class DbConnectionSettings
     {
         public const string InventoryDb = "InventoryDb";
         public const string KurrentDb = "KurrentDb";
