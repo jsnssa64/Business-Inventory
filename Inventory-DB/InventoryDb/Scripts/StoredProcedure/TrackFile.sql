@@ -12,7 +12,8 @@ BEGIN TRY
 	BEGIN
 		UPDATE dbo._deployOnce
 		SET Id = @newVersion
-		WHERE Id < @newVersion;
+		WHERE Id < @newVersion 
+		AND [FileName] LIKE '%' + @fileName + '%';
 
 		IF (@@ROWCOUNT = 0)
 		BEGIN
