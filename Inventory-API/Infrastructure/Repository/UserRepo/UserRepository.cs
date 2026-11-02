@@ -1,7 +1,9 @@
 ﻿using System.Data;
+using System.Data.Entity.Infrastructure;
 using Dapper;
 using Domain.Entities.User;
 using Domain.ValueObjects.User;
+using Domain.ValueObjects.User.Role;
 using Infrastructure.DataModel.Role;
 using Infrastructure.DataModel.User;
 using Services.Interface;

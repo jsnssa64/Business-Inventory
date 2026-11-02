@@ -1,9 +1,9 @@
 ﻿using Dapper;
 using Domain.Entities.Product;
+using Domain.ValueObjects.Product;
 using Infrastructure.DataModel.Product;
 using Microsoft.IdentityModel.Tokens;
-using Services.DataModel.Product;
-using Services.DataModel.User;
+using Shared.Constants;
 using System.Data;
 using System.Data.Entity.Infrastructure;
 
@@ -98,7 +98,7 @@ namespace Infrastructure.Repository.Product
         {
             using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
 
-            DynamicParameters parameters = new DynamicParameters();
+            DynamicParameters parameters = new();
             parameters.Add(nameof(ProductIdentity.Username), productIdentifierModel.Username);
             parameters.Add(nameof(ProductIdentity.PublicProductId), productIdentifierModel.PublicProductId);
 
