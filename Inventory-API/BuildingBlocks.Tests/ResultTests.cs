@@ -47,7 +47,7 @@ public class ResultTests
     [Test] 
     public void FailedResult_NullThrowsException()
     {
-        Assert.Throws<ArgumentNullException>(() => new BBE.Result<ImmutableRecord>((BBE.ResultError)null));
+        Assert.Throws<ArgumentNullException>(() => new BBE.Result<ImmutableRecord>((BBE.ResultError)null!));
     }
 
     private class MutableClass
