@@ -17,5 +17,16 @@ namespace InventoryApi.Controllers.Base
 
             return userName;
         }
+
+
+        protected string GetUserIdFromClaim()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                throw new ArgumentNullException(userId, "User ID is missing");
+
+            return userId;
+        }
     }
 }

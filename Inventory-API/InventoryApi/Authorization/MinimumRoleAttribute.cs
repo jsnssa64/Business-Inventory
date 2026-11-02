@@ -2,22 +2,23 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using Domain.ValueObjects.User;
+using Domain.ValueObjects.User.Role;
+using Domain.ValueObjects.User.Role.Extensions;
 
 namespace InventoryApi.Authorization
 {
-    public class MinimumRoleAttribute(RoleLevel minimumRole) : Attribute, IAsyncActionFilter
+    public class MinimumRoleAttribute(UserRoleLevel minimumRole) : Attribute, IAsyncActionFilter
     {
-        private readonly RoleLevel _minimumRole = minimumRole;
+        private readonly UserRoleLevel _minimumRole = minimumRole;
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             var endpoint = context.HttpContext.GetEndpoint();
-            var allowAnonymous = endpoint?.Metadata.GetMetadata<IAllowAnonymous>() != null;
+            var isAnonymouseEndpoint = endpoint?.Metadata.GetMetadata<IAllowAnonymous>() != null;
 
-            if (allowAnonymous)
+            if (isAnonymouseEndpoint)
             {
-                await next(); // Skip auth check
+                await next();
                 return;
             }
 
@@ -30,8 +31,9 @@ namespace InventoryApi.Authorization
             }
 
             var roleClaim = user.FindFirst(ClaimTypes.Role);
-
-            if (roleClaim == null || !Enum.TryParse<RoleLevel>(roleClaim.Value, out var level) || (int)level < (int)_minimumRole)
+            
+            if (!UserRolesExtensions.IsValidRole(roleClaim?.Value, out var level) || 
+                !UserRolesExtensions.IsHigherThenMinimumRole(level, _minimumRole))
             {
                 context.Result = new ForbidResult();
                 return;

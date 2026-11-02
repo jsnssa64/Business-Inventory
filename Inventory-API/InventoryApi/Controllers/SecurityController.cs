@@ -1,7 +1,7 @@
 ﻿using InventoryApi.Controllers.Base;
 using InventoryApi.DTOs.User;
 using Microsoft.AspNetCore.Mvc;
-using Services.Service.SecurityService;
+using Services.Service.Security;
 
 namespace InventoryApi.Controllers
 {
@@ -13,9 +13,9 @@ namespace InventoryApi.Controllers
 
         [HttpPost("CreatePassword")]
         //  DevOnly - TODO
-        public IActionResult CreatePassword(UserNewPassword userNewPassword, CancellationToken cancellationToken)
+        public async Task<IActionResult> CreatePassword(UserNewPassword userNewPassword, CancellationToken cancellationToken)
         {
-            var passwordHash = _securityService.HashPassword(userNewPassword.NewPassword);
+            var passwordHash = await _securityService.HashPassword(userNewPassword.NewPassword);
             return Ok(passwordHash);
         }
     }
