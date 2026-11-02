@@ -1,4 +1,4 @@
 ﻿namespace Domain.ValueObjects.Product
 {
-    public record struct ProductIdentity(string PublicProductId, string Username, string Description);
+    public record struct ProductIdentity(ProductId PublicProductId, string Username, string Description);
 }

@@ -11,18 +11,17 @@ namespace Domain.Aggregates
             Uncommited = new ConcurrentDictionary<Version, DomainEvent>();
         }
 
-        public record Version(int version);
+        public record Version(int Value);
 
         public const int _maximumUncommited = 50;
 
-        private readonly object lockObject = new();
+        private readonly Lock lockObject = new();
 
         public ConcurrentDictionary<Version, DomainEvent> Uncommited;
 
         public void AddEvent(DomainEvent domainEvent)
         {
-            if (domainEvent == null)
-                throw new ArgumentNullException(nameof(domainEvent));
+            ArgumentNullException.ThrowIfNull(domainEvent);
 
             if (Uncommited.Count >= _maximumUncommited)
                 throw new InvalidOperationException($"Cannot add more than {_maximumUncommited} uncommitted events.");
@@ -35,7 +34,7 @@ namespace Domain.Aggregates
 
         }
 
-        public void commit()
+        public void Commit()
         {
             List<KeyValuePair<Version, DomainEvent>> orderedUncommitedVersion;
 

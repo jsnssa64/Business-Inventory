@@ -1,4 +1,4 @@
 ﻿namespace Domain.ValueObjects.User
 {
-    public record UserId(int Id);
+    public record UserId(string Id);
 }

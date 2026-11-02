@@ -6,6 +6,11 @@
         public string? SecondLineAddress { get; set; }
         public string? Country { get; set; }
         public string? PostCode { get; set; }
+        public object AddressLine1 { get; set; }
+        public object AddressLine2 { get; set; }
+        public object City { get; set; }
+        public object State { get; set; }
+        public object PostalCode { get; set; }
 
         public void Map(dynamic usrdets)
         {

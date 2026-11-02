@@ -1,16 +1,17 @@
-﻿namespace Domain.ValueObjects.User
+﻿using Domain.ValueObjects.User.Role;
+using Domain.ValueObjects.User.Role.Extensions;
+
+namespace Domain.ValueObjects.User
 {
     public class UserDetails
     {
-        public string? Username { get; set; }
-        public string? Email { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public UserAddress? UserAddress { get; set; }
         public string? Gender { get; set; }
         public DateOnly? DOB { get; set; }
         public string? ContactNumber { get; set; }
-        public UserRole? Role { get; set; }
+        public UserRoleLevel Role { get; set; }
 
         public void Map(dynamic usrdets)
         {
@@ -18,12 +19,10 @@
             {
                 ArgumentNullException.ThrowIfNull(usrdets);
 
-                Username = usrdets?.Username;
-                Email = usrdets?.Email;
                 FirstName = usrdets?.FirstName;
                 LastName = usrdets?.LastName;
 
-                Role = new UserRole(Enum.Parse<RoleLevel>((string)usrdets.RoleName, true));
+                Role = UserRolesExtensions.GetUserRole((string)usrdets.RoleName);
 
                 UserAddress = new UserAddress();
                 UserAddress.Map(usrdets);

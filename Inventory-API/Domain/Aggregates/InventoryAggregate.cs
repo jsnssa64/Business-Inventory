@@ -1,5 +1,6 @@
 ﻿using Domain.Entities.Inventory;
 using Domain.Events.Inventory;
+using Domain.Events.Inventory.Core;
 using Domain.ValueObjects.Inventory;
 
 namespace Domain.Aggregates
@@ -26,7 +27,7 @@ namespace Domain.Aggregates
 
             Apply(inventoryItemAdded);
 
-            commit();
+            Commit();
         }
 
         public void RemoveInventoryItem(int eventVersion, InventoryItemIdentity inventoryItemIdentity, int Quantity)
@@ -46,13 +47,12 @@ namespace Domain.Aggregates
                 Version = eventVersion,
                 InventoryEvent = new InventoryEvent(eventVersion, inventoryItemIdentity)
             };
-            //(eventVersion, inventoryItemIdentity, Quantity);
 
             AddEvent(inventoryItemRemoved.InventoryEvent);
 
             Apply(inventoryItemRemoved);
 
-            commit();
+            Commit();
         }
 
 

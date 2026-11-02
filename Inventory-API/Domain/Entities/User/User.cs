@@ -2,5 +2,5 @@
 
 namespace Domain.Entities.User
 {
-    public record User(string Username, string Email, UserRole Role);
+    public record User(UserIdentity UserIdentity);
 }

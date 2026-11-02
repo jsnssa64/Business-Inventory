@@ -4,7 +4,16 @@ namespace Domain.Entities.Inventory
 {
     public class InventoryItem
     {
-        public InventoryItemIdentity InventoryItemIdentity { get; set; } = new InventoryItemIdentity();
+        public InventoryItemIdentity Id { get; set; } = new InventoryItemIdentity();
         public int Quantity { get; set; } = 0;
+
+        public void UpdateQuantity(int newQuantity)
+        {
+            if (newQuantity < 0)
+            {
+                throw new ArgumentException("Quantity cannot be negative.");
+            }
+            Quantity = newQuantity;
+        }
     }
 }

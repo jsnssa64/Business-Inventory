@@ -1,5 +1,4 @@
-﻿using Domain.Aggregates;
-using Domain.Entities.Order;
+﻿using Domain.Entities.Order;
 using Domain.Events.Orders;
 using Domain.Events.Orders.Enum;
 using Domain.ValueObjects.Order;
@@ -8,7 +7,7 @@ namespace Domain.Aggregates
 {
     public class OrderAggregate : Aggregate
     {
-        public Order currentOrder { get; set; }
+        public Order CurrentOrder { get; set; }
 
         public void CreateOrder(int eventVersion, OrderIdentity orderIdentity)
         {
@@ -18,7 +17,7 @@ namespace Domain.Aggregates
 
             Apply(orderEvent);
 
-            commit();
+            Commit();
         }
 
         public void OrderStatusChanged(OrderIdentity orderIdentity, OrderStatus orderStatus, int eventVersion)
@@ -29,22 +28,22 @@ namespace Domain.Aggregates
 
             Apply(orderStatus);
 
-            commit();
+            Commit();
 
         }
 
         public void Apply(OrderCreated orderCreated)
         {
-            currentOrder = new Order()
+            CurrentOrder = new Order()
             {
-                orderIdentity = orderCreated.OrderIdentity,
-                orderStatus = orderCreated.OrderStatus
+                Id = orderCreated.OrderIdentity,
+                Status = orderCreated.OrderStatus
             };
         }
 
         public void Apply(OrderStatus orderStatus)
         {
-            currentOrder = currentOrder with { orderStatus = orderStatus };
+            CurrentOrder = CurrentOrder with { Status = orderStatus };
         }
     }
 }

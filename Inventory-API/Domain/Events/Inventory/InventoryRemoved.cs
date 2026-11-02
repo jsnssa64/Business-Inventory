@@ -1,4 +1,4 @@
-﻿using Domain.Entities.Inventory;
+﻿using Domain.Events.Inventory.Core;
 
 namespace Domain.Events.Inventory
 {
@@ -7,5 +7,4 @@ namespace Domain.Events.Inventory
         public int Quantity { get; set; }
         public required InventoryEvent InventoryEvent { get; set; }
     } 
-    //(int Version, InventoryItemIdentity InventoryItemIdentity, int Quantity) : InventoryEvent(Version, InventoryItemIdentity);
 }

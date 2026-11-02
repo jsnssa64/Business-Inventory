@@ -2,40 +2,30 @@
 
 namespace Domain.Entities.Product
 {
-    public class ProductEntity
+    public class ProductV1
     {
-        public ProductIdentity PublicProductId { get; set; }
-
-        public ProductInfo ProductInfo { get; set; } = new ProductInfo();
+        public ProductId PublicProductId { get; set; }
+        public ProductIdentity ProductIdentity { get; set; }
+        public ProductInfo ProductInfo { get; set; }
         public bool Active { get; set; } = true;
-        public Price? Price { get; set; } = null;
+        public Price? Price { get; set; }
+        private bool PriceEnabled { get; set; } = false;
 
-        //public void Map(dynamic? product, dynamic? price)
-        //{
-        //    try
-        //    {
-        //        if (product is null)
-        //            throw new ArgumentException("Unable to find product");
+        public void SetPrice(Price price)
+        {
+            Price = price;
+            PriceEnabled = true;
+        }
 
-        //        PublicProductId = product.PublicProductId;
-        //        Name = product.Name;
-        //        Description = product.Description;
-        //        Version = product.Version;
+        public void DisablePrice()
+        {
+            PriceEnabled = false;
+            Price = null;
+        }
 
-        //        if (price is null)
-        //            return;
-
-        //        Price = new Price()
-        //        {
-        //            Amount = price.Price,
-        //            Currency = price.CurrencyCode
-        //        };
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception("Unable to map Product ({exception})", ex);
-        //    }
-        //}
+        public bool IsPriceEnabled()
+        {
+            return PriceEnabled;
+        }
     }
-    public record Product(ProductIdentity Id, ProductInfo ProductInfo, bool Active, Price Price, int Version);
 }

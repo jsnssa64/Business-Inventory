@@ -1,4 +1,4 @@
-﻿using Domain.Entities.Order;
+﻿using Domain.Events.Orders.Core;
 using Domain.Events.Orders.Enum;
 using Domain.ValueObjects.Order;
 

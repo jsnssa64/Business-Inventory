@@ -1,29 +1,31 @@
 ﻿using Domain.Entities.Product;
 using Domain.Events.Product;
+using Domain.Events.Product.Enum;
 using Domain.ValueObjects.Product;
 
 namespace Domain.Aggregates
 {
-    public class ProductAggregate : Aggregate
+    public class ProductAggregate(ProductV1 Product) : Aggregate
     {
-        public ProductEntity CurrentProduct { get; set; } = new ProductEntity();
-
         public void CreateProduct(
             int Version,
-            ProductIdentity ProductIdentity)
+            ProductIdentity ProductIdentity,
+            Price Price)
         {
-            if(CurrentProduct != null) {
+            if(Product != null) {
                 throw new InvalidOperationException("Product already exists. Cannot create a new product.");
             }
 
             var productCreated = new ProductCreated(
                 Version,
-                ProductIdentity);
+                ProductIdentity,
+                Price,
+                ProductStatus.Active);
 
             AddEvent(productCreated);
             Apply(productCreated);
 
-            commit();
+            Commit();
 
         }
 
@@ -41,9 +43,9 @@ namespace Domain.Aggregates
 
             Apply(productInfo);
 
-            commit();
-
+            Commit();
         }
+
         public void EnableProductPrice(
             int Version,
             ProductIdentity ProductIdentity,
@@ -58,8 +60,7 @@ namespace Domain.Aggregates
             AddEvent(priceEnabled);
             Apply(price);
 
-            commit();
-
+            Commit();
         }
 
         public void DeactiveProduct(ProductDeactivated productDeactivated)
@@ -68,68 +69,69 @@ namespace Domain.Aggregates
 
             Apply(productDeactivated);
 
-            commit();
+            Commit();
 
         }
 
         public void Apply(ProductCreated productCreated)
         {
-            if(CurrentProduct != null)
+            if(Product != null)
             {
-                throw new InvalidOperationException("CurrentProduct is already set. Cannot apply ProductCreated event.");
+                throw new InvalidOperationException("Product is already set. Cannot apply ProductCreated event.");
             }
 
-            CurrentProduct = new Product(
-                productCreated.ProductIdentity,
-                new ProductInfo(
+            Product = new ProductV1()
+            {
+                ProductInfo = new ProductInfo(
                     productCreated.ProductIdentity.PublicProductId,
-                    productCreated.ProductIdentity.Name,
+                    productCreated.ProductIdentity.Username,
                     productCreated.ProductIdentity.Description),
-                true,
-                productCreated.Price,
-                productCreated.Version);
+                Active = true,
+                Price = new Price(productCreated.Price.Amount, productCreated.Price.Currency)
+            };
         }
 
         public void Apply(ProductInfo productInfo)
         {
-            if(CurrentProduct == null)
+            if(Product == null)
             {
-                throw new InvalidOperationException("CurrentProduct is null. Cannot apply product info.");
+                throw new InvalidOperationException("Product is null. Cannot apply product info.");
             }
 
-            CurrentProduct.ProductInfo = new ProductInfo(
+            Product.ProductInfo = new ProductInfo(
+                productInfo.PublicProductId,
                 productInfo.Name,
                 productInfo.Description);
         }
 
         public void Apply(Price price)
         {
-            if(CurrentProduct == null)
+            if(Product == null)
             {
-                throw new InvalidOperationException("CurrentProduct is null. Cannot apply price.");
+                throw new InvalidOperationException("Product is null. Cannot apply price.");
             }
 
-            CurrentProduct.Price = price;
+            Product.Price = price;
         }
 
-        public void Apply(ProductDeactivated productDeactivated)
+        public void Apply(ProductDeactivated ProductDeactivated)
         {
-            if(CurrentProduct == null)
+            if(Product == null)
             {
-                throw new InvalidOperationException("CurrentProduct is null. Cannot apply product deactivation.");
+                throw new InvalidOperationException("Product is null. Cannot apply product deactivation.");
             }
 
-            CurrentProduct.Active = false;
+            Product.Active = false;
         }
 
-        public void Apply(ProductActivated productActivated)
+        public void Apply(ProductActivated ProductActivated)
         {
-            if(CurrentProduct == null)
+            if(Product == null)
             {
-                throw new InvalidOperationException("CurrentProduct is null. Cannot apply product activation.");
+                throw new InvalidOperationException("Product is null. Cannot apply product activation.");
             }
 
-            CurrentProduct.Active = true;
+            Product.Active = true;
         }
     }
 }

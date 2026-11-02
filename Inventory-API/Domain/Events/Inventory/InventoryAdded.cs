@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Domain.Events.Inventory.Core;
+using MediatR;
 
 namespace Domain.Events.Inventory
 {
