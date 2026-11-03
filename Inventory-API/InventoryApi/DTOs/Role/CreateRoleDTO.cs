@@ -1,4 +1,4 @@
-﻿namespace InventoryApi.DTOs.RoleDTO
+﻿namespace InventoryApi.DTOs.Role
 {
     public class CreateRoleDTO
     {

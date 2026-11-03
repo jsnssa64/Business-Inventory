@@ -1,27 +1,25 @@
 ﻿using System.Security.Claims;
 using Domain.ValueObjects.User;
 using Microsoft.AspNetCore.Http;
+using Services.Service.User.Dto;
 using Services.Service.User.Input;
 
 namespace Services.Service.User
 {
     public interface IUserService
     {
-        Task AssignUserToRole(UserIdInput userIdInput, RoleNameModel roleIdModel);
-        Task ChangePassword(UserIdInput userIdInput, PasswordModel passwordModel);
-        Task ForgottenPasswordByEmail(UserEmailModel userEmailModel);
+        Task AssignUserToRole(UserIdInput userIdInput, UserRoleInput roleInput);
+        Task ChangePassword(UserIdInput userIdInput, UserChangePasswordInput passwordChangeInput);
+        Task ForgottenPasswordByEmail(UserEmailInput userEmailInput);
         Task ForgottenPasswordByUsername(UserIdInput userIdInput);
-        Task<UserDetails> GetUserDetails(UserIdInput userIdInput);
-        Task LoginUser(HttpResponse httpResponse, UserLoginModel userLoginModel);
-        void LogoutUser(HttpResponse httpResponse);
-        Task<IEnumerable<Claim>> GenerateLogin(HttpResponse httpResponse, UserIdInput userIdInput, Action<UserWithPassword>? validate = null);
-        Task RegisterDefaultUser(HttpResponse httpResponse, UserIdInput userIdentifierModel, UserRegistrationModel userRegistrationModel);
-        Task RegisterUser(HttpResponse httpResponse, UserIdInput userIdInput, UserRegistrationModel userRegistrationModel);
-        Task ResetPassword(string token, PasswordModel passwordModel);
-        Task SetUserStatus(UserIdInput userIdInput, StatusModel statusModel);
-        Task UpdateUser(UserIdInput userIdInput, UserDetailsModel userDetailsModel);
+        Task<UserIdDto> GetUser(UserIdInput userIdInput);
+        Task<IEnumerable<UserDetailsDto>> GetUsers();
+        Task LogoutUser(HttpResponse httpResponse);
+        Task RegisterDefaultUser(HttpResponse httpResponse, UserIdInput userId, UserDetailsInput userDetailsInput);
+        Task RegisterUser(HttpResponse httpResponse, UserIdInput userId, UserDetailsInput userDetailsInput);
+        Task ResetPassword(string token, UserPasswordInput password);
+        Task SetUserStatus(UserIdInput userIdInput, UserStatus status);
+        Task UpdateUser(UserIdInput userIdInput, UserDetailsInput userDetailsModel);
         Task UserConfirmation(string token);
-        Task<User> GetUser(UserIdInput userIdInput);
-        Task<IEnumerable<User>> GetUsers();
     }
 }

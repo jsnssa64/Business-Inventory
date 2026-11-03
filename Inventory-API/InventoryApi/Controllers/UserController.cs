@@ -43,7 +43,7 @@ namespace InventoryApi.Controllers
         }
 
         [HttpPost("ChangePassword")]
-        public async Task<IActionResult> ChangePassword(UserNewPassword userNewPassword, CancellationToken cancellationToken)
+        public async Task<IActionResult> ChangePassword(UserNewPasswordDTO userNewPassword, CancellationToken cancellationToken)
         {
             var passwordModel = new PasswordModel()
             {

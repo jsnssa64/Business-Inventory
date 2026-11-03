@@ -10,24 +10,22 @@ using Domain.Interface;
 using Services.Service.Security.Utilities;
 using Services.Service.Security;
 using Services.Service.Security.Models;
-using Domain.Events.User;
 using Services.Service.User.Input;
 using Services.Service.User.Dto;
 using Domain.ValueObjects.User.Role;
-using Domain.ValueObjects.User.Role.Extensions;
 
 namespace Services.Service.User
 {
     public class UserService : IUserService
     {
-        private IMediator _mediator;
-        private IPublishEndpoint _publishEndpoint;
-        private IFusionCache _fusionCache;
-        private IUserRepository _userRepository;
-        private ISecurityService _securityService;
-        private IUserUtility _userUtility;
-        private IJWTUtility _jwtUtility;
-        private ILogger<UserService> _logger;
+        private readonly IMediator _mediator;
+        private readonly IPublishEndpoint _publishEndpoint;
+        private readonly IFusionCache _fusionCache;
+        private readonly IUserRepository _userRepository;
+        private readonly ISecurityService _securityService;
+        private readonly IUserUtility _userUtility;
+        private readonly IJWTUtility _jwtUtility;
+        private readonly ILogger<UserService> _logger;
 
         public UserService(IUserRepository userRepository,
             IPublishEndpoint publishEndpoint,
@@ -48,23 +46,22 @@ namespace Services.Service.User
             _jwtUtility = jwtUtility;
         }
 
-        public async Task RegisterUser(HttpResponse httpResponse, UserIdInput userId, UserRegistrationInput userRegistrationDetails)
+        public async Task RegisterUser(HttpResponse httpResponse, UserIdInput userId, UserDetailsInput userDetailsInput)
         {
-            await CreateUser(httpResponse, userId, userRegistrationDetails);
+            await CreateUser(httpResponse, userDetailsInput);
         }
 
-        public async Task RegisterDefaultUser(HttpResponse httpResponse, UserIdInput userId, UserRegistrationInput userRegistrationDetails)
+        public async Task RegisterDefaultUser(HttpResponse httpResponse, UserIdInput userId, UserDetailsInput userDetailsInput)
         {
-            userRegistrationModel.RoleName = UserRoles.DefaultRole.ToString();
-            await CreateUser(httpResponse, userId, userRegistrationDetails);
+            await CreateUser(httpResponse, userDetailsInput);
         }
 
 
-        private async Task<UserIdDto> CreateUser(HttpResponse httpResponse, UserRegistrationInput userRegistrationDetails)
+        private async Task<UserIdDto> CreateUser(HttpResponse httpResponse, UserDetailsInput userRegistrationDetails)
         {
             var encryptedPassword = await _securityService.HashPassword(userRegistrationDetails.Password, SecurityLevel.Mid);
             
-            var userPassword = new UserPassword(encryptedPassword);
+            var userEncryptedPassword = new UserEncryptedPassword(encryptedPassword);
             var userRole = UserRole.GetUserRole(userRegistrationDetails.Role);
 
             var userDetails = new UserDetails()
@@ -85,27 +82,23 @@ namespace Services.Service.User
                 }
             };
 
-            var userId = await _userRepository.Create(userDetails, userRole, userPassword);
+            var userId = await _userRepository.Create(userDetails, userRole, userEncryptedPassword);
 
             await _userRepository.AssignRoleToUser(userId, userRole);
 
             //  TODO: This line will auto activate the User - TEMPORARY until email confirmation is implemented
             await _userRepository.ActivateUser(userId);
 
-            await _mediator.Publish(
-                new UserCreatedNotification()
-                {
-                    Version = 1,
-                    UserIdentity = new UserIdentity(userId.ToString(), "", userRegistrationDetails.Email),
-                }
-            );
+            //await _mediator.Publish(
+            //    new UserCreatedNotification()
+            //    {
+            //        Version = 1,
+            //        UserIdentity = new UserIdentity(userId, "", userRegistrationDetails.Email),
+            //    }
+            //);
 
             //  Auto login user after registration
-            await LoginUser(httpResponse, new UserLoginModel()
-            {
-                Username = userId.Username,
-                Password = userRegistrationDetails.Password
-            });
+            await LoginUser(httpResponse, userId, new UserPassword(userRegistrationDetails.Password));
 
             return new UserIdDto(userId.ToString());
         }
@@ -115,14 +108,35 @@ namespace Services.Service.User
             await _userRepository.ActivateUser(userId);
         }
 
-        public async Task UpdateUser(UserIdInput userIdInput, UserDetailsModel userDetailsModel)
+        public async Task UpdateUser(UserIdInput userIdInput, UserDetailsInput userDetailsModel)
         {
-            await _userRepository.UpdateUserDetails(userIdInput, userDetailsModel);
+            var userDetails = new UserDetails()
+            {
+                FirstName = userDetailsModel.FirstName,
+                LastName = userDetailsModel.LastName,
+                ContactNumber = userDetailsModel.ContactNumber,
+                DOB = userDetailsModel.DOB,
+                Gender = userDetailsModel.Gender,
+                UserAddress = new UserAddress()
+                {
+                    AddressLine1 = userDetailsModel.AddressLine1,
+                    AddressLine2 = userDetailsModel.AddressLine2,
+                    City = userDetailsModel.City,
+                    State = userDetailsModel.State,
+                    Country = userDetailsModel.Country,
+                    PostalCode = userDetailsModel.PostalCode
+                }
+            };
+
+            var userId = new UserId(userIdInput.UserId);
+
+            await _userRepository.UpdateUserDetails(userId, userDetails);
         }
 
-        public async Task SetUserStatus(UserIdInput userIdInput, StatusModel statusModel)
+        public async Task SetUserStatus(UserIdInput userIdInput, UserStatus status)
         {
-            await _userRepository.SetUserStatus(userIdInput, statusModel);
+            var userId = new UserId(userIdInput.UserId);
+            await _userRepository.SetUserStatus(userId, status);
         }
 
         public async Task UserConfirmation(string token)
@@ -137,154 +151,144 @@ namespace Services.Service.User
             await ActivateUser(userId);
         }
 
-        public async Task ResetPassword(string token, PasswordModel passwordModel)
+        //  <summary>
+        //      User has forgotten password and is resetting it using the token sent to their email
+        //  </summary>
+        public async Task ResetPassword(string token, UserPasswordInput password)
         {
             var tokenClaims = await _jwtUtility.GetTokenClaims(token, KeyType.resetPassword);
 
-            var userIdentifier = new UserId(_userUtility.GetClaimForUser(tokenClaims.Claims, UserClaim.UserId));
+            var userId = new UserId(_userUtility.GetClaimForUser(tokenClaims.Claims, UserClaim.UserId));
 
-            await _userRepository.ResetPassword(userIdentifier, passwordModel);
+            var passwordHash = new UserEncryptedPassword(await _securityService.HashPassword(password.NewPassword, SecurityLevel.Mid));
+
+            await _userRepository.SetPassword(userId, passwordHash);
         }
 
-        public async Task ChangePassword(UserIdentifierModel userIdentifierModel, PasswordModel passwordModel)
+        //  <summary>
+        //      User explicitly asks to change password
+        //  </summary>
+        public async Task ChangePassword(UserIdInput userIdInput, UserChangePasswordInput passwordChangeInput)
         {
-            var user = await _userRepository.GetUser(userIdentifierModel);
+            var userId = new UserId(userIdInput.UserId);
+            var user = await _userRepository.GetUser(userId);
 
-            if (!_securityService.VerifyPassword(passwordModel.OldPassword, user.PasswordHash))
+            if (!await _securityService.VerifyPassword(passwordChangeInput.OldPassword, user.Password!.PasswordHash))
             {
                 throw new Exception("Invalid password");
             }
 
-            passwordModel.NewPassword = _securityService.HashPassword(passwordModel.NewPassword, SecurityLevel.Mid);
+            var passwordHash = new UserEncryptedPassword(await _securityService.HashPassword(passwordChangeInput.NewPassword, SecurityLevel.Mid));
 
-            await _userRepository.ResetPassword(userIdentifierModel, passwordModel);
+            await _userRepository.SetPassword(userId, passwordHash);
         }
 
-        private async Task LoginUser(HttpResponse httpResponse, UserLoginModel userLoginModel)
+        private async Task LoginUser(HttpResponse httpResponse, UserId userId, UserPassword userPassword)
         {
-            var userIdentifierModel = new UserIdentifierModel() { 
-                Username = userLoginModel.Username 
-            };
-
-            await GenerateLogin(httpResponse, userIdentifierModel, (usersRole) =>
+            await GenerateLogin(httpResponse, userId, async (user) =>
             {
-                if (!_securityService.VerifyPassword(userLoginModel.Password, usersRole.PasswordHash))
+                if (!await _securityService.VerifyPassword(userPassword.Password, user.Password!.PasswordHash))
                 {
                     throw new Exception("Invalid password");
                 }
             });
         }
 
-        private async Task<IEnumerable<Claim>> GenerateLogin(HttpResponse httpResponse, UserIdentifierModel userIdentifierModel, Action<UserWithPassword>? validate = null)
+        private async Task<IEnumerable<Claim>> GenerateLogin(HttpResponse httpResponse, UserId userId, Action<UserDetails>? validate = null)
         {
-            var user = await _userRepository.GetUser(userIdentifierModel);
+            var user = await _userRepository.GetUser(userId);
 
             if (validate is not null)
                 validate(user);
 
-            var claims = _userUtility.MapUserToClaims(user.User);
+            var claims = _userUtility.MapUserToClaims(user);
 
             var cookieExpiry = DateTimeOffset.UtcNow.AddDays(1);
 
-            var tokens = _securityService.GenerateLoginJWT(claims, claims);
+            (var accessToken, var refreshToken) = await _securityService.GenerateLoginJWT(claims, claims);
 
-            _securityService.SetCookieForLogin(httpResponse, tokens.AccessToken, tokens.RefreshToken, cookieExpiry);
+            await _securityService.SetCookieForLogin(httpResponse, accessToken, refreshToken, cookieExpiry);
 
             return claims;
         }
 
-        private async Task<UserDetails> GetUserDetails(UserIdentifierModel userName)
+        private async Task<UserDetails> GetUserDetails(UserId userId)
         {
             var userDetails = await _fusionCache
-                                    .GetOrSetAsync<UserDetails>($"UserDetail-{userName.Username}", 
+                                    .GetOrSetAsync<UserDetails>($"UserDetail-{userId}", 
                                         async (ctx, ct) =>
                                         {
-                                            return await _userRepository.GetUserDetails(userName);
+                                            return await _userRepository.GetUserDetails(userId);
                                         },
                                         options: new FusionCacheEntryOptions().SetDuration(new TimeSpan(100000)));
-
-            if (userDetails is null)
-                throw new Exception("Not valid userdetails");
-
             return userDetails;
         }
 
-        public async Task<User> GetUser(UserIdentifierModel userName)
+        public async Task<UserIdDto> GetUser(UserIdInput userIdInput)
         {
             var user = await _fusionCache
-                                    .GetOrSetAsync<User>($"User-{userName.Username}",
+                                    .GetOrSetAsync<UserDetails>($"User-{userIdInput.UserId}",
                                         async (ctx, ct) =>
                                         {
-                                            return await _userRepository.GetUser(userName);
+                                            return await _userRepository.GetUser(new UserId(userIdInput.UserId));
                                         },
                                         options: new FusionCacheEntryOptions().SetDuration(new TimeSpan(1000)));
 
-            return user;
+            return new UserIdDto(user.UserIdentity!.Id.Id);
         }
 
-        public async Task<IEnumerable<User>> GetUsers()
+        public async Task<IEnumerable<UserDetailsDto>> GetUsers()
         {
-            return await _userRepository.GetAllUsers();
+            var users = await _userRepository.GetAllUsers();
+            return users.Select(u => new UserDetailsDto(u!.UserIdentity.Id.Id, u.UserIdentity.Username, u.UserIdentity.Email));
         }
 
-        public async Task ForgottenPasswordByEmail(UserEmailModel userEmailModel)
+        public async Task ForgottenPasswordByEmail(UserEmailInput userEmailInput)
         {
-            var user = await _userRepository.GetUserByEmail(userEmailModel);
+            var user = await _userRepository.GetUserByEmail(userEmailInput.Email);
 
-            var userIdentifierModel = new UserIdentifierModel()
-            {
-                Username = user.Username
-            };
-
-            var token = await _securityService.GenerateUserJWT(userIdentifierModel, KeyType.resetPassword);
+            var token = await _securityService.GenerateUserJWT(new UserIdInput(user!.UserIdentity.Id.Id), KeyType.resetPassword);
 
             //  Send to rabbitmq
-            await _mediator.Publish(new PasswordResetRequestedNotification()
-            {
-                Username = user.Username,
-                Email = user.Email,
-                Token = token
-            });
+            //  Send Email Password Reset Notification
+            //await _mediator.Publish(new PasswordResetRequestedNotification()
+            //{
+            //    Username = user.Username,
+            //    Email = user.Email,
+            //    Token = token
+            //});
         }
 
-        public async Task ForgottenPasswordByUsername(UserIdentifierModel userIdentifierModel)
+        public async Task ForgottenPasswordByUsername(UserIdInput userIdInput)
         {
-            await _userRepository.IsValidUserByUsername(userIdentifierModel)) ;
+            var userId = new UserId(userIdInput.UserId);
+            await _userRepository.IsValidUserByUsername(userId) ;
 
-            var user = await _userRepository.GetUser(userIdentifierModel);
+            var user = await _userRepository.GetUser(userId);
                 
-            var token = await _securityService.GenerateUserJWT(userIdentifierModel, KeyType.resetPassword);
+            var token = await _securityService.GenerateUserJWT(userIdInput, KeyType.resetPassword);
 
-            await _mediator.Publish(new PasswordResetRequestedNotification()
-            {
-                Username = user.Username,
-                Email = user.Email,
-                Token = token
-            });
-
-            var user = await _userRepository.GetUser(userIdentifierModel);
-                
-            var token = await _securityService.GenerateUserJWT(userIdentifierModel, KeyType.resetPassword);
-
-            try 
-            { 
-                await _mediator.Publish(new EmailConfirmationModel(user.Username, user.Email, token));
-            }
-            catch
-            {
-                //  Handle Gracefully - Do not fail the user request if email fails to send
-                _logger.LogWarning("Failed to send email for user: {Username}", user.Username);
-            }
+            //  Send to rabbitmq
+            //  Send Email Password Reset Notification
+            //await _mediator.Publish(new PasswordResetRequestedNotification()
+            //{
+            //    Username = user.Username,
+            //    Email = user.Email,
+            //    Token = token
+            //});
         }
 
-        public void LogoutUser(HttpResponse httpResponse)
+        public async Task LogoutUser(HttpResponse httpResponse)
         {
-            _securityService.SetCookieForLogout(httpResponse);
+            await _securityService.SetCookieForLogout(httpResponse);
         }
 
-        public async Task AssignUserToRole(UserIdentifierModel userIdentifierModel, RoleNameModel roleIdModel)
+        public async Task AssignUserToRole(UserIdInput userIdInput, UserRoleInput roleInput)
         {
-            await _userRepository.AssignRoleToUser(userIdentifierModel, roleIdModel);
+            var userId = new UserId(userIdInput.UserId);
+            var userRole = UserRole.GetUserRole(roleInput.Role);
+
+            await _userRepository.AssignRoleToUser(userId, userRole);
         }
     }
 }

@@ -8,6 +8,6 @@ namespace Shared.Utilities.User
         string GetClaimForUser(IEnumerable<Claim> claims, UserClaim userClaim);
         Claim GetUserClaim(Domain.Entities.User.User user, UserClaim userClaim);
         UserClaims MapClaimsToUser(IEnumerable<Claim> claims);
-        IEnumerable<Claim> MapUserToClaims(Domain.Entities.User.User user);
+        IEnumerable<Claim> MapUserToClaims(Domain.ValueObjects.User.UserDetails user);
     }
 }

@@ -1,9 +1,8 @@
 ﻿using Dapper;
 using Domain.Entities.Inventory;
+using Domain.Interface;
 using Infrastructure.DataModel.User;
 using KurrentDB.Client;
-using Services.Interface;
-using Shared.Constants;
 using System.Data;
 
 namespace Infrastructure.Repository.Inventory

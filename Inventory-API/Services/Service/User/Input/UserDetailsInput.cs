@@ -1,6 +1,6 @@
 namespace Services.Service.User.Input;
 
-public record UserRegistrationInput(
+public record UserDetailsInput(
     string Username,
     string Email,
     string Password,

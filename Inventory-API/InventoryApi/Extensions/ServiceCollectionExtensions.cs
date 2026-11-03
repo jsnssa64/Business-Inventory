@@ -1,7 +1,9 @@
-﻿using Grpc.Core;
+﻿using Domain.Interface;
+using Grpc.Core;
 using Infrastructure.Factory;
 using Infrastructure.Repository.Inventory;
 using Infrastructure.Repository.Product;
+using Infrastructure.Repository.RoleRepo;
 using Infrastructure.Repository.UserRepo;
 using Infrastructure.Repository.Webhook;
 using InventoryApi.Authentication;
@@ -9,7 +11,6 @@ using KurrentDB.Client;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Caching.Memory;
-using Services.Interface;
 using Services.Service.Inventory;
 using Services.Service.Product;
 using Services.Service.Role;

@@ -1,9 +1,7 @@
 ﻿using Dapper;
-using Domain.Entities.Product;
+using Domain.Interface;
 using Domain.ValueObjects.Product;
 using Infrastructure.DataModel.Product;
-using Microsoft.IdentityModel.Tokens;
-using Shared.Constants;
 using System.Data;
 using System.Data.Entity.Infrastructure;
 

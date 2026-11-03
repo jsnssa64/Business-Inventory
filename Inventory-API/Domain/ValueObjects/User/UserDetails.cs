@@ -1,10 +1,10 @@
 ﻿using Domain.ValueObjects.User.Role;
-using Domain.ValueObjects.User.Role.Extensions;
 
 namespace Domain.ValueObjects.User
 {
     public class UserDetails
     {
+        public UserIdentity? UserIdentity { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public UserAddress? UserAddress { get; set; }
@@ -12,6 +12,7 @@ namespace Domain.ValueObjects.User
         public DateOnly? DOB { get; set; }
         public string? ContactNumber { get; set; }
         public UserRoleLevel Role { get; set; }
+        public UserEncryptedPassword? Password { get; set; }
 
         public void Map(dynamic usrdets)
         {
@@ -22,7 +23,7 @@ namespace Domain.ValueObjects.User
                 FirstName = usrdets?.FirstName;
                 LastName = usrdets?.LastName;
 
-                Role = UserRolesExtensions.GetUserRole((string)usrdets.RoleName);
+                Role = UserRole.GetUserRole((string)usrdets.RoleName);
 
                 UserAddress = new UserAddress();
                 UserAddress.Map(usrdets);

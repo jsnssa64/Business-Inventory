@@ -13,7 +13,7 @@ namespace InventoryApi.Controllers
 
         [HttpPost("CreatePassword")]
         //  DevOnly - TODO
-        public async Task<IActionResult> CreatePassword(UserNewPassword userNewPassword, CancellationToken cancellationToken)
+        public async Task<IActionResult> CreatePassword(UserNewPasswordDTO userNewPassword, CancellationToken cancellationToken)
         {
             var passwordHash = await _securityService.HashPassword(userNewPassword.NewPassword);
             return Ok(passwordHash);
