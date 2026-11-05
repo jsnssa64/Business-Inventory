@@ -1,0 +1,5 @@
+#   Notes:
+#       Reuseable workflow for .NET Projects
+name: dotnet-ci
+
+
