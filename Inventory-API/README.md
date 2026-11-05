@@ -1,15 +1,15 @@
 # Inventory API
 
-A .NET 8.0 REST API for business inventory management, built with Domain-Driven Design, CQRS, and Event Sourcing patterns.
+A .NET 8.0 REST API for business inventory management, built with Clean Architecture and Domain-Driven Design, using CQRS and Event Sourcing in selected areas.
 
 ## Overview
 
-Inventory API handles product catalogue management, stock level tracking, user management with role-based access control, and webhook-based event notifications. Domain events are persisted in an event store (KurrentDB) for full audit trails, with RabbitMQ enabling asynchronous event distribution.
+Inventory API handles product catalogue management, stock level tracking, user management with role-based access control, and webhook-based event notifications. Data is stored state-based in SQL Server by default; event-sourced areas persist their events to KurrentDB instead. Any area may publish to RabbitMQ for asynchronous event distribution.
 
 ## Architecture
 
 ```
-InventoryApi/          Presentation layer — controllers, middleware, auth, DTOs
+InventoryApi/          Presentation layer — controllers, middleware, auth, request/response types
 Services/              Business logic — domain services, repositories (Dapper)
 Domain/                Domain layer — aggregates, entities, domain events
 Shared/                Cross-cutting constants and utilities
@@ -17,8 +17,8 @@ Chart/                 Helm charts for Kubernetes deployment
 ```
 
 **Key patterns:**
-- **CQRS** via MediatR — commands and queries separated in-process
-- **Event Sourcing** — all state changes stored as immutable events in KurrentDB
+- **CQRS** via MediatR in event-sourced areas; application services elsewhere
+- **Event Sourcing** — opt-in per area; those areas store state changes as immutable events in KurrentDB
 - **Domain-Driven Design** — aggregates (`InventoryAggregate`, `ProductAggregate`, `OrderAggregate`) own their domain logic
 - **Repository pattern** — Dapper-backed repositories per aggregate root
 - **JWT + HTTP-only cookies** — RSA-256 signed tokens stored as `authAccessToken` (20 min) and `authRefreshToken` (30 days)

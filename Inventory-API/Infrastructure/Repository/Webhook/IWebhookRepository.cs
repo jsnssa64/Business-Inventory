@@ -1,6 +1,6 @@
 ﻿using Services.DataModel.Webhook;
 
-namespace Services.Repository.Webhook
+namespace Infrastructure.Repository.Webhook
 {
 
     public interface IWebhookRepository

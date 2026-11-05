@@ -1,6 +1,7 @@
-﻿using Domain.Events.Product.Enum;
+﻿using Domain.Entities.Product;
+using Domain.Events.Product.Core;
+using Domain.Events.Product.Enum;
 using Domain.ValueObjects.Product;
-using InventoryApi.Model.Events.Product;
 
 namespace Domain.Events.Product
 {

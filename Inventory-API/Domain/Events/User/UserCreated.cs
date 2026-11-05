@@ -1,12 +1,12 @@
 ﻿using Domain.ValueObjects.User;
 using MediatR;
 
-namespace Domain.Service.UserService
+namespace Domain.Events.User
 {
     public class UserCreatedNotification: INotification
     {
         public int Version { get; set; } = 0;
-        public required UserIdentity userIdentity { get; set; }
+        public required UserIdentity UserIdentity { get; set; }
     }
 
 }

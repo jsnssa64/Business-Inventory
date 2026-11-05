@@ -1,0 +1,48 @@
+
+# Notes
+# paths: 
+# working-directory:
+# permissions:
+# Build One Artifact then promote through dev, staging and prod
+# Dependency Caching and concurrency
+
+# Action Tab Label and Job Name on PR Checks
+name: ui
+
+on: 
+    pull_request:
+        paths: 
+            - 'Inventory-UI/**'
+            - '.github/workflows/ui.yml'
+        branches: [master]
+    push:
+        paths: 
+            - 'Inventory-UI/**'
+            - '.github/workflows/ui.yml'
+        branches: [master]
+
+permissions:
+    contents: read
+
+env:
+    NODE_VERSION: '26'
+    LOCK_PATH: 'Inventory-UI/package-lock.json'
+
+jobs:
+    lint:
+        name: lint
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v6
+            -   name: Set up Node
+                uses: actions/setup-node@v7
+                with: 
+                    node-version: ${{env.NODE_VERSION}}
+                    cache: 'npm'
+                    cache-dependency-path: ${{env.LOCK_PATH}}
+            -   name: Install Dependencies
+                working-directory: Inventory-UI
+                run: npm ci
+            -   name: Lint
+                working-directory: Inventory-UI
+                run: npm run lint

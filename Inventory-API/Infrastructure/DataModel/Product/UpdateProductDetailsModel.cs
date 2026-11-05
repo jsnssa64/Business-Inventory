@@ -1,4 +1,6 @@
-﻿namespace Services.DataModel.Product
+﻿using Infrastructure.DataModel.Product;
+
+namespace Infrastructure.DataModel.Product
 {
     public class UpdateProductDetailsModel
     {

@@ -1,6 +1,7 @@
-﻿using MediatR;
+﻿using Domain.Events.Inventory.Core;
+using MediatR;
 
-namespace InventoryApi.Model.Events.Inventory
+namespace Domain.Events.Inventory
 {
     public record InventoryAdded: INotification
     {

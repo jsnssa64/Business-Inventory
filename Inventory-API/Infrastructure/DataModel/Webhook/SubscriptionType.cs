@@ -1,4 +1,4 @@
-﻿namespace Services.DataModel.Webhook
+﻿namespace Infrastructure.DataModel.Webhook
 {
     public enum SubscriptionType
     {

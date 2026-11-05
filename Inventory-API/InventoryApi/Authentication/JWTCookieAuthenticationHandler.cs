@@ -4,14 +4,11 @@ using Microsoft.Extensions.Options;
 
 namespace InventoryApi.Authentication
 {
-    public class CookieJwtHandler : AuthenticationHandler<AuthenticationSchemeOptions>
+    public class CookieJwtHandler(
+        IOptionsMonitor<AuthenticationSchemeOptions> options,
+        ILoggerFactory logger,
+        UrlEncoder encoder) : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
     {
-        public CookieJwtHandler(
-            IOptionsMonitor<AuthenticationSchemeOptions> options,
-            ILoggerFactory logger,
-            UrlEncoder encoder)
-            : base(options, logger, encoder) { }
-
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             if (Context.User?.Identity?.IsAuthenticated == true)

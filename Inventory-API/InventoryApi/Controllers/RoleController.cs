@@ -1,15 +1,15 @@
-using InventoryApi.Authentication;
 using InventoryApi.DTOs.RoleDTO;
 using Microsoft.AspNetCore.Mvc;
-using Services.DataModel.Role;
-using Services.Service.RoleService;
-using Domain.ValueObjects.User;
+using InventoryApi.Controllers.HostedSupplier;
+using InventoryApi.Authorization;
+using Domain.ValueObjects.User.Role;
+using Services.Service.Role;
 
 namespace InventoryApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [MinimumRole(RoleLevel.User)]
+    [MinimumRole(UserRoleLevel.Admin)]
     public class RoleController : ControllerBase
     {
         private readonly ILogger<InventoryController> _logger;
@@ -24,28 +24,19 @@ namespace InventoryApi.Controllers
         [Obsolete]
         private async Task<IActionResult> CreateRole(CreateRoleDTO createRoleDTO)
         {
-            var createRoleModel = new CreateRoleModel()
-            {
-                IsDefault = createRoleDTO.SetAsDefault,
-                RoleName = createRoleDTO.RoleName
-            };
-
-            var role = await _roleService.CreateRole(createRoleModel);
-            return Ok(role);
+            throw new NotImplementedException();
         }
 
         [HttpGet("GetRoles")]
         public IActionResult GetRoles()
         {
-            var roles = _roleService.GetRoles();
-            return Ok(roles);
+            throw new NotImplementedException();
         }
 
         [HttpGet("GetDefaultRole")]
         public IActionResult GetDefaultRole()
         {
-            var role = _roleService.GetDefaultRole();
-            return Ok(role);
+            throw new NotImplementedException();
         }
     }
 }

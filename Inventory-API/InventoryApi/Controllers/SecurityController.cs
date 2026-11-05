@@ -1,7 +1,7 @@
-﻿using InventoryApi.Controllers.CustomController;
+﻿using InventoryApi.Controllers.Base;
 using InventoryApi.DTOs.User;
 using Microsoft.AspNetCore.Mvc;
-using Services.Service.SecurityService;
+using Services.Service.Security;
 
 namespace InventoryApi.Controllers
 {
@@ -9,13 +9,13 @@ namespace InventoryApi.Controllers
     [Route("[controller]")]
     public class SecurityController(ISecurityService securityService) : BaseController
     {
-        public ISecurityService SecurityService { get; } = securityService;
+        private readonly ISecurityService _securityService = securityService;
 
         [HttpPost("CreatePassword")]
         //  DevOnly - TODO
-        public IActionResult CreatePassword(UserNewPassword userNewPassword, CancellationToken cancellationToken)
+        public async Task<IActionResult> CreatePassword(UserNewPasswordDTO userNewPassword, CancellationToken cancellationToken)
         {
-            var passwordHash = SecurityService.EncryptPassword(userNewPassword.NewPassword);
+            var passwordHash = await _securityService.HashPassword(userNewPassword.NewPassword);
             return Ok(passwordHash);
         }
     }

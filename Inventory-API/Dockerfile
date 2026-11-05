@@ -6,7 +6,7 @@ ARG BUILD_CONFIGURATION=Release # Default to DEBUG if not specified debug or rel
 # For more information, please see https://aka.ms/containercompat
 
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 WORKDIR /app
 
 EXPOSE 8080

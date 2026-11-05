@@ -1,4 +1,4 @@
-﻿namespace Services.DataModel.Role
+﻿namespace Infrastructure.DataModel.Role
 {
     public class RoleNameModel
     {

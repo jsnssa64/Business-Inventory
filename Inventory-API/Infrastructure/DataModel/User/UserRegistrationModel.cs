@@ -1,4 +1,4 @@
-﻿namespace Services.DataModel.User
+﻿namespace Infrastructure.DataModel.User
 {
     public class UserRegistrationModel
     {

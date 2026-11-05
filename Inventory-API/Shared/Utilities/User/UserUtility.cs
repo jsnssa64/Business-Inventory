@@ -33,32 +33,24 @@ namespace Shared.Utilities.User
 
         public Claim GetUserClaim(Domain.Entities.User.User user, UserClaim userClaim)
         {
-            switch (userClaim)
+            return userClaim switch
             {
-                case UserClaim.Email:
-                    return new(ClaimTypes.Email, user.Email ?? throw new Exception("Unable to generate Email claim"));      // Ensure non-null value
-                case UserClaim.Username:
-                    return new(ClaimTypes.Name, user.Username ?? throw new Exception("Unable to generate Username claim"));        // Ensure non-null value
-                case UserClaim.Role:
-                    return new(ClaimTypes.Role, user.Role.Level.ToString());
-                default:
-                    throw new NotImplementedException();
-            }
+                UserClaim.Email => new(ClaimTypes.Email, user.Email ?? throw new Exception("Unable to generate Email claim")),// Ensure non-null value
+                UserClaim.Username => new(ClaimTypes.Name, user.Username ?? throw new Exception("Unable to generate Username claim")),// Ensure non-null value
+                UserClaim.Role => new(ClaimTypes.Role, user.Role.Level.ToString()),
+                _ => throw new NotImplementedException(),
+            };
         }
 
         public string GetClaimForUser(IEnumerable<Claim> claims, UserClaim userClaim)
         {
-            switch (userClaim)
+            return userClaim switch
             {
-                case UserClaim.Username:
-                    return claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value ?? throw new Exception("Unable to generate Username claim");
-                case UserClaim.Email:
-                    return claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value ?? throw new Exception("Unable to generate Email claim");
-                case UserClaim.Role:
-                    return claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? throw new Exception("Unable to generate Role claim");
-                default:
-                    throw new NotImplementedException();
-            }
+                UserClaim.Username => claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value ?? throw new Exception("Unable to generate Username claim"),
+                UserClaim.Email => claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value ?? throw new Exception("Unable to generate Email claim"),
+                UserClaim.Role => claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? throw new Exception("Unable to generate Role claim"),
+                _ => throw new NotImplementedException(),
+            };
         }
     }
 }

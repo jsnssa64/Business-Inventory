@@ -1,19 +1,18 @@
-using InventoryApi.Authentication;
-using InventoryApi.Controllers.CustomController;
 using InventoryApi.DTOs.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Services.DataModel.Role;
-using Services.DataModel.User;
-using Services.Service.SecurityService;
-using Services.Service.UserService;
-using Domain.ValueObjects.User;
+using InventoryApi.Controllers.HostedSupplier;
+using InventoryApi.Controllers.Base;
+using InventoryApi.Authorization;
+using Domain.ValueObjects.User.Role;
+using Services.Service.User;
+using Services.Service.Security.Utilities;
 
 namespace InventoryApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [MinimumRole(RoleLevel.User)]
+    [MinimumRole(UserRoleLevel.Client)]
     public class UserController : BaseController
     {
         private readonly ILogger<InventoryController> _logger;
@@ -28,7 +27,7 @@ namespace InventoryApi.Controllers
         }
 
         [HttpPost("AssignUserRole")]
-        [MinimumRole(RoleLevel.Admin)]
+        [MinimumRole(UserRoleLevel.Admin)]
         public async Task<IActionResult> AssignUserRole(UsersRoleDTO usersRoleDTO, CancellationToken cancellationToken)
         {
             await _userService.AssignUserToRole(
@@ -44,7 +43,7 @@ namespace InventoryApi.Controllers
         }
 
         [HttpPost("ChangePassword")]
-        public async Task<IActionResult> ChangePassword(UserNewPassword userNewPassword, CancellationToken cancellationToken)
+        public async Task<IActionResult> ChangePassword(UserNewPasswordDTO userNewPassword, CancellationToken cancellationToken)
         {
             var passwordModel = new PasswordModel()
             {
@@ -207,7 +206,7 @@ namespace InventoryApi.Controllers
         [MinimumRole(RoleLevel.Admin)]
         public async Task<IActionResult> RegisterUserWithRole(UserWithRoleRegisterDTO userWithRoleRegisterDTO, CancellationToken cancellationToken)
         {
-            if (!Roles.IsValidRoleLevel(userWithRoleRegisterDTO.RoleName))
+            if (!UserRoles.IsValidRoleLevel(userWithRoleRegisterDTO.RoleName))
             {
                 return BadRequest("Invalid role name provided.");
             }

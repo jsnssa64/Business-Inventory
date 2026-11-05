@@ -1,23 +1,28 @@
-﻿using InventoryApi.Factory;
-using InventoryApi.Authentication;
-using Microsoft.AspNetCore.Authentication;
-using InventoryApi.Repository.Inventory;
-using MassTransit;
-using Microsoft.Extensions.Caching.Memory;
-using ZiggyCreatures.Caching.Fusion;
-using KurrentDB.Client;
+﻿using Domain.Interface;
 using Grpc.Core;
-using UserCredentials = KurrentDB.Client.UserCredentials;
-using Shared.Utilities.User;
-using Services.Service.SecurityService;
-using Services.Service.SecurityService.Models;
-using Services.Service.UserService;
-using Services.Repository.Webhook;
-using Services.Repository.UserRepo;
-using Services.Service.InventoryService;
-using Services.Service.RoleService;
-using Services.Repository.RoleRepo;
+using Infrastructure.Factory;
+using Infrastructure.Repository.Inventory;
+using Infrastructure.Repository.Product;
+using Infrastructure.Repository.RoleRepo;
+using Infrastructure.Repository.UserRepo;
+using Infrastructure.Repository.Webhook;
+using InventoryApi.Authentication;
+using KurrentDB.Client;
+using MassTransit;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Caching.Memory;
+using Services.Service.Inventory;
+using Services.Service.Product;
+using Services.Service.Role;
+using Services.Service.Security;
+using Services.Service.Security.Models;
+using Services.Service.Security.Utilities;
+using Services.Service.User;
+using Services.Service.Webhook;
 using Shared.Constants;
+using Shared.Utilities.User;
+using ZiggyCreatures.Caching.Fusion;
+using UserCredentials = KurrentDB.Client.UserCredentials;
 
 namespace InventoryApi.Extensions
 {
@@ -67,7 +72,7 @@ namespace InventoryApi.Extensions
 
         public static IServiceCollection AddEventServices(this IServiceCollection services, IConfigurationManager configuration)
         {
-            var rabbitmqConnectionString = configuration.GetDataConnection(DatabaseConnections.RabbitMQ.ToString());
+            var rabbitmqConnectionString = configuration.GetDataConnection(DbConnectionSettings.RabbitMQ);
 
             services.AddMassTransit(config =>
             {
@@ -82,7 +87,7 @@ namespace InventoryApi.Extensions
 
             services.AddKurrentDBClient((KurrentDBClientSettings settings) =>
             {
-                settings.ConnectionName = configuration.GetDataConnection(DatabaseConnections.KurrentDb.ToString());
+                settings.ConnectionName = configuration.GetDataConnection(DbConnectionSettings.KurrentDb);
                 settings.ChannelCredentials = ChannelCredentials.Insecure;
 
                 //settings.ConnectivitySettings = new KurrentDBClientConnectivitySettings();
@@ -124,18 +129,14 @@ namespace InventoryApi.Extensions
 
         private static IServiceCollection AddDapper(this IServiceCollection services, IConfigurationManager configuration)
         {
-            var connectionString = configuration.GetDataConnection(DatabaseConnections.InventoryDb.ToString());
-            if (connectionString == null)
-            {
-                throw new InvalidOperationException("Database:Address configuration is missing or invalid.");
-            }
-
+            var connectionString = configuration.GetDataConnection(DbConnectionSettings.InventoryDb) ?? throw new InvalidOperationException("Database:Address configuration is missing or invalid.");
+            
             services.AddSingleton<IDbConnectionFactory, DapperDbConnectionFactory>(sp =>
             {
-                var connectionDict = new Dictionary<DatabaseConnections, string>()
+                var connectionDict = new Dictionary<string, string>()
                 {
                         {
-                            DatabaseConnections.InventoryDb,
+                            DbConnectionSettings.InventoryDb,
                             connectionString
                         }
                 };

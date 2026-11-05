@@ -9,12 +9,14 @@ Notes/
 # API test scripts - cookie jar (contains auth tokens)
 scripts/.cookies.json
 
-# Compose .ENV File
+#   Local Folders
+Notes
+
+#   Compose .ENV File
 .env*
 
 # Secret Files 
 *_password*
-
 
 # User-specific files
 *.rsuser

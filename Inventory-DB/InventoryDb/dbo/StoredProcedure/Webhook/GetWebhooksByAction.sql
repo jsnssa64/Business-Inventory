@@ -11,7 +11,7 @@ AS
         WHERE u.[Disabled] = 0
             AND s.TriggerAction = @SubscriptionType;
 
-        RETURN 0;  -- success
+        RETURN 0;
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT > 0

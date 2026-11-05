@@ -74,11 +74,29 @@
     <Folder Include="dbo\StoredProcedure\Product" />
     <Folder Include="dbo\StoredProcedure\Webhook" />
     <Folder Include="dbo\StoredProcedure\Product\Query" />
+    <Folder Include="Security\Schema\" />
+    <Folder Include="org\" />
+    <Folder Include="org\Table\" />
+    <Folder Include="supplierregistry\" />
+    <Folder Include="supplierregistry\Table\" />
+    <Folder Include="hostedcatalogue\" />
+    <Folder Include="hostedcatalogue\Table\" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\Pre-Deployment\Script.PreDeployment.sql" />
     <Build Include="dbo\Table\Inventory.sql" />
     <Build Include="dbo\Table\Product.sql" />
+    <Build Include="Security\Schema\org.sql" />
+    <Build Include="Security\Schema\supplierregistry.sql" />
+    <Build Include="Security\Schema\ordering.sql" />
+    <Build Include="Security\Schema\stock.sql" />
+    <Build Include="Security\Schema\hostedcatalogue.sql" />
+    <Build Include="org\Table\Business.sql" />
+    <Build Include="org\Table\StaffMember.sql" />
+    <Build Include="supplierregistry\Table\Supplier.sql" />
+    <Build Include="supplierregistry\Table\SupplierAccess.sql" />
+    <Build Include="hostedcatalogue\Table\Supplier.sql" />
+    <Build Include="hostedcatalogue\Table\Product.sql" />
     <None Include="Scripts\Post-Deployment\SeedData.sql" />
   </ItemGroup>
   <ItemGroup>
@@ -95,7 +113,6 @@
     </SqlCmdVariable>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Scripts\Pre-Deployment\_DeployOnce.sql" />
     <None Include="InventoryDb.publish.xml" />
   </ItemGroup>
   <ItemGroup>
@@ -149,6 +166,7 @@
     <Build Include="dbo\StoredProcedure\Product\Query\GetProductId.sql" />
     <Build Include="dbo\StoredProcedure\Product\Query\GetProductPriceById.sql" />
     <Build Include="dbo\StoredProcedure\Product\Query\GetProducts.sql" />
+    <Build Include="dbo\Table\_DeployOnce.sql" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\StoredProcedure\Inventory\GetInventoryItems.sql" />

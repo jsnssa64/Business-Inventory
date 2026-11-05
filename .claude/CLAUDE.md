@@ -14,8 +14,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Business-Inventory/
 ├── Inventory-UI/          # React 19 + TypeScript SPA (Webpack 5, Tailwind 4, DaisyUI 5)
 ├── Inventory-API/         # ASP.NET Core 8 Web API
-│   ├── InventoryApi/      # Presentation: controllers, middleware, DTOs, validators
-│   ├── Services/          # Application layer: CQRS handlers, Dapper repositories
+│   ├── InventoryApi/      # Presentation: controllers, middleware, request/response types
+│   ├── Services/          # Application layer: services, CQRS handlers, validators, Dapper repositories
 │   ├── Domain/            # Domain layer: aggregates, entities, domain events
 │   └── Shared/            # Cross-cutting: constants, utilities
 ├── Inventory-DB/          # SQL Server setup with seeding service
@@ -54,9 +54,9 @@ Default `.env` values for local dev: `MSSQL_SA_PASSWORD=test123!`, `DEFAULT_ADMI
 
 ## Architecture
 
-### API — DDD + CQRS + Event Sourcing
+### API — Clean Architecture + DDD, CQRS where event-sourced
 
-All state mutations flow through **MediatR commands/queries** (CQRS). The domain uses **aggregate roots** (`InventoryAggregate`, `ProductAggregate`, `OrderAggregate`) that raise **domain events**. Every event is persisted to **KurrentDB** (EventStoreDB) for the audit log and then published to **RabbitMQ** via MassTransit for async downstream processing (e.g., NotificationService).
+Application services by default; **event-sourced areas** use **MediatR commands/queries** (CQRS) for all their reads and writes. The choice is per area — see `.claude/RULES.md`. The domain uses **aggregate roots** (`InventoryAggregate`, `ProductAggregate`, `OrderAggregate`) that raise **domain events**. Persistence is state-based SQL by default; event-sourced areas persist their events to **KurrentDB** (EventStoreDB) instead. Publishing is independent of persistence: any area may publish to **RabbitMQ** via MassTransit for async downstream processing (e.g., NotificationService).
 
 Read paths use **Dapper** directly against SQL Server — no ORM. **FusionCache** wraps read-heavy queries with a 2-minute default TTL.
 

@@ -1,95 +1,63 @@
-﻿using System.Data;
-using Dapper;
+﻿using Dapper;
 using Domain.Entities.Inventory;
-using Domain.ValueObjects.Product;
+using Domain.Interface;
+using Infrastructure.DataModel.User;
 using KurrentDB.Client;
-using Services.DataModel.Inventory;
-using Services.DataModel.Product;
-using Services.DataModel.User;
-using Shared.Constants;
+using System.Data;
 
 namespace Infrastructure.Repository.Inventory
 {
-    public class InventoryRepository : IInventoryRepository
+    public class InventoryRepository(
+            IDbConnectionFactory dbConnectionFactory,
+            KurrentDBClient storeClient) : IInventoryRepository
     {
-        private IDbConnectionFactory _dbConnectionFactory;
-        private KurrentDBClient _storeClient;
-
-        public InventoryRepository(
-            IDbConnectionFactory dbConnectionFactory
-            , KurrentDBClient storeClient
-            )
+        private static class StoredProc
         {
-            _dbConnectionFactory = dbConnectionFactory;
-            _storeClient = storeClient;
+            public const string UpdateItemInInventory = "dbo.UpdateItemInInventory";
+            public const string GetInventoryByProductId = "dbo.GetInventoryByProductId";
+            public const string GetInventoryItems = "dbo.GetInventoryItems";
         }
 
-        public async Task UpdateItemToInventoryByProductIdTransact(IDbConnection dbConnection,  ProductIdentity productIdentifier, InventoryItemModel inventoryItemModel, IDbTransaction? dbTransaction)
+        private readonly IDbConnectionFactory _dbConnectionFactory = dbConnectionFactory;
+        private readonly KurrentDBClient _storeClient = storeClient;
+
+        public async Task UpdateItemInInventory(ProductIdentifierModel productIdentifier, InventoryItemModel inventoryItemModel, CancellationToken cancellationToken)
         {
-            try
-            {
-                await UpdateItemInInventory(dbConnection, productIdentifier, inventoryItemModel, dbTransaction);
-            }
-            catch(Exception ex)
-            {
-                throw new DbUpdateException($"Failed to add item to inventory: {ex.Message}");
-            }            
+            using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb);
+            await UpdateItemInInventory(productIdentifier, inventoryItemModel, conn, null, cancellationToken);
         }
 
-        public async Task UpdateItemToInventoryByProductId(ProductIdentity productIdentifier, InventoryItemModel inventoryItemModel)
+        public async Task<int> UpdateItemInInventory(ProductIdentifierModel productIdentifier, InventoryItemModel inventoryItemModel, IDbConnection dbConnection, IDbTransaction? dbTransaction, CancellationToken cancellationToken)
         {
-            try
-            {
-                using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
-                await UpdateItemInInventory(conn, productIdentifier, inventoryItemModel);
-            }
-            catch (Exception ex)
-            {
-                throw new DbUpdateException($"Failed to add item to inventory: {ex.Message}");
-            }
-        }
-
-        public async Task UpdateItemInInventory(IDbConnection dbConnection, ProductIdentity productIdentifier, InventoryItemModel inventoryItemModel, IDbTransaction? dbTransaction = null)
-        {
-            DynamicParameters parameters = new DynamicParameters();
-            parameters.Add(nameof(ProductIdentity.Username), productIdentifier.Username);
-            parameters.Add(nameof(ProductIdentity.PublicProductId), productIdentifier.PublicProductId);
+            DynamicParameters parameters = new();
+            parameters.Add(nameof(ProductIdentifierModel.Username), productIdentifier.Username);
+            parameters.Add(nameof(ProductIdentifierModel.PublicProductId), productIdentifier.PublicProductId);
             parameters.Add(nameof(InventoryItemModel.Quantity), inventoryItemModel.Quantity);
 
-            var result = await dbConnection.ExecuteScalarAsync<int>("dbo.UpdateItemInInventory", parameters, commandType: CommandType.StoredProcedure, transaction: dbTransaction);
-
-            if (result != 0)
-            {
-                throw new DbUpdateException($"Failed to Insert item");
-            }
+            return result = await dbConnection.ExecuteScalarAsync<int>(new CommandDefinition(StoredProc.UpdateItemInInventory, parameters, transaction: dbTransaction, commandType: CommandType.StoredProcedure, cancellationToken: cancellationToken));
         }
 
-        public async Task<InventoryItem> GetInventoryItemByProductId(ProductIdentity productIdentifierModel)
+        public async Task<InventoryItem?> GetInventoryItemByProductId(ProductIdentifierModel productIdentifierModel, CancellationToken cancellationToken)
         {
             using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
 
-            DynamicParameters parameters = new DynamicParameters();
-            parameters.Add(nameof(ProductIdentity.PublicProductId), productIdentifierModel.PublicProductId);
-            parameters.Add(nameof(ProductIdentity.Username), productIdentifierModel.Username);
+            DynamicParameters parameters = new();
+            parameters.Add(nameof(ProductIdentifierModel.PublicProductId), productIdentifierModel.PublicProductId);
+            parameters.Add(nameof(ProductIdentifierModel.Username), productIdentifierModel.Username);
 
-            var result = await conn.QuerySingleAsync<InventoryItem>("dbo.GetInventoryByProductId", parameters, commandType: CommandType.StoredProcedure);
-
-            if (result is null)
-            {
-                throw new DbUpdateException($"Failed to get inventory item: {productIdentifierModel.PublicProductId}");
-            }
+            var result = await conn.QuerySingleOrDefaultAsync<InventoryItem>(new CommandDefinition(StoredProc.GetInventoryByProductId, parameters, commandType: CommandType.StoredProcedure, cancellationToken: cancellationToken));
 
             return result;
         }
 
-        public async Task<IEnumerable<InventoryItem>> GetInventoryItems(UserIdentifierModel userIdentifierModel)
+        public async Task<IEnumerable<InventoryItem>> GetInventoryItems(UserIdentifierModel userIdentifierModel, CancellationToken cancellationToken)
         {
             using IDbConnection conn = _dbConnectionFactory.CreateConnection(DatabaseConnections.InventoryDb.ToString());
 
-            DynamicParameters parameters = new DynamicParameters();
+            DynamicParameters parameters = new();
             parameters.Add(nameof(UserIdentifierModel.Username), userIdentifierModel.Username);
 
-            var result = await conn.QueryAsync<InventoryItem>("dbo.GetInventoryItems", parameters, commandType: CommandType.StoredProcedure);
+            var result = await conn.QueryAsync<InventoryItem>(new CommandDefinition(StoredProc.GetInventoryItems, parameters, commandType: CommandType.StoredProcedure, cancellationToken: cancellationToken));
 
             return result;
         }

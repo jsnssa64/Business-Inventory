@@ -4,6 +4,6 @@
     {
         public required string OldPassword { get; set; }
         public required string NewPassword { get; set; }
-        public required string token { get; set; }
+        public required string Token { get; set; }
     }
 }

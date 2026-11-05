@@ -1,16 +1,15 @@
-using InventoryApi.Authentication;
-using InventoryApi.Controllers.CustomController;
+using Domain.ValueObjects.User.Role;
+using Infrastructure.DataModel.Webhook;
+using InventoryApi.Authorization;
+using InventoryApi.Controllers.Base;
 using Microsoft.AspNetCore.Mvc;
-using Services.DataModel.Webhook;
-using Services.Repository.Webhook;
-using Services.Service.SecurityService;
-using Domain.ValueObjects.User;
+using Services.Service.Security;
 
 namespace InventoryApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [MinimumRole(RoleLevel.User)]
+    [MinimumRole(UserRoleLevel.Client)]
     public class WebhookController : BaseController
     {
         private readonly ISecurityService _securityService;
@@ -27,31 +26,23 @@ namespace InventoryApi.Controllers
         [HttpGet("RegisterWebhook")]
         public async Task<IActionResult> RegisterWebhook(string webhookURL, string subscriptionType)
         {
-            try
+            if (!Enum.TryParse<SubscriptionType>(subscriptionType, out var parsedSubscriptionType))
+                throw new Exception("Invalid subscription type provided.");
+
+            var sharedSecret = _securityService.GenerateSecureSecret();
+
+            var subscriptionModel = new Subscription
             {
-                if (!Enum.TryParse<SubscriptionType>(subscriptionType, out var parsedSubscriptionType))
-                    throw new Exception("Invalid subscription type provided.");
+                userName = GetUserIdFromClaim(),
+                webhookUrl = new Uri(webhookURL),
+                secret = sharedSecret,
+                subscriptionType = parsedSubscriptionType
+            };
 
-                var sharedSecret = _securityService.GenerateSecureSecret();
+            await _webhookRepository.Subscribe(subscriptionModel);
 
-                var subscriptionModel = new Subscription
-                {
-                    userName = GetUsername(),
-                    webhookUrl = new Uri(webhookURL),
-                    secret = sharedSecret,
-                    subscriptionType = parsedSubscriptionType
-                };
-
-                await _webhookRepository.Subscribe(subscriptionModel);
-
-                // Fix: Return a single object instead of passing multiple arguments to Ok()
-                return Ok(new { Message = "Webhook registered successfully.", SharedSecret = sharedSecret });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error registering subscription");
-                return StatusCode(500);
-            }
+            // Fix: Return a single object instead of passing multiple arguments to Ok()
+            return Ok(new { Message = "Webhook registered successfully.", SharedSecret = sharedSecret });
         }
     }
 }

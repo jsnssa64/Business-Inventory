@@ -1,4 +1,4 @@
-﻿namespace Services.DataModel.Product
+﻿namespace Infrastructure.DataModel.Product
 {
     public class ProductIdModel
     {

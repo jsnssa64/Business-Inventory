@@ -1,4 +1,4 @@
-﻿namespace InventoryApi.Repository.UserRepo.Enum
+﻿namespace Infrastructure.Repository.UserRepo.Enum
 {
     public enum UserType
     {

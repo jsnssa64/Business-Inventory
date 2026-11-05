@@ -1,0 +1,12 @@
+ad5a069223fbd77737c4199e9c96f54296469666:Inventory-API/InventoryApi/appsettings.Development.json:private-key:15
+ad5a069223fbd77737c4199e9c96f54296469666:Inventory-API/InventoryApi/appsettings.Development.json:private-key:19
+ad5a069223fbd77737c4199e9c96f54296469666:Inventory-API/InventoryApi/appsettings.Development.json:private-key:23
+ad5a069223fbd77737c4199e9c96f54296469666:Inventory-API/InventoryApi/appsettings.Development.json:private-key:27
+a7b947299c80b0936203b39b0752e6b5bd679ad1:Infrastructure/CD/k8s/Manifests/secret.yaml:kubernetes-secret-yaml:2
+a7b947299c80b0936203b39b0752e6b5bd679ad1:Infrastructure/CD/k8s/Manifests/secret.yaml:generic-api-key:10
+a7b947299c80b0936203b39b0752e6b5bd679ad1:Inventory-UI/CD/yml/secret.yaml:kubernetes-secret-yaml:2
+a7b947299c80b0936203b39b0752e6b5bd679ad1:Inventory-UI/CD/yml/secret.yaml:generic-api-key:10
+3e67be7370f89000fa70742de357874f2dc21797:Inventory-API/InventoryApi/appsettings.Development.json:private-key:14
+3e67be7370f89000fa70742de357874f2dc21797:Inventory-API/InventoryApi/appsettings.Development.json:private-key:18
+3e67be7370f89000fa70742de357874f2dc21797:Inventory-API/InventoryApi/appsettings.Development.json:private-key:22
+3e67be7370f89000fa70742de357874f2dc21797:Inventory-API/InventoryApi/appsettings.Development.json:private-key:26

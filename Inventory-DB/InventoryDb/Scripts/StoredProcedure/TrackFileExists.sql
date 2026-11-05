@@ -5,8 +5,8 @@ AS
 
     IF EXISTS (
         SELECT 1 
-	    FROM dbo._deployOnce AS do 
-	    WHERE do.[FileName] LIKE '%' + @fileName + '%'
+	    FROM dbo._deployOnce AS d
+	    WHERE d.[FileName] LIKE '%' + @fileName + '%'
     )
         RETURN 1;
 
