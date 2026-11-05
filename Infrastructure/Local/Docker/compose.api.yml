@@ -15,14 +15,16 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
       - ConnectionStrings__InventoryDb=${DB_CONNECTION}
-      - ConnectionStrings__EventStoreDb=${EVENTSTORE_CONNECTION}
+      - ConnectionStrings__KurrentDb=${EVENTSTORE_CONNECTION}
       - ConnectionStrings__RabbitMQ=${RABBITMQ_CONNECTION}
-      - Security__AccessToken__Key=${SECURITY_ACCESS_KEY}
-      - Security__AccessToken__Expiry=${SECURITY_ACCESS_EXPIRY}
-      - Security__RefreshToken__Key=${SECURITY_REFRESH_KEY}
-      - Security__RefreshToken__Expiry=${SECURITY_REFRESH_EXPIRY}
-      - Security__ConfirmationToken__Key=${SECURITY_CONFIRM_KEY}
-      - Security__ConfirmationToken__Expiry=${SECURITY_CONFIRM_EXPIRY}
+      - Security__ResetPasswordToken__Key=${SECURITY_RESETPASSWORDTOKEN_KEY}
+      - Security__ResetPasswordToken__Expiry=${SECURITY_RESETPASSWORDTOKEN_EXPIRY}
+      - Security__AccessToken__Key=${SECURITY_ACCESSTOKEN_KEY}
+      - Security__AccessToken__Expiry=${SECURITY_ACCESSTOKEN_EXPIRY}
+      - Security__RefreshToken__Key=${SECURITY_REFRESHTOKEN_KEY}
+      - Security__RefreshToken__Expiry=${SECURITY_REFRESHTOKEN_EXPIRY}
+      - Security__ConfirmationToken__Key=${SECURITY_CONFIRMTOKEN_KEY}
+      - Security__ConfirmationToken__Expiry=${SECURITY_CONFIRMTOKEN_EXPIRY}
       - Security__Audience=${SECURITY_AUDIENCE}
       - Security__Issuer=${SECURITY_ISSUER}
     networks:
